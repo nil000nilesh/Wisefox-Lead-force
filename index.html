@@ -43,7 +43,7 @@
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-white"></div>
         </div>
 
-        <!-- SETUP REQUIRED MODAL (Hidden if config works) -->
+        <!-- SETUP REQUIRED MODAL -->
         <div id="setupRequiredModal" class="hidden fixed inset-0 bg-black/80 z-[80] flex items-center justify-center px-6">
             <div class="bg-white w-full max-w-sm p-6 rounded-xl shadow-2xl text-center">
                 <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -80,9 +80,10 @@
 
         <!-- 2. DASHBOARD -->
         <div id="mainDashboard" class="hidden fade-in pb-24">
-            <div id="adminTabs" class="hidden bg-white border-b flex justify-around p-2 sticky top-[60px] z-40 shadow-sm">
+            <!-- Navigation Tabs -->
+            <div id="navTabs" class="hidden bg-white border-b flex justify-around p-2 sticky top-[60px] z-40 shadow-sm">
                 <button onclick="window.switchTab('leads')" id="tabLeads" class="flex-1 py-2 text-sm font-bold text-indigo-600 border-b-2 border-indigo-600">Leads</button>
-                <button onclick="window.switchTab('users')" id="tabUsers" class="flex-1 py-2 text-sm font-bold text-gray-400">Users</button>
+                <button onclick="window.switchTab('users')" id="tabUsers" class="flex-1 py-2 text-sm font-bold text-gray-400">Partners</button>
             </div>
 
             <!-- Stats -->
@@ -99,7 +100,7 @@
                 </div>
             </div>
 
-            <!-- LEADS -->
+            <!-- LEADS VIEW -->
             <div id="viewLeads" class="px-4">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="font-bold text-gray-700">Applications</h3>
@@ -111,9 +112,10 @@
                 <div id="emptyState" class="hidden text-center mt-10 text-gray-400">No data found</div>
             </div>
 
-            <!-- USERS -->
+            <!-- USERS VIEW -->
             <div id="viewUsers" class="hidden px-4 pt-4">
-                <button onclick="window.openModal('addUserModal')" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 mb-4">
+                <!-- Create Button (Only for Admin) -->
+                <button id="btnCreateUser" onclick="window.openModal('addUserModal')" class="hidden w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 mb-4">
                     <i class="fa-solid fa-user-plus mr-2"></i> Create New Partner
                 </button>
                 <div id="usersList" class="space-y-3 pb-10"></div>
@@ -151,10 +153,23 @@
                     <button onclick="window.closeModal('addUserModal')"><i class="fa-solid fa-times"></i></button>
                 </div>
                 <form onsubmit="window.createUser(event)" class="space-y-3">
-                    <select id="newUserRole" class="w-full p-2 border rounded bg-white">
-                        <option value="dsa">DSA</option>
-                        <option value="subdsa">Sub-DSA</option>
-                    </select>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500">ROLE</label>
+                        <select id="newUserRole" onchange="window.toggleParentSelect()" class="w-full p-2 border rounded bg-white">
+                            <option value="dsa">DSA (Master)</option>
+                            <option value="subdsa">Sub-DSA (Field Agent)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Parent DSA Select (Visible only for Sub-DSA) -->
+                    <div id="parentSelectDiv" class="hidden">
+                        <label class="text-xs font-bold text-gray-500">UNDER DSA</label>
+                        <select id="newUserParent" class="w-full p-2 border rounded bg-white">
+                            <option value="">Select Parent DSA</option>
+                            <!-- Dynamic Content -->
+                        </select>
+                    </div>
+
                     <input type="text" id="newUserName" required class="w-full p-2 border rounded" placeholder="Full Name">
                     <input type="tel" id="newUserMobile" required maxlength="10" class="w-full p-2 border rounded" placeholder="Mobile (10 digits)">
                     <input type="email" id="newUserEmail" class="w-full p-2 border rounded" placeholder="Email (Optional)">
@@ -188,10 +203,8 @@
     <!-- FIREBASE & LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, updateDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, updateDoc, doc, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // ============================================
-        // UPDATED CONFIG (User Provided)
         // ============================================
         const firebaseConfig = {
           apiKey: "AIzaSyBz9bUrnOMu6I_OQ2cTHsRbVJUGlNs9c_E",
@@ -203,21 +216,16 @@
         };
         // ============================================
 
-        // Initialize Firebase
         let db;
-        
-        // CHECK IF CONFIG IS PRESENT
         if (!firebaseConfig.apiKey) {
             document.getElementById('setupRequiredModal').classList.remove('hidden');
         } else {
-            // Initialize Firebase
             try {
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 console.log("Firebase Connected");
             } catch(e) {
                 console.error("Init Error", e);
-                document.getElementById('configErrorMsg').innerText = "Init Error: " + e.message;
                 document.getElementById('setupRequiredModal').classList.remove('hidden');
             }
         }
@@ -227,17 +235,13 @@
 
         // --- GLOBAL FUNCTIONS ---
         window.login = async () => {
-            if(!db) {
-                alert("Database not connected.");
-                return;
-            }
-
+            if(!db) return alert("Database not connected.");
             const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value.trim();
             showLoading(true);
 
             try {
-                // Hardcoded Admin Backup
+                // Hardcoded Admin
                 if(u === 'nil000nilesh' && p === 'nil*5786') {
                     currentUser = { id: 'admin', role: 'admin', name: 'Nilesh (Admin)', username: u };
                     finalizeLogin();
@@ -261,10 +265,7 @@
                     showLoading(false);
                 }
             } catch (error) {
-                console.error(error);
-                let msg = error.message;
-                if(msg.includes("billing")) msg = "Billing Error! Create NEW Project with US-Central location.";
-                alert("Login Error: " + msg);
+                alert("Login Error: " + error.message);
                 showLoading(false);
             }
         };
@@ -275,14 +276,24 @@
             document.getElementById('logoutBtn').classList.remove('hidden');
             document.getElementById('headerRole').innerText = currentUser.name;
 
-            if (currentUser.role === 'admin') {
-                document.getElementById('adminTabs').classList.remove('hidden');
-                setupRealtimeListeners('leads');
+            // Show Tabs for Admin and DSA (Sub-DSA only sees Leads)
+            if (currentUser.role === 'admin' || currentUser.role === 'dsa') {
+                document.getElementById('navTabs').classList.remove('hidden');
             } else {
-                document.getElementById('adminTabs').classList.add('hidden');
-                document.getElementById('viewLeads').classList.remove('hidden');
-                setupRealtimeListeners('leads');
+                document.getElementById('navTabs').classList.add('hidden');
             }
+            
+            // Default view
+            document.getElementById('viewLeads').classList.remove('hidden');
+            setupRealtimeListeners('leads');
+            
+            // Create User button only for Admin
+            if(currentUser.role === 'admin') {
+                document.getElementById('btnCreateUser').classList.remove('hidden');
+            } else {
+                document.getElementById('btnCreateUser').classList.add('hidden');
+            }
+
             showLoading(false);
         }
 
@@ -302,9 +313,6 @@
                 unsubscribeLeads = onSnapshot(q, (snapshot) => {
                     const leads = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     renderLeads(leads);
-                }, (error) => {
-                    console.error(error);
-                    if(error.message.includes("billing")) alert("CRITICAL: Billing Required Error. Please enable billing or create a NEW project in US-Central.");
                 });
             } else if (type === 'users') {
                  const usersRef = collection(db, "users");
@@ -361,24 +369,123 @@
             const container = document.getElementById('usersList');
             container.innerHTML = '';
             
-            users.forEach(u => {
+            // Filter: Admin sees all, DSA sees ONLY their sub-DSAs
+            const filteredUsers = users.filter(u => {
+                if(currentUser.role === 'admin') return true;
+                if(currentUser.role === 'dsa') return u.parentId === currentUser.username;
+                return false;
+            });
+
+            filteredUsers.forEach(u => {
                 let statusBadge = u.status === 'blocked' ? '<span class="text-red-500 font-bold text-xs">BLOCKED</span>' : '<span class="text-green-500 text-xs">ACTIVE</span>';
-                let action = u.status === 'blocked' 
-                    ? `<button onclick="window.toggleUser('${u.dbId}', 'active')" class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Unblock</button>`
-                    : `<button onclick="window.toggleUser('${u.dbId}', 'blocked')" class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Block</button>`;
+                
+                // Actions: Block & Delete (Only for Admin)
+                let actions = '';
+                if (currentUser.role === 'admin') {
+                    let blockBtn = u.status === 'blocked' 
+                        ? `<button onclick="window.toggleUser('${u.dbId}', 'active')" class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Unblock</button>`
+                        : `<button onclick="window.toggleUser('${u.dbId}', 'blocked')" class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Block</button>`;
+                    
+                    let deleteBtn = `<button onclick="window.deleteUser('${u.dbId}')" class="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded hover:bg-red-500 hover:text-white"><i class="fa-solid fa-trash"></i></button>`;
+                    
+                    actions = `<div class="flex">${blockBtn} ${deleteBtn}</div>`;
+                }
+
+                // Show Parent info if available
+                let subInfo = u.parentId ? `<br><span class="text-[10px] text-indigo-400">Under: ${u.parentId}</span>` : '';
 
                 container.innerHTML += `
                     <div class="bg-white p-3 rounded-lg border shadow-sm flex justify-between items-center">
                         <div>
                             <h4 class="font-bold">${u.name} <span class="text-xs bg-blue-100 px-1 rounded">${u.role}</span></h4>
-                            <p class="text-xs text-gray-500">ID: ${u.username} | 📱 ${u.mobile}</p>
+                            <p class="text-xs text-gray-500">ID: ${u.username} | 📱 ${u.mobile} ${subInfo}</p>
                             ${statusBadge}
                         </div>
-                        <div>${action}</div>
+                        <div>${actions}</div>
                     </div>
                 `;
             });
         }
+
+        // --- USER MANAGEMENT ---
+        window.toggleParentSelect = async () => {
+            const role = document.getElementById('newUserRole').value;
+            const parentDiv = document.getElementById('parentSelectDiv');
+            const parentSelect = document.getElementById('newUserParent');
+            
+            if (role === 'subdsa') {
+                parentDiv.classList.remove('hidden');
+                // Fetch All DSAs from DB to populate dropdown
+                try {
+                    parentSelect.innerHTML = '<option value="">Select Parent DSA</option>';
+                    const q = query(collection(db, "users"), where("role", "==", "dsa"));
+                    const snap = await getDocs(q);
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        parentSelect.innerHTML += `<option value="${d.username}">${d.name} (${d.location})</option>`;
+                    });
+                } catch(e) { console.error("Error fetching DSAs", e); }
+            } else {
+                parentDiv.classList.add('hidden');
+            }
+        };
+
+        window.createUser = async (e) => {
+            e.preventDefault();
+            const mobile = document.getElementById('newUserMobile').value;
+            if(mobile.length !== 10) return alert("Mobile must be 10 digits");
+
+            showLoading(true);
+            
+            const role = document.getElementById('newUserRole').value;
+            let parentId = null;
+            if(role === 'subdsa') {
+                parentId = document.getElementById('newUserParent').value;
+                if(!parentId) {
+                    alert("Please select a Parent DSA for this Sub-DSA");
+                    showLoading(false);
+                    return;
+                }
+            }
+
+            const data = {
+                role: role,
+                name: document.getElementById('newUserName').value,
+                mobile: mobile,
+                email: document.getElementById('newUserEmail').value,
+                location: document.getElementById('newUserLocation').value,
+                username: document.getElementById('newUserLoginId').value,
+                password: document.getElementById('newUserPass').value,
+                status: 'active',
+                parentId: parentId
+            };
+
+            try {
+                const q = query(collection(db, "users"), where("username", "==", data.username));
+                const snap = await getDocs(q);
+                if(!snap.empty) {
+                    alert("Username already taken!");
+                    showLoading(false);
+                    return;
+                }
+                await addDoc(collection(db, "users"), data);
+                window.closeModal('addUserModal');
+                showToast("User Created!");
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+            showLoading(false);
+        };
+
+        window.deleteUser = async (dbId) => {
+            if(!confirm("DELETE WARNING: This user will be permanently deleted. Continue?")) return;
+            try {
+                await deleteDoc(doc(db, "users", dbId));
+                showToast("User Deleted Successfully");
+            } catch (err) {
+                alert("Error deleting: " + err.message);
+            }
+        };
 
         window.submitLead = async (e) => {
             if(!db) return;
@@ -411,60 +518,19 @@
             showLoading(false);
         };
 
-        window.createUser = async (e) => {
-            if(!db) return;
-            e.preventDefault();
-            const mobile = document.getElementById('newUserMobile').value;
-            if(mobile.length !== 10) return alert("Mobile must be 10 digits");
-
-            showLoading(true);
-            const data = {
-                role: document.getElementById('newUserRole').value,
-                name: document.getElementById('newUserName').value,
-                mobile: mobile,
-                email: document.getElementById('newUserEmail').value,
-                location: document.getElementById('newUserLocation').value,
-                username: document.getElementById('newUserLoginId').value,
-                password: document.getElementById('newUserPass').value,
-                status: 'active',
-                parentId: null
-            };
-
-            try {
-                const q = query(collection(db, "users"), where("username", "==", data.username));
-                const snap = await getDocs(q);
-                if(!snap.empty) {
-                    alert("Username already taken!");
-                    showLoading(false);
-                    return;
-                }
-                await addDoc(collection(db, "users"), data);
-                window.closeModal('addUserModal');
-                showToast("User Created!");
-            } catch (err) {
-                alert("Error: " + err.message);
-            }
-            showLoading(false);
-        };
-
         window.saveStatus = async () => {
-            if(!db) return;
             const id = document.getElementById('statusLeadId').value;
             const status = document.getElementById('newStatus').value;
             const remarks = document.getElementById('statusRemarks').value;
-            
             try {
                 const leadRef = doc(db, "leads", id);
                 await updateDoc(leadRef, { status: status, remarks: remarks });
                 window.closeModal('statusModal');
                 showToast("Updated!");
-            } catch (err) {
-                alert("Error: " + err.message);
-            }
+            } catch (err) { alert("Error: " + err.message); }
         };
 
         window.toggleUser = async (dbId, newStatus) => {
-            if(!db) return;
             if(!confirm("Change status?")) return;
             try {
                 const userRef = doc(db, "users", dbId);
@@ -489,7 +555,12 @@
             }
         };
 
-        window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); };
+        window.openModal = (id) => { 
+            document.getElementById(id).classList.remove('hidden'); 
+            document.getElementById(id).classList.add('flex');
+            // If opening Add User modal, trigger toggleParentSelect to reset state
+            if(id === 'addUserModal') window.toggleParentSelect();
+        };
         window.closeModal = (id) => { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); };
         window.openStatusModal = (id, status, remarks) => {
             document.getElementById('statusLeadId').value = id;
