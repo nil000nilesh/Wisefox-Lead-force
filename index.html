@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wisefox LeadApp</title>
+    <title>Wisefox LeadApp (Online)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Icons -->
@@ -12,7 +12,6 @@
         body { font-family: 'Segoe UI', sans-serif; background-color: #f8fafc; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     </style>
@@ -28,17 +27,31 @@
                 <i class="fa-solid fa-fox text-orange-400 text-xl"></i>
                 <div>
                     <h1 class="font-bold text-lg leading-none">Wisefox LeadApp</h1>
-                    <p class="text-[10px] text-indigo-300 uppercase tracking-wider" id="headerRole">Login Required</p>
+                    <p class="text-[10px] text-indigo-300 uppercase tracking-wider" id="headerRole">Connecting...</p>
                 </div>
             </div>
-            <button id="logoutBtn" onclick="logout()" class="hidden text-xs bg-indigo-800 hover:bg-indigo-700 px-3 py-1.5 rounded border border-indigo-600 transition">
+            <button id="logoutBtn" onclick="window.logout()" class="hidden text-xs bg-indigo-800 hover:bg-indigo-700 px-3 py-1.5 rounded border border-indigo-600 transition">
                 <i class="fa-solid fa-power-off"></i>
             </button>
         </div>
 
-        <!-- TOAST NOTIFICATION -->
-        <div id="toast" class="hidden fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-xl z-[60] text-sm font-medium transition-all flex items-center gap-2 w-max max-w-[90%] text-center">
-            <i class="fa-solid fa-circle-check text-green-400"></i> <span id="toastMsg">Action Successful</span>
+        <!-- TOAST & LOADING -->
+        <div id="toast" class="hidden fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-xl z-[60] text-sm font-medium transition-all text-center">
+            <span id="toastMsg">Action Successful</span>
+        </div>
+        <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/50 z-[70] flex items-center justify-center">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-white"></div>
+        </div>
+
+        <!-- SETUP REQUIRED MODAL (Hidden if config works) -->
+        <div id="setupRequiredModal" class="hidden fixed inset-0 bg-black/80 z-[80] flex items-center justify-center px-6">
+            <div class="bg-white w-full max-w-sm p-6 rounded-xl shadow-2xl text-center">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-triangle-exclamation text-red-600 text-2xl"></i>
+                </div>
+                <h3 class="font-bold text-xl text-gray-800 mb-2">Connection Error</h3>
+                <p id="configErrorMsg" class="text-sm text-gray-600 mb-4">Database se connect nahi ho pa raha.</p>
+            </div>
         </div>
 
         <!-- 1. LOGIN SCREEN -->
@@ -48,715 +61,451 @@
                     <i class="fa-solid fa-fox text-orange-500 text-5xl"></i>
                 </div>
                 <h2 class="text-3xl font-bold text-gray-800">Welcome</h2>
-                <p class="text-gray-500 text-sm mt-1">Wisefox Loan System</p>
+                <p class="text-gray-500 text-sm mt-1">Wisefox Loan System (Online)</p>
             </div>
 
-            <form onsubmit="event.preventDefault(); login();" class="space-y-4">
+            <form onsubmit="event.preventDefault(); window.login();" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Username</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-user absolute left-3 top-3.5 text-gray-400"></i>
-                        <input type="text" id="username" placeholder="Enter ID" class="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-white">
-                    </div>
+                    <input type="text" id="username" placeholder="Username" class="w-full pl-4 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Password</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-lock absolute left-3 top-3.5 text-gray-400"></i>
-                        <input type="password" id="password" placeholder="Enter Password" class="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-white">
-                    </div>
+                    <input type="password" id="password" placeholder="Password" class="w-full pl-4 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
-                
-                <!-- Forgot Password Link -->
-                <div class="text-right">
-                    <button type="button" onclick="openForgotPwd()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold">Forgot Password?</button>
-                </div>
-
-                <button type="submit" class="w-full bg-indigo-600 text-white py-3.5 rounded-lg font-bold hover:bg-indigo-700 transition shadow-lg mt-2 text-sm uppercase tracking-wide">
-                    Login Dashboard
+                <button type="submit" class="w-full bg-indigo-600 text-white py-3.5 rounded-lg font-bold hover:bg-indigo-700 transition shadow-lg mt-2">
+                    Login
                 </button>
             </form>
-            
-            <!-- Default credentials box REMOVED as requested -->
+            <p class="text-center text-xs text-gray-400 mt-4">Powered by Firebase</p>
         </div>
 
-        <!-- 2. MAIN DASHBOARD (Shared for Admin, DSA, Sub-DSA) -->
+        <!-- 2. DASHBOARD -->
         <div id="mainDashboard" class="hidden fade-in pb-24">
-            
-            <!-- Admin Tabs (Only visible to Admin) -->
             <div id="adminTabs" class="hidden bg-white border-b flex justify-around p-2 sticky top-[60px] z-40 shadow-sm">
-                <button onclick="switchAdminTab('leads')" id="tabLeads" class="flex-1 py-2 text-sm font-bold text-indigo-600 border-b-2 border-indigo-600">
-                    <i class="fa-solid fa-list-check mr-1"></i> Leads
-                </button>
-                <button onclick="switchAdminTab('users')" id="tabUsers" class="flex-1 py-2 text-sm font-bold text-gray-400 hover:text-gray-600">
-                    <i class="fa-solid fa-users-gear mr-1"></i> Manage Users
-                </button>
+                <button onclick="window.switchTab('leads')" id="tabLeads" class="flex-1 py-2 text-sm font-bold text-indigo-600 border-b-2 border-indigo-600">Leads</button>
+                <button onclick="window.switchTab('users')" id="tabUsers" class="flex-1 py-2 text-sm font-bold text-gray-400">Users</button>
             </div>
 
-            <!-- Dashboard Stats -->
-            <div id="statsPanel" class="p-5 bg-gradient-to-br from-indigo-800 to-blue-600 text-white rounded-b-[2rem] shadow-lg mb-6">
+            <!-- Stats -->
+            <div class="p-5 bg-gradient-to-br from-indigo-800 to-blue-600 text-white rounded-b-[2rem] shadow-lg mb-6">
                 <div class="flex justify-between items-end mb-4">
                     <div>
                         <p class="text-xs opacity-70 uppercase tracking-wider">Total Business</p>
                         <h2 class="text-3xl font-bold" id="totalValue">₹0</h2>
                     </div>
                     <div class="text-right">
-                        <p class="text-xs opacity-70">Pending Files</p>
+                        <p class="text-xs opacity-70">Pending</p>
                         <h2 class="text-xl font-bold" id="pendingCount">0</h2>
                     </div>
                 </div>
-                <!-- Progress Bar -->
-                <div class="w-full bg-white/20 rounded-full h-1.5 mb-2">
-                    <div class="bg-yellow-400 h-1.5 rounded-full" style="width: 70%"></div>
-                </div>
             </div>
 
-            <!-- LEADS VIEW -->
+            <!-- LEADS -->
             <div id="viewLeads" class="px-4">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-gray-700 text-lg">Applications</h3>
-                    <!-- Add Lead Button (Visible to everyone) -->
-                    <button onclick="openModal('addLeadModal')" class="bg-indigo-600 text-white px-4 py-2 rounded-full text-xs font-bold shadow hover:bg-indigo-700 transition flex items-center gap-1">
+                    <h3 class="font-bold text-gray-700">Applications</h3>
+                    <button onclick="window.openModal('addLeadModal')" class="bg-indigo-600 text-white px-4 py-2 rounded-full text-xs font-bold shadow hover:bg-indigo-700 flex items-center gap-1">
                         <i class="fa-solid fa-plus"></i> New
                     </button>
                 </div>
-
-                <!-- Filter/Search -->
-                <div class="relative mb-4">
-                    <input type="text" id="searchInput" onkeyup="renderLeads()" placeholder="Search by name or mobile..." class="w-full p-2 pl-8 text-sm border rounded-lg bg-gray-50 focus:bg-white focus:border-indigo-500 outline-none">
-                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-400 text-xs"></i>
-                </div>
-
-                <div id="leadsList" class="space-y-4">
-                    <!-- Leads injected here -->
-                </div>
-                
-                <div id="emptyState" class="hidden flex flex-col items-center justify-center mt-12 text-gray-400">
-                    <div class="bg-gray-100 p-4 rounded-full mb-3">
-                        <i class="fa-solid fa-folder-open text-3xl"></i>
-                    </div>
-                    <p class="text-sm">No applications found</p>
-                </div>
+                <div id="leadsList" class="space-y-4 pb-10"></div>
+                <div id="emptyState" class="hidden text-center mt-10 text-gray-400">No data found</div>
             </div>
 
-            <!-- USERS VIEW (Admin Only) -->
+            <!-- USERS -->
             <div id="viewUsers" class="hidden px-4 pt-4">
-                <button onclick="openModal('addUserModal')" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 mb-4 flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-user-plus"></i> Create New Partner
+                <button onclick="window.openModal('addUserModal')" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 mb-4">
+                    <i class="fa-solid fa-user-plus mr-2"></i> Create New Partner
                 </button>
-                <div id="usersList" class="space-y-3">
-                    <!-- Users injected here -->
-                </div>
+                <div id="usersList" class="space-y-3 pb-10"></div>
             </div>
-
         </div>
 
         <!-- MODALS -->
-
-        <!-- 1. ADD LEAD MODAL (With Validations & Docs) -->
+        <!-- Add Lead -->
         <div id="addLeadModal" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-end sm:items-center justify-center fade-in backdrop-blur-sm">
             <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center mb-5">
-                    <h3 class="font-bold text-lg text-gray-800">New Application</h3>
-                    <button onclick="closeModal('addLeadModal')" class="bg-gray-100 p-2 rounded-full hover:bg-gray-200"><i class="fa-solid fa-times"></i></button>
+                    <h3 class="font-bold">New Application</h3>
+                    <button onclick="window.closeModal('addLeadModal')" class="text-gray-400"><i class="fa-solid fa-times"></i></button>
                 </div>
-                <form onsubmit="submitLead(event)" class="space-y-4">
-                    <div>
-                        <label class="text-xs font-bold text-gray-500">CLIENT NAME</label>
-                        <input type="text" id="leadName" required class="w-full p-2 border rounded focus:border-indigo-500 outline-none" placeholder="Full Name">
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-500">MOBILE (10 Digits)</label>
-                        <input type="tel" id="leadPhone" required pattern="[0-9]{10}" maxlength="10" title="Must be 10 digits" class="w-full p-2 border rounded focus:border-indigo-500 outline-none" placeholder="e.g. 9876543210">
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-500">LOAN TYPE</label>
-                        <select id="leadType" class="w-full p-2 border rounded bg-white focus:border-indigo-500 outline-none">
-                            <option value="Personal Loan">Personal Loan</option>
-                            <option value="Home Loan">Home Loan</option>
-                            <option value="Auto Loan">Auto Loan</option>
-                            <option value="Business Loan">Business Loan</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-500">AMOUNT (₹)</label>
-                        <input type="number" id="leadAmount" required class="w-full p-2 border rounded focus:border-indigo-500 outline-none" placeholder="e.g. 500000">
-                    </div>
-                    
-                    <!-- File Uploads -->
-                    <div class="p-3 bg-gray-50 border border-dashed border-gray-300 rounded-lg">
-                        <label class="text-xs font-bold text-gray-500 block mb-2">UPLOAD DOCUMENTS</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <span class="text-[10px] text-gray-400 block mb-1">Aadhar Card</span>
-                                <input type="file" id="docAadhar" class="text-[10px] w-full file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-[10px] file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                            </div>
-                            <div>
-                                <span class="text-[10px] text-gray-400 block mb-1">PAN Card</span>
-                                <input type="file" id="docPan" class="text-[10px] w-full file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-[10px] file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold shadow hover:bg-indigo-700 mt-2">Submit File</button>
+                <form onsubmit="window.submitLead(event)" class="space-y-4">
+                    <input type="text" id="leadName" required class="w-full p-2 border rounded" placeholder="Client Name">
+                    <input type="tel" id="leadPhone" required maxlength="10" class="w-full p-2 border rounded" placeholder="Mobile (10 digits)">
+                    <select id="leadType" class="w-full p-2 border rounded bg-white">
+                        <option>Personal Loan</option>
+                        <option>Home Loan</option>
+                        <option>Auto Loan</option>
+                        <option>Business Loan</option>
+                    </select>
+                    <input type="number" id="leadAmount" required class="w-full p-2 border rounded" placeholder="Amount (₹)">
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold shadow">Submit</button>
                 </form>
             </div>
         </div>
 
-        <!-- 2. UPDATE STATUS MODAL (For Admin & DSAs) -->
-        <div id="statusModal" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-center justify-center fade-in backdrop-blur-sm px-4">
-            <div class="bg-white w-full max-w-sm p-6 rounded-xl shadow-2xl">
-                <h3 class="font-bold text-lg text-gray-800 mb-4">Update Case Status</h3>
-                <input type="hidden" id="statusLeadId">
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="text-xs font-bold text-gray-500">CURRENT STATUS</label>
-                        <select id="newStatus" class="w-full p-2 border rounded bg-white focus:border-indigo-500 outline-none font-medium">
-                            <option value="Contacted">Contacted</option>
-                            <option value="In Process">In Process</option>
-                            <option value="Sanctioned">Sanctioned</option>
-                            <option value="Disbursed">Disbursed</option>
-                            <option value="Rejected">Rejected</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-500">REMARKS</label>
-                        <textarea id="statusRemarks" rows="3" class="w-full p-2 border rounded focus:border-indigo-500 outline-none text-sm" placeholder="Any comments..."></textarea>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="closeModal('statusModal')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold">Cancel</button>
-                        <button onclick="saveStatus()" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg font-bold hover:bg-indigo-700">Update</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. ADD USER MODAL (Admin Only) -->
-        <div id="addUserModal" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-center justify-center fade-in backdrop-blur-sm px-4">
+        <!-- Add User -->
+        <div id="addUserModal" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-center justify-center px-4">
             <div class="bg-white w-full max-w-sm p-6 rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-lg text-gray-800">Create New User</h3>
-                    <button onclick="closeModal('addUserModal')" class="text-gray-400"><i class="fa-solid fa-times"></i></button>
+                    <h3 class="font-bold">Create User</h3>
+                    <button onclick="window.closeModal('addUserModal')"><i class="fa-solid fa-times"></i></button>
                 </div>
-                <form onsubmit="createUser(event)" class="space-y-3">
-                    <div>
-                        <label class="text-xs font-bold text-gray-500">ROLE</label>
-                        <select id="newUserRole" onchange="toggleParentSelect()" class="w-full p-2 border rounded bg-white outline-none">
-                            <option value="dsa">DSA (Master)</option>
-                            <option value="subdsa">Sub-DSA (Field Agent)</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Only show if Sub-DSA is selected -->
-                    <div id="parentSelectDiv" class="hidden">
-                        <label class="text-xs font-bold text-gray-500">UNDER DSA</label>
-                        <select id="newUserParent" class="w-full p-2 border rounded bg-white outline-none">
-                            <!-- Filled by JS -->
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="text-xs font-bold text-gray-500">FULL NAME</label>
-                        <input type="text" id="newUserName" required class="w-full p-2 border rounded outline-none">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="text-xs font-bold text-gray-500">MOBILE (10 Digits)</label>
-                            <input type="tel" id="newUserMobile" required pattern="[0-9]{10}" maxlength="10" title="Must be 10 digits" class="w-full p-2 border rounded outline-none">
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-500">EMAIL (Optional)</label>
-                            <input type="email" id="newUserEmail" class="w-full p-2 border rounded outline-none" placeholder="For Self Reset">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-500">LOCATION</label>
-                        <input type="text" id="newUserLocation" required class="w-full p-2 border rounded outline-none">
-                    </div>
-                    <hr class="border-gray-100 my-2">
-                    <p class="text-xs font-bold text-indigo-600 mb-2">LOGIN CREDENTIALS</p>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="text-xs font-bold text-gray-500">USERNAME</label>
-                            <input type="text" id="newUserLoginId" required class="w-full p-2 border rounded outline-none bg-yellow-50">
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-500">PASSWORD</label>
-                            <input type="text" id="newUserPass" required class="w-full p-2 border rounded outline-none bg-yellow-50">
-                        </div>
-                    </div>
-                    <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg font-bold shadow mt-2">Create Account</button>
+                <form onsubmit="window.createUser(event)" class="space-y-3">
+                    <select id="newUserRole" class="w-full p-2 border rounded bg-white">
+                        <option value="dsa">DSA</option>
+                        <option value="subdsa">Sub-DSA</option>
+                    </select>
+                    <input type="text" id="newUserName" required class="w-full p-2 border rounded" placeholder="Full Name">
+                    <input type="tel" id="newUserMobile" required maxlength="10" class="w-full p-2 border rounded" placeholder="Mobile (10 digits)">
+                    <input type="email" id="newUserEmail" class="w-full p-2 border rounded" placeholder="Email (Optional)">
+                    <input type="text" id="newUserLocation" required class="w-full p-2 border rounded" placeholder="Location">
+                    <input type="text" id="newUserLoginId" required class="w-full p-2 border rounded bg-yellow-50" placeholder="Username">
+                    <input type="text" id="newUserPass" required class="w-full p-2 border rounded bg-yellow-50" placeholder="Password">
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg font-bold shadow">Create</button>
                 </form>
             </div>
         </div>
 
-        <!-- 4. CHANGE PASSWORD MODAL (Internal) -->
-        <div id="pwdModal" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-center justify-center fade-in backdrop-blur-sm px-4">
+        <!-- Status Modal -->
+        <div id="statusModal" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-center justify-center px-4">
             <div class="bg-white w-full max-w-sm p-6 rounded-xl shadow-2xl">
-                <h3 class="font-bold text-lg text-gray-800 mb-2">Reset Password</h3>
-                <p class="text-xs text-gray-500 mb-4">For User: <span id="resetUserName" class="font-bold text-gray-800"></span></p>
-                <input type="hidden" id="resetUserId">
-                <input type="text" id="newResetPass" placeholder="Enter new password" class="w-full p-2 border rounded outline-none mb-4">
-                <button onclick="savePassword()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold">Update Password</button>
-                <button onclick="closeModal('pwdModal')" class="w-full text-gray-500 text-sm mt-3">Cancel</button>
+                <h3 class="font-bold mb-4">Update Status</h3>
+                <input type="hidden" id="statusLeadId">
+                <select id="newStatus" class="w-full p-2 border rounded mb-4">
+                    <option>Contacted</option>
+                    <option>In Process</option>
+                    <option>Sanctioned</option>
+                    <option>Disbursed</option>
+                    <option>Rejected</option>
+                </select>
+                <textarea id="statusRemarks" rows="3" class="w-full p-2 border rounded mb-4" placeholder="Remarks..."></textarea>
+                <button onclick="window.saveStatus()" class="w-full bg-indigo-600 text-white py-2 rounded font-bold">Update</button>
+                <button onclick="window.closeModal('statusModal')" class="w-full mt-2 text-gray-500">Cancel</button>
             </div>
         </div>
-
-        <!-- 5. FORGOT PASSWORD EMAIL MODAL -->
-        <div id="forgotPwdModal" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-center justify-center fade-in backdrop-blur-sm px-4">
-            <div class="bg-white w-full max-w-sm p-6 rounded-xl shadow-2xl relative">
-                <button onclick="closeModal('forgotPwdModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times"></i></button>
-                <div class="text-center mb-6">
-                    <div class="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="fa-solid fa-envelope text-indigo-600 text-2xl"></i>
-                    </div>
-                    <h3 class="font-bold text-lg text-gray-800">Forgot Password?</h3>
-                    <p class="text-xs text-gray-500 mt-1">Enter your registered email to receive reset link.</p>
-                </div>
-                
-                <input type="email" id="forgotEmailInput" placeholder="name@example.com" class="w-full p-3 border border-gray-300 rounded-lg outline-none mb-4 focus:ring-2 focus:ring-indigo-500">
-                
-                <button onclick="sendResetLink()" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold shadow hover:bg-indigo-700 transition">
-                    Send Reset Link
-                </button>
-            </div>
-        </div>
-
     </div>
 
-    <!-- JAVASCRIPT ENGINE -->
-    <script>
-        // --- 1. MOCK DATABASE ---
+    <!-- FIREBASE & LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, updateDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // ============================================
+        // UPDATED CONFIG (User Provided)
+        // ============================================
+        const firebaseConfig = {
+          apiKey: "AIzaSyBz9bUrnOMu6I_OQ2cTHsRbVJUGlNs9c_E",
+          authDomain: "wisfox-lead-app.firebaseapp.com",
+          projectId: "wisfox-lead-app",
+          storageBucket: "wisfox-lead-app.firebasestorage.app",
+          messagingSenderId: "54162755199",
+          appId: "1:54162755199:web:80ebc15aae5584383bb94a"
+        };
+        // ============================================
+
+        // Initialize Firebase
+        let db;
         
-        // Users Array (Added 'status' for blocking)
-        let users = [
-            // Updated Admin credentials as requested
-            { id: 'nil000nilesh', pass: 'nil*5786', role: 'admin', name: 'Nilesh (Admin)', location: 'Head Office', mobile: '9999999999', email: 'nil000nilesh@gmail.com', status: 'active' },
-            { id: 'dsa1', pass: '123', role: 'dsa', name: 'Rahul Enterprise', location: 'Delhi South', mobile: '9876543210', email: 'dsa@mail.com', status: 'active' },
-            { id: 'sub1', pass: '123', role: 'subdsa', parentId: 'dsa1', name: 'Amit Field Agent', location: 'Delhi Saket', mobile: '9123456789', email: 'amit@mail.com', status: 'active' }
-        ];
-
-        // Leads Array (Added docs field)
-        let leads = [
-            { id: 101, name: "Suresh Raina", phone: "9898989898", amount: 1500000, type: "Home Loan", status: "In Process", remarks: "Docs verification pending", agentId: "dsa1", date: "2023-10-25", docs: ['Aadhar.pdf'] },
-            { id: 102, name: "Virat K", phone: "8888888888", amount: 500000, type: "Personal Loan", status: "Contacted", remarks: "Client interested, asked for ROI", agentId: "sub1", date: "2023-10-26", docs: [] },
-            { id: 103, name: "Rohit S", phone: "7777777777", amount: 2500000, type: "Business Loan", status: "Sanctioned", remarks: "Sanction letter issued", agentId: "dsa1", date: "2023-10-24", docs: ['PAN.jpg', 'Aadhar.jpg'] }
-        ];
-
-        // App State
-        let currentUser = null; 
-
-        // --- 2. AUTHENTICATION ---
-        function login() {
-            const u = document.getElementById('username').value.trim();
-            const p = document.getElementById('password').value.trim();
-
-            const user = users.find(usr => usr.id === u && usr.pass === p);
-
-            if (user) {
-                // Check if user is blocked
-                if(user.status === 'blocked') {
-                    showToast("Access Denied: Your ID is blocked by Admin.");
-                    return;
-                }
-
-                currentUser = user;
-                // UI Setup
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('mainDashboard').classList.remove('hidden');
-                document.getElementById('logoutBtn').classList.remove('hidden');
-                
-                // Header Info
-                const roleDisplay = user.role === 'admin' ? 'Admin' : user.role === 'dsa' ? 'Master DSA' : 'Sub-DSA';
-                document.getElementById('headerRole').innerText = `${roleDisplay} | ${user.name}`;
-
-                // Admin Tab Logic
-                if (user.role === 'admin') {
-                    document.getElementById('adminTabs').classList.remove('hidden');
-                    switchAdminTab('leads');
-                } else {
-                    document.getElementById('adminTabs').classList.add('hidden');
-                    document.getElementById('viewLeads').classList.remove('hidden');
-                    document.getElementById('viewUsers').classList.add('hidden');
-                }
-                
-                renderLeads();
-                showToast(`Welcome back, ${user.name}`);
-            } else {
-                showToast("Invalid Credentials! Try again.");
+        // CHECK IF CONFIG IS PRESENT
+        if (!firebaseConfig.apiKey) {
+            document.getElementById('setupRequiredModal').classList.remove('hidden');
+        } else {
+            // Initialize Firebase
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                console.log("Firebase Connected");
+            } catch(e) {
+                console.error("Init Error", e);
+                document.getElementById('configErrorMsg').innerText = "Init Error: " + e.message;
+                document.getElementById('setupRequiredModal').classList.remove('hidden');
             }
         }
 
-        function logout() {
-            currentUser = null;
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('mainDashboard').classList.add('hidden');
-            document.getElementById('logoutBtn').classList.add('hidden');
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
+        let currentUser = null;
+        let unsubscribeLeads = null;
+
+        // --- GLOBAL FUNCTIONS ---
+        window.login = async () => {
+            if(!db) {
+                alert("Database not connected.");
+                return;
+            }
+
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+            showLoading(true);
+
+            try {
+                // Hardcoded Admin Backup
+                if(u === 'nil000nilesh' && p === 'nil*5786') {
+                    currentUser = { id: 'admin', role: 'admin', name: 'Nilesh (Admin)', username: u };
+                    finalizeLogin();
+                    return;
+                }
+
+                const q = query(collection(db, "users"), where("username", "==", u), where("password", "==", p));
+                const snapshot = await getDocs(q);
+
+                if (!snapshot.empty) {
+                    const userData = snapshot.docs[0].data();
+                    if(userData.status === 'blocked') {
+                        showToast("Access Denied: Blocked");
+                        showLoading(false);
+                        return;
+                    }
+                    currentUser = { ...userData, dbId: snapshot.docs[0].id };
+                    finalizeLogin();
+                } else {
+                    showToast("Invalid Credentials");
+                    showLoading(false);
+                }
+            } catch (error) {
+                console.error(error);
+                let msg = error.message;
+                if(msg.includes("billing")) msg = "Billing Error! Create NEW Project with US-Central location.";
+                alert("Login Error: " + msg);
+                showLoading(false);
+            }
+        };
+
+        function finalizeLogin() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainDashboard').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            document.getElementById('headerRole').innerText = currentUser.name;
+
+            if (currentUser.role === 'admin') {
+                document.getElementById('adminTabs').classList.remove('hidden');
+                setupRealtimeListeners('leads');
+            } else {
+                document.getElementById('adminTabs').classList.add('hidden');
+                document.getElementById('viewLeads').classList.remove('hidden');
+                setupRealtimeListeners('leads');
+            }
+            showLoading(false);
         }
 
-        // --- 3. DASHBOARD LOGIC ---
-        
-        function switchAdminTab(tab) {
+        window.logout = () => {
+            currentUser = null;
+            if(unsubscribeLeads) unsubscribeLeads();
+            location.reload();
+        };
+
+        function setupRealtimeListeners(type) {
+            if(!db) return;
+            if (unsubscribeLeads) unsubscribeLeads();
+
+            if (type === 'leads') {
+                const leadsRef = collection(db, "leads");
+                const q = query(leadsRef, orderBy("date", "desc"));
+                unsubscribeLeads = onSnapshot(q, (snapshot) => {
+                    const leads = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderLeads(leads);
+                }, (error) => {
+                    console.error(error);
+                    if(error.message.includes("billing")) alert("CRITICAL: Billing Required Error. Please enable billing or create a NEW project in US-Central.");
+                });
+            } else if (type === 'users') {
+                 const usersRef = collection(db, "users");
+                 unsubscribeLeads = onSnapshot(usersRef, (snapshot) => {
+                    const users = snapshot.docs.map(doc => ({ dbId: doc.id, ...doc.data() }));
+                    renderUsers(users);
+                });
+            }
+        }
+
+        function renderLeads(leads) {
+            const container = document.getElementById('leadsList');
+            container.innerHTML = '';
+            let total = 0, pending = 0;
+
+            const filtered = leads.filter(l => {
+                if (currentUser.role === 'admin') return true;
+                if (currentUser.role === 'dsa') return l.agentId === currentUser.username || l.parentAgentId === currentUser.username;
+                return l.agentId === currentUser.username;
+            });
+
+            if(filtered.length === 0) document.getElementById('emptyState').classList.remove('hidden');
+            else document.getElementById('emptyState').classList.add('hidden');
+
+            filtered.forEach(lead => {
+                total += parseInt(lead.amount || 0);
+                if(lead.status !== 'Disbursed' && lead.status !== 'Rejected') pending++;
+
+                let color = 'bg-gray-100 text-gray-600';
+                if(lead.status === 'Sanctioned') color = 'bg-green-100 text-green-800';
+                if(lead.status === 'Rejected') color = 'bg-red-100 text-red-800';
+
+                let canEdit = currentUser.role === 'admin' || currentUser.username === lead.agentId;
+                let btn = canEdit ? `<button onclick="window.openStatusModal('${lead.id}', '${lead.status}', '${lead.remarks || ''}')" class="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded border">Update</button>` : '';
+
+                container.innerHTML += `
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                        <div class="flex justify-between mb-2">
+                            <div><h4 class="font-bold">${lead.name}</h4><p class="text-xs text-blue-600">₹${lead.amount}</p></div>
+                            <span class="px-2 py-1 rounded text-[10px] font-bold h-fit ${color}">${lead.status}</span>
+                        </div>
+                        <p class="text-xs text-gray-500">📱 ${lead.phone} | By: ${lead.agentName}</p>
+                        <p class="text-xs italic text-gray-400 mt-1 border-t pt-1">"${lead.remarks || 'No remarks'}"</p>
+                        <div class="flex justify-between mt-2 text-[10px] text-gray-400"><span>${lead.date}</span>${btn}</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('totalValue').innerText = `₹${(total/100000).toFixed(1)}L`;
+            document.getElementById('pendingCount').innerText = pending;
+        }
+
+        function renderUsers(users) {
+            const container = document.getElementById('usersList');
+            container.innerHTML = '';
+            
+            users.forEach(u => {
+                let statusBadge = u.status === 'blocked' ? '<span class="text-red-500 font-bold text-xs">BLOCKED</span>' : '<span class="text-green-500 text-xs">ACTIVE</span>';
+                let action = u.status === 'blocked' 
+                    ? `<button onclick="window.toggleUser('${u.dbId}', 'active')" class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Unblock</button>`
+                    : `<button onclick="window.toggleUser('${u.dbId}', 'blocked')" class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Block</button>`;
+
+                container.innerHTML += `
+                    <div class="bg-white p-3 rounded-lg border shadow-sm flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold">${u.name} <span class="text-xs bg-blue-100 px-1 rounded">${u.role}</span></h4>
+                            <p class="text-xs text-gray-500">ID: ${u.username} | 📱 ${u.mobile}</p>
+                            ${statusBadge}
+                        </div>
+                        <div>${action}</div>
+                    </div>
+                `;
+            });
+        }
+
+        window.submitLead = async (e) => {
+            if(!db) return;
+            e.preventDefault();
+            const phone = document.getElementById('leadPhone').value;
+            if(phone.length !== 10) return alert("Mobile must be 10 digits");
+
+            showLoading(true);
+            const data = {
+                name: document.getElementById('leadName').value,
+                phone: phone,
+                type: document.getElementById('leadType').value,
+                amount: document.getElementById('leadAmount').value,
+                status: 'Pending',
+                remarks: 'New File',
+                date: new Date().toISOString().split('T')[0],
+                agentId: currentUser.username,
+                agentName: currentUser.name,
+                parentAgentId: currentUser.parentId || null
+            };
+
+            try {
+                await addDoc(collection(db, "leads"), data);
+                window.closeModal('addLeadModal');
+                e.target.reset();
+                showToast("Lead Saved!");
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+            showLoading(false);
+        };
+
+        window.createUser = async (e) => {
+            if(!db) return;
+            e.preventDefault();
+            const mobile = document.getElementById('newUserMobile').value;
+            if(mobile.length !== 10) return alert("Mobile must be 10 digits");
+
+            showLoading(true);
+            const data = {
+                role: document.getElementById('newUserRole').value,
+                name: document.getElementById('newUserName').value,
+                mobile: mobile,
+                email: document.getElementById('newUserEmail').value,
+                location: document.getElementById('newUserLocation').value,
+                username: document.getElementById('newUserLoginId').value,
+                password: document.getElementById('newUserPass').value,
+                status: 'active',
+                parentId: null
+            };
+
+            try {
+                const q = query(collection(db, "users"), where("username", "==", data.username));
+                const snap = await getDocs(q);
+                if(!snap.empty) {
+                    alert("Username already taken!");
+                    showLoading(false);
+                    return;
+                }
+                await addDoc(collection(db, "users"), data);
+                window.closeModal('addUserModal');
+                showToast("User Created!");
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+            showLoading(false);
+        };
+
+        window.saveStatus = async () => {
+            if(!db) return;
+            const id = document.getElementById('statusLeadId').value;
+            const status = document.getElementById('newStatus').value;
+            const remarks = document.getElementById('statusRemarks').value;
+            
+            try {
+                const leadRef = doc(db, "leads", id);
+                await updateDoc(leadRef, { status: status, remarks: remarks });
+                window.closeModal('statusModal');
+                showToast("Updated!");
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+        };
+
+        window.toggleUser = async (dbId, newStatus) => {
+            if(!db) return;
+            if(!confirm("Change status?")) return;
+            try {
+                const userRef = doc(db, "users", dbId);
+                await updateDoc(userRef, { status: newStatus });
+                showToast("User Status Changed");
+            } catch (err) { alert(err.message); }
+        };
+
+        window.switchTab = (tab) => {
             if (tab === 'leads') {
                 document.getElementById('viewLeads').classList.remove('hidden');
                 document.getElementById('viewUsers').classList.add('hidden');
                 document.getElementById('tabLeads').classList.add('text-indigo-600', 'border-b-2');
-                document.getElementById('tabLeads').classList.remove('text-gray-400');
                 document.getElementById('tabUsers').classList.remove('text-indigo-600', 'border-b-2');
-                document.getElementById('tabUsers').classList.add('text-gray-400');
-                renderLeads();
+                setupRealtimeListeners('leads');
             } else {
                 document.getElementById('viewLeads').classList.add('hidden');
                 document.getElementById('viewUsers').classList.remove('hidden');
                 document.getElementById('tabUsers').classList.add('text-indigo-600', 'border-b-2');
-                document.getElementById('tabUsers').classList.remove('text-gray-400');
                 document.getElementById('tabLeads').classList.remove('text-indigo-600', 'border-b-2');
-                document.getElementById('tabLeads').classList.add('text-gray-400');
-                renderUsers();
+                setupRealtimeListeners('users');
             }
-        }
+        };
 
-        function renderLeads() {
-            const container = document.getElementById('leadsList');
-            const searchVal = document.getElementById('searchInput').value.toLowerCase();
-            container.innerHTML = '';
-
-            let filteredLeads = [];
-            let totalAmt = 0;
-            let pending = 0;
-
-            if (currentUser.role === 'admin') {
-                filteredLeads = leads; 
-            } else if (currentUser.role === 'dsa') {
-                filteredLeads = leads.filter(l => {
-                    const agent = users.find(u => u.id === l.agentId);
-                    return l.agentId === currentUser.id || (agent && agent.parentId === currentUser.id);
-                });
-            } else {
-                filteredLeads = leads.filter(l => l.agentId === currentUser.id);
-            }
-
-            filteredLeads = filteredLeads.filter(l => l.name.toLowerCase().includes(searchVal) || l.phone.includes(searchVal));
-
-            if (filteredLeads.length === 0) {
-                document.getElementById('emptyState').classList.remove('hidden');
-            } else {
-                document.getElementById('emptyState').classList.add('hidden');
-                filteredLeads.forEach(lead => {
-                    totalAmt += lead.amount;
-                    if(lead.status !== 'Disbursed' && lead.status !== 'Rejected') pending++;
-
-                    const agent = users.find(u => u.id === lead.agentId);
-                    const agentName = agent ? agent.name : 'Unknown';
-
-                    let statusColor = 'bg-gray-100 text-gray-600';
-                    if (lead.status === 'Sanctioned') statusColor = 'bg-green-100 text-green-700';
-                    if (lead.status === 'Disbursed') statusColor = 'bg-green-600 text-white';
-                    if (lead.status === 'Rejected') statusColor = 'bg-red-100 text-red-600';
-                    if (lead.status === 'In Process') statusColor = 'bg-yellow-100 text-yellow-700';
-                    if (lead.status === 'Contacted') statusColor = 'bg-blue-50 text-blue-600';
-
-                    let canUpdate = false;
-                    if (currentUser.role === 'admin') canUpdate = true;
-                    else if (currentUser.role === 'dsa') {
-                        if (lead.agentId === currentUser.id) canUpdate = true;
-                        else {
-                            const leadAgent = users.find(u => u.id === lead.agentId);
-                            if (leadAgent && leadAgent.parentId === currentUser.id) canUpdate = true;
-                        }
-                    } else if (currentUser.role === 'subdsa') {
-                        if (lead.agentId === currentUser.id) canUpdate = true;
-                    }
-
-                    let actionBtn = '';
-                    if (canUpdate) {
-                        actionBtn = `<button onclick="openStatusModal(${lead.id})" class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded border border-indigo-200 hover:bg-indigo-100 font-medium">Update Status</button>`;
-                    }
-
-                    // Docs Indicator
-                    let docsBadge = '';
-                    if(lead.docs && lead.docs.length > 0) {
-                        docsBadge = `<div class="mt-2 flex gap-1">${lead.docs.map(d => `<span class="text-[9px] bg-gray-200 px-1 rounded flex items-center"><i class="fa-solid fa-file-pdf mr-1 text-red-500"></i> ${d}</span>`).join('')}</div>`;
-                    }
-
-                    const html = `
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-                            <div class="flex justify-between items-start mb-2">
-                                <div>
-                                    <h4 class="font-bold text-gray-800">${lead.name}</h4>
-                                    <p class="text-xs text-indigo-500 font-semibold">${lead.type} • ₹${(lead.amount/100000).toFixed(2)}L</p>
-                                </div>
-                                <span class="px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wide ${statusColor}">${lead.status}</span>
-                            </div>
-                            
-                            <div class="bg-gray-50 p-2 rounded-lg text-xs space-y-1 text-gray-600 mb-2">
-                                <p><i class="fa-solid fa-phone mr-1 opacity-50"></i> ${lead.phone}</p>
-                                <p><i class="fa-solid fa-user-tie mr-1 opacity-50"></i> By: ${agentName} (${agent ? agent.role.toUpperCase() : ''})</p>
-                                <p class="text-gray-500 italic border-t border-gray-200 pt-1 mt-1">"${lead.remarks || 'No remarks yet'}"</p>
-                                ${docsBadge}
-                            </div>
-
-                            <div class="flex justify-between items-center mt-2">
-                                <span class="text-[10px] text-gray-400">${lead.date}</span>
-                                ${actionBtn}
-                            </div>
-                        </div>
-                    `;
-                    container.innerHTML += html;
-                });
-            }
-
-            document.getElementById('totalValue').innerText = `₹${(totalAmt/100000).toFixed(1)}L`;
-            document.getElementById('pendingCount').innerText = pending;
-        }
-
-        // --- 4. LEAD CREATION (With Validation) ---
-        function submitLead(e) {
-            e.preventDefault();
-            const name = document.getElementById('leadName').value;
-            const phone = document.getElementById('leadPhone').value;
-            const amount = document.getElementById('leadAmount').value;
-            const type = document.getElementById('leadType').value;
-            
-            // Files (Simulation)
-            const docAadhar = document.getElementById('docAadhar').value.split('\\').pop();
-            const docPan = document.getElementById('docPan').value.split('\\').pop();
-            let uploadedDocs = [];
-            if(docAadhar) uploadedDocs.push(docAadhar);
-            if(docPan) uploadedDocs.push(docPan);
-
-            // Strict Mobile Validation
-            if (phone.length !== 10 || isNaN(phone)) {
-                alert("Mobile number must be exactly 10 digits!");
-                return;
-            }
-
-            const newLead = {
-                id: Date.now(),
-                name: name,
-                phone: phone,
-                amount: parseInt(amount),
-                type: type,
-                status: "Pending",
-                remarks: "File Login",
-                agentId: currentUser.id,
-                date: new Date().toISOString().split('T')[0],
-                docs: uploadedDocs
-            };
-
-            leads.unshift(newLead);
-            closeModal('addLeadModal');
-            document.querySelector('#addLeadModal form').reset();
-            renderLeads();
-            
-            // Notification Logic (Simulated)
-            let notifyText = "Lead Added!";
-            // Logic to find who should be notified
-            if(currentUser.role === 'subdsa' && currentUser.parentId) {
-                 const parent = users.find(u => u.id === currentUser.parentId);
-                 if(parent) {
-                     notifyText += ` Email alert sent to ${parent.name}.`;
-                 }
-            } else {
-                 notifyText += " Email alert sent to Admin.";
-            }
-            
-            showToast(notifyText);
-        }
-
-        // --- 5. ADMIN STATUS UPDATES ---
-        function openStatusModal(id) {
-            const lead = leads.find(l => l.id === id);
+        window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); };
+        window.closeModal = (id) => { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); };
+        window.openStatusModal = (id, status, remarks) => {
             document.getElementById('statusLeadId').value = id;
-            document.getElementById('statusRemarks').value = lead.remarks;
-            document.getElementById('newStatus').value = lead.status === 'Pending' ? 'Contacted' : lead.status;
-            openModal('statusModal');
+            document.getElementById('newStatus').value = status;
+            document.getElementById('statusRemarks').value = remarks;
+            window.openModal('statusModal');
+        };
+        function showLoading(show) {
+            if(show) document.getElementById('loadingOverlay').classList.remove('hidden');
+            else document.getElementById('loadingOverlay').classList.add('hidden');
         }
-
-        function saveStatus() {
-            const id = parseInt(document.getElementById('statusLeadId').value);
-            const status = document.getElementById('newStatus').value;
-            const remarks = document.getElementById('statusRemarks').value;
-
-            const lead = leads.find(l => l.id === id);
-            if(lead) {
-                lead.status = status;
-                lead.remarks = remarks;
-                renderLeads();
-                closeModal('statusModal');
-                
-                // Notification simulation
-                showToast("Status Updated! Notification sent to DSA.");
-            }
-        }
-
-        // --- 6. USER MANAGEMENT (With Block/Unblock) ---
-        function renderUsers() {
-            const container = document.getElementById('usersList');
-            container.innerHTML = '';
-
-            users.forEach(u => {
-                if(u.role === 'admin') return; 
-
-                const parent = users.find(p => p.id === u.parentId);
-                const parentText = parent ? `<span class="text-[10px] bg-gray-100 px-1 rounded text-gray-500">Under: ${parent.name}</span>` : '';
-                
-                // Block/Unblock Button Logic
-                const isBlocked = u.status === 'blocked';
-                const statusBtn = isBlocked 
-                    ? `<button onclick="toggleUserStatus('${u.id}')" class="text-xs bg-green-50 text-green-600 px-3 py-1 rounded border border-green-200">Unblock</button>` 
-                    : `<button onclick="toggleUserStatus('${u.id}')" class="text-xs bg-red-50 text-red-600 px-3 py-1 rounded border border-red-200">Block</button>`;
-
-                const statusBadge = isBlocked 
-                    ? `<span class="text-[10px] bg-red-600 text-white px-1.5 rounded ml-2">BLOCKED</span>` 
-                    : `<span class="text-[10px] bg-green-100 text-green-700 px-1.5 rounded ml-2">ACTIVE</span>`;
-
-                const html = `
-                    <div class="bg-white p-3 rounded-lg border flex justify-between items-center shadow-sm">
-                        <div class="flex-1">
-                            <div class="flex items-center">
-                                <h4 class="font-bold text-gray-800">${u.name}</h4>
-                                <span class="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded font-bold uppercase ml-2">${u.role}</span>
-                                ${statusBadge}
-                            </div>
-                            <div class="text-xs text-gray-500 mt-1 space-y-0.5">
-                                <p><i class="fa-solid fa-location-dot w-4"></i> ${u.location}</p>
-                                <p><i class="fa-solid fa-phone w-4"></i> ${u.mobile}</p>
-                                <p><i class="fa-solid fa-envelope w-4"></i> ${u.email || '-'}</p>
-                                <p><i class="fa-solid fa-fingerprint w-4"></i> Login: <b>${u.id}</b></p>
-                                ${parentText}
-                            </div>
-                        </div>
-                        <div class="flex flex-col gap-2 ml-2">
-                             ${statusBtn}
-                             <button onclick="openPwdModal('${u.id}', '${u.name}')" class="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded hover:bg-gray-200">Reset</button>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += html;
-            });
-        }
-
-        function toggleUserStatus(userId) {
-            const u = users.find(user => user.id === userId);
-            if(u) {
-                u.status = u.status === 'active' ? 'blocked' : 'active';
-                renderUsers();
-                showToast(`User ${u.status === 'blocked' ? 'Blocked' : 'Unblocked'}`);
-            }
-        }
-
-        function toggleParentSelect() {
-            const role = document.getElementById('newUserRole').value;
-            const parentDiv = document.getElementById('parentSelectDiv');
-            const parentSelect = document.getElementById('newUserParent');
-            
-            if (role === 'subdsa') {
-                parentDiv.classList.remove('hidden');
-                parentSelect.innerHTML = '';
-                // Fill with DSAs
-                users.filter(u => u.role === 'dsa').forEach(dsa => {
-                    parentSelect.innerHTML += `<option value="${dsa.id}">${dsa.name} (${dsa.location})</option>`;
-                });
-            } else {
-                parentDiv.classList.add('hidden');
-            }
-        }
-
-        function createUser(e) {
-            e.preventDefault();
-            const role = document.getElementById('newUserRole').value;
-            const parentId = role === 'subdsa' ? document.getElementById('newUserParent').value : null;
-            const name = document.getElementById('newUserName').value;
-            const mobile = document.getElementById('newUserMobile').value;
-            const email = document.getElementById('newUserEmail').value; // Now optional
-            const location = document.getElementById('newUserLocation').value;
-            const id = document.getElementById('newUserLoginId').value;
-            const pass = document.getElementById('newUserPass').value;
-
-            // Strict Mobile Validation
-            if (mobile.length !== 10 || isNaN(mobile)) {
-                alert("Mobile number must be exactly 10 digits!");
-                return;
-            }
-
-            if(users.find(u => u.id === id)) {
-                alert("Username already exists!");
-                return;
-            }
-
-            users.push({ id, pass, role, name, mobile, location, parentId, email, status: 'active' });
-            
-            closeModal('addUserModal');
-            renderUsers();
-            showToast("New User Created!");
-        }
-
-        // --- PASSWORD RESET & FORGOT LOGIC ---
-
-        function openPwdModal(id, name) {
-            document.getElementById('resetUserId').value = id;
-            document.getElementById('resetUserName').innerText = name;
-            document.getElementById('newResetPass').value = '';
-            openModal('pwdModal');
-        }
-
-        function savePassword() {
-            const id = document.getElementById('resetUserId').value;
-            const newPass = document.getElementById('newResetPass').value;
-            if(!newPass) return alert("Enter password");
-
-            const u = users.find(u => u.id === id);
-            if(u) {
-                u.pass = newPass;
-                closeModal('pwdModal');
-                showToast("Password Updated!");
-            }
-        }
-
-        function openForgotPwd() {
-            openModal('forgotPwdModal');
-        }
-
-        function sendResetLink() {
-            const email = document.getElementById('forgotEmailInput').value;
-            const user = users.find(u => u.email === email);
-            
-            if (user) {
-                closeModal('forgotPwdModal');
-                showToast(`Reset link sent to ${email}`);
-                // SIMULATION ONLY
-                setTimeout(() => {
-                    openPwdModal(user.id, user.name);
-                    alert("DEMO: Link clicked! Now reset password.");
-                }, 1500);
-            } else {
-                alert("Email not found in system!");
-            }
-        }
-
-        // --- UTILS ---
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-            document.getElementById(id).classList.add('flex');
-            if(id === 'addUserModal') toggleParentSelect(); 
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-            document.getElementById(id).classList.remove('flex');
-        }
-
         function showToast(msg) {
-            const t = document.getElementById('toast');
             document.getElementById('toastMsg').innerText = msg;
-            t.classList.remove('hidden');
-            setTimeout(() => t.classList.add('hidden'), 3000);
+            document.getElementById('toast').classList.remove('hidden');
+            setTimeout(() => document.getElementById('toast').classList.add('hidden'), 3000);
         }
-
     </script>
 </body>
 </html>
