@@ -1,4 +1,4 @@
-<!-- FIREBASE AUTH + GOOGLE SIGNUP + ROLE MANAGEMENT (UPDATED WITH DSA SUBDSA LIST) -->
+<!-- WISEFOX LEADAPP — UPDATED UI + FIXED LEAD SAVE + SEPARATE PAGES -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,27 +13,36 @@
 
 <h2 class="font-bold text-lg mb-3">Wisefox LeadApp</h2>
 
-<!-- LOGIN / SIGNUP -->
+<!-- LOGIN -->
 <div id="authBox" class="space-y-2">
 <button onclick="googleLogin()" class="w-full bg-red-500 text-white p-2 rounded">Login with Google</button>
 </div>
 
-<!-- SIGNUP EXTRA FORM -->
+<!-- SIGNUP -->
 <div id="signupBox" class="hidden space-y-2 mt-3">
 <input id="mobile" placeholder="Mobile Number" class="w-full border p-2" />
 <input id="location" placeholder="Location" class="w-full border p-2" />
 <button onclick="completeSignup()" class="w-full bg-indigo-600 text-white p-2">Complete Signup</button>
 </div>
 
-<!-- DASHBOARD -->
+<!-- MAIN APP -->
 <div id="app" class="hidden">
-<div class="flex gap-2 mb-2">
-<button onclick="openModal()" class="bg-indigo-600 text-white px-3 py-1 rounded">Add Lead</button>
-<button id="clearBtn" onclick="clearAllLeads()" class="hidden bg-red-600 text-white px-3 py-1 rounded">Clear All</button>
+
+<!-- TOP NAV -->
+<div class="flex gap-2 mb-3">
+<button onclick="showPage('leads')" class="bg-indigo-600 text-white px-3 py-1 rounded">Leads</button>
+<button onclick="showPage('users')" class="bg-gray-300 px-3 py-1 rounded">Users</button>
 <button onclick="logout()" class="ml-auto bg-gray-200 px-3 py-1 rounded">Logout</button>
 </div>
 
-<!-- DSA SUB‑DSA CREATION PANEL -->
+<!-- LEADS PAGE -->
+<div id="leadsPage">
+<button onclick="openModal()" class="w-full bg-indigo-600 text-white py-2 rounded mb-3">+ Generate Lead</button>
+<div id="list" class="space-y-2"></div>
+</div>
+
+<!-- USERS PAGE -->
+<div id="usersPage" class="hidden">
 <div id="dsaPanel" class="hidden mb-3">
 <h3 class="font-bold">Create Sub‑DSA</h3>
 <input id="subEmail" placeholder="User Email" class="w-full border p-2 mb-1" />
@@ -41,33 +50,32 @@
 <button onclick="createSubDSA()" class="w-full bg-blue-600 text-white p-2">Create Sub‑DSA</button>
 </div>
 
-<!-- DSA SUBDSA LIST -->
-<div id="mySubList" class="hidden mb-3">
-<h3 class="font-bold">My Sub‑DSA Team</h3>
+<div id="mySubList" class="hidden">
+<h3 class="font-bold mb-2">My Sub‑DSA Team</h3>
 <div id="subList" class="space-y-2"></div>
 </div>
 
-<!-- ADMIN USER ROLE PANEL -->
-<div id="adminPanel" class="hidden mb-3">
-<h3 class="font-bold">New Users</h3>
+<div id="adminPanel" class="hidden">
+<h3 class="font-bold mb-2">New Users</h3>
 <div id="userList" class="space-y-2"></div>
 </div>
-
-<div id="list" class="space-y-2"></div>
+</div>
 </div>
 
 <!-- ADD LEAD MODAL -->
 <div id="modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center">
 <div class="bg-white p-4 rounded w-80">
+<h3 class="font-bold mb-2">Generate Lead</h3>
 <input id="name" placeholder="Client Name" class="w-full border p-2 mb-2" />
 <input id="phone" placeholder="Mobile" class="w-full border p-2 mb-2" />
 <select id="type" class="w-full border p-2 mb-2">
 <option>Personal Loan</option>
 <option>Home Loan</option>
 <option>Business Loan</option>
+<option>Auto Loan</option>
 </select>
 <input id="amount" placeholder="Amount" class="w-full border p-2 mb-2" />
-<button onclick="saveLead()" class="w-full bg-indigo-600 text-white p-2 mb-1">Save</button>
+<button onclick="saveLead()" class="w-full bg-indigo-600 text-white p-2 mb-1">Save Lead</button>
 <button onclick="closeModal()" class="w-full text-gray-500">Cancel</button>
 </div>
 </div>
@@ -92,214 +100,101 @@ const provider = new GoogleAuthProvider();
 
 let currentUser = null;
 
-// GOOGLE LOGIN
+// LOGIN
 window.googleLogin = async () => {
 try {
 const result = await signInWithPopup(auth, provider);
-const user = result.user;
-
-const userDocSnap = await getDocs(query(collection(db, "users"), where("email","==",user.email)));
-
-if (userDocSnap.empty) {
-authBox.classList.add('hidden');
-signupBox.classList.remove('hidden');
-window.tempUser = user;
-return;
-}
-
-currentUser = userDocSnap.docs[0].data();
-startApp();
-
-} catch (err) {
-console.warn('Popup blocked or COOP issue → switching to redirect login');
-// ---- COOP / POPUP BLOCK FIX ----
+handleLogin(result.user);
+} catch {
 await signInWithRedirect(auth, provider);
 }
 };
 
+async function handleLogin(user){
+const snap = await getDocs(query(collection(db, "users"), where("email","==",user.email)));
+if(snap.empty){
+authBox.classList.add('hidden');
+signupBox.classList.remove('hidden');
+window.tempUser=user;return;
+}
+currentUser=snap.docs[0].data();
+startApp();
+}
+
 // SIGNUP
 window.completeSignup = async () => {
-const user = window.tempUser;
-
-// ---- STRICT VALIDATION (NO UNDEFINED TO FIRESTORE) ----
-const mobileVal = (document.getElementById('mobile').value || '').trim();
-const locationVal = (document.getElementById('location').value || '').trim();
-
-if (!mobileVal) {
-alert('Enter mobile number');
-return;
-}
-
-if (!locationVal) {
-alert('Enter location');
-return;
-}
-
-const role = user.email === 'nil000nilesh@gmail.com' ? 'admin' : 'new';
-
-await setDoc(doc(db, "users", user.uid), {
-name: user.displayName || '',
-email: user.email || '',
-mobile: mobileVal,
-location: locationVal,
-role: role,
-parentEmail: null
-});
-
-currentUser = { name: user.displayName || '', email: user.email || '', role };
+const user=window.tempUser;
+const mobileVal=(mobile.value||'').trim();
+const locationVal=(location.value||'').trim();
+if(!mobileVal||!locationVal) return alert('Enter full details');
+const role=user.email==='nil000nilesh@gmail.com'?'admin':'new';
+await setDoc(doc(db,'users',user.uid),{name:user.displayName,email:user.email,mobile:mobileVal,location:locationVal,role,parentEmail:null});
+currentUser={name:user.displayName,email:user.email,role};
 signupBox.classList.add('hidden');
 startApp();
 };
 
-function startApp() {
+function startApp(){
 app.classList.remove('hidden');
-
-if (currentUser.role === 'admin') {
-clearBtn.classList.remove('hidden');
-adminPanel.classList.remove('hidden');
-loadNewUsers();
-}
-
-if (currentUser.role === 'dsa') {
-dsaPanel.classList.remove('hidden');
-mySubList.classList.remove('hidden');
-loadMySubDSA();
-}
-
 loadLeads();
+if(currentUser.role==='admin'){adminPanel.classList.remove('hidden');loadNewUsers();}
+if(currentUser.role==='dsa'){dsaPanel.classList.remove('hidden');mySubList.classList.remove('hidden');loadMySubDSA();}
 }
 
-window.logout = () => signOut(auth).then(() => location.reload());
+window.logout=()=>signOut(auth).then(()=>location.reload());
 
-// ADMIN — SEE NEW USERS
-function loadNewUsers() {
-onSnapshot(collection(db, "users"), snap => {
-userList.innerHTML = '';
-snap.forEach(d => {
-const u = d.data();
-if (u.role !== 'new') return;
-
-userList.innerHTML += `
-<div class='border p-2 rounded'>
-<b>${u.name}</b><br>${u.email}<br>
-<button onclick="setRole('${d.id}','dsa')" class='text-xs bg-green-200 px-2'>Make DSA</button>
-</div>`;
-});
-});
-}
-
-window.setRole = async (id, role) => {
-await updateDoc(doc(db, "users", id), { role });
+// PAGE SWITCH
+window.showPage=(p)=>{
+leadsPage.classList.toggle('hidden',p!=='leads');
+usersPage.classList.toggle('hidden',p!=='users');
 };
 
-// DSA CREATE SUB‑DSA
-window.createSubDSA = async () => {
-if (currentUser.role !== 'dsa') return;
-
-const email = subEmail.value.trim();
-const mobileVal = subMobile.value.trim();
-
-const q = query(collection(db, "users"), where("email", "==", email));
-const snap = await getDocs(q);
-
-if (snap.empty) return alert('User not registered');
-
-const docSnap = snap.docs[0];
-const userData = docSnap.data();
-
-if (userData.role !== 'new') return alert('User already engaged');
-
-await updateDoc(doc(db, "users", docSnap.id), {
-role: 'subdsa',
-parentEmail: currentUser.email,
-mobile: mobileVal
+// LOAD LEADS
+function loadLeads(){
+onSnapshot(collection(db,'leads'),snap=>{
+list.innerHTML='';
+snap.forEach(d=>{
+const l=d.data();
+if(currentUser.role==='subdsa'&&l.agentEmail!==currentUser.email)return;
+list.innerHTML+=`<div class='border p-2 rounded'><b>${l.name}</b><br>${l.type} | ₹${l.amount}<br>📱 ${l.phone}</div>`;
 });
+});}
 
-alert('Sub‑DSA added under you');
-};
-
-// LOAD MY SUBDSA LIST FOR DSA
-function loadMySubDSA() {
-const q = query(collection(db, "users"), where("parentEmail", "==", currentUser.email));
-
-onSnapshot(q, snap => {
-subList.innerHTML = '';
-
-snap.forEach(d => {
-const u = d.data();
-
-subList.innerHTML += `
-<div class='border p-2 rounded bg-blue-50'>
-<b>${u.name}</b><br>
-📧 ${u.email}<br>
-📱 ${u.mobile}<br>
-📍 ${u.location}
-</div>`;
-});
-});
-}
-
-// LEADS
-function loadLeads() {
-onSnapshot(collection(db, "leads"), snap => {
-list.innerHTML = '';
-
-snap.forEach(d => {
-const l = d.data();
-
-if (currentUser.role === 'subdsa' && l.agentEmail !== currentUser.email) return;
-
-let updateBtn = '';
-let deleteBtn = '';
-
-if (currentUser.role === 'dsa') updateBtn = `<button onclick="updateStatus('${d.id}')" class='text-xs bg-blue-100 px-2'>Update</button>`;
-if (currentUser.role === 'admin') deleteBtn = `<button onclick="deleteLead('${d.id}')" class='text-xs bg-red-100 px-2 ml-2'>Delete</button>`;
-
-list.innerHTML += `
-<div class='border p-2 rounded'>
-<b>${l.name}</b> | ${l.phone}<br>
-${l.type} | ₹${l.amount}<br>
-Status: <b>${l.status}</b><br>
-${updateBtn} ${deleteBtn}
-</div>`;
-});
-});
-}
-
-window.openModal = () => modal.classList.remove('hidden');
-window.closeModal = () => modal.classList.add('hidden');
-
-window.saveLead = async () => {
-await addDoc(collection(db, "leads"), {
-name: name.value,
-phone: phone.value,
-type: type.value,
-amount: amount.value,
-status: 'Pending',
-agentEmail: currentUser.email
-});
+// SAVE LEAD (FIXED)
+window.saveLead=async()=>{
+const nameVal=name.value.trim();
+const phoneVal=phone.value.trim();
+const amountVal=amount.value.trim();
+if(!nameVal||!phoneVal||!amountVal) return alert('Fill all fields');
+await addDoc(collection(db,'leads'),{name:nameVal,phone:phoneVal,type:type.value,amount:amountVal,status:'Pending',agentEmail:currentUser.email,created:new Date()});
 closeModal();
+name.value='';phone.value='';amount.value='';
 };
 
-window.updateStatus = async id => {
-if (currentUser.role !== 'dsa') return;
-const s = prompt('Enter Status');
-if (!s) return;
-await updateDoc(doc(db, "leads", id), { status: s });
+window.openModal=()=>modal.classList.remove('hidden');
+window.closeModal=()=>modal.classList.add('hidden');
+
+// ADMIN USERS
+function loadNewUsers(){
+onSnapshot(collection(db,'users'),snap=>{
+userList.innerHTML='';
+snap.forEach(d=>{const u=d.data();if(u.role!=='new')return;userList.innerHTML+=`<div class='border p-2 rounded'>${u.name}<br>${u.email}<button onclick="setRole('${d.id}','dsa')" class='text-xs bg-green-200 px-2 ml-1'>Make DSA</button></div>`;});});}
+window.setRole=async(id,role)=>updateDoc(doc(db,'users',id),{role});
+
+// DSA SUBDSA
+window.createSubDSA=async()=>{
+const email=subEmail.value.trim();
+const snap=await getDocs(query(collection(db,'users'),where('email','==',email)));
+if(snap.empty)return alert('User not found');
+const docSnap=snap.docs[0];
+if(docSnap.data().role!=='new')return alert('User already engaged');
+await updateDoc(doc(db,'users',docSnap.id),{role:'subdsa',parentEmail:currentUser.email});
+alert('SubDSA created');
 };
 
-window.deleteLead = async id => {
-if (currentUser.role !== 'admin') return;
-if (!confirm('Delete Lead?')) return;
-await deleteDoc(doc(db, "leads", id));
-};
-
-window.clearAllLeads = async () => {
-if (currentUser.role !== 'admin') return;
-if (!confirm('Clear ALL Leads?')) return;
-const snap = await getDocs(collection(db, "leads"));
-for (const d of snap.docs) await deleteDoc(doc(db, "leads", d.id));
-};
+function loadMySubDSA(){
+const q=query(collection(db,'users'),where('parentEmail','==',currentUser.email));
+onSnapshot(q,snap=>{subList.innerHTML='';snap.forEach(d=>{const u=d.data();subList.innerHTML+=`<div class='border p-2 rounded bg-blue-50'><b>${u.name}</b><br>${u.email}<br>${u.mobile}</div>`;});});}
 
 </script>
 </body>
