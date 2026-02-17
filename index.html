@@ -135,9 +135,23 @@ startApp();
 };
 
 function startApp(){
+// ---- HIDE LOGIN BUTTON AFTER LOGIN ----
+document.getElementById('authBox').classList.add('hidden');
+
 app.classList.remove('hidden');
 loadLeads();
-if(currentUser.role==='admin'){adminPanel.classList.remove('hidden');loadNewUsers();}
+
+if(currentUser.role==='admin'){
+adminPanel.classList.remove('hidden');
+loadNewUsers();
+}
+
+if(currentUser.role==='dsa'){
+dsaPanel.classList.remove('hidden');
+mySubList.classList.remove('hidden');
+loadMySubDSA();
+}
+}
 if(currentUser.role==='dsa'){dsaPanel.classList.remove('hidden');mySubList.classList.remove('hidden');loadMySubDSA();}
 }
 
@@ -162,13 +176,38 @@ list.innerHTML+=`<div class='border p-2 rounded'><b>${l.name}</b><br>${l.type} |
 
 // SAVE LEAD (FIXED)
 window.saveLead=async()=>{
-const nameVal=name.value.trim();
-const phoneVal=phone.value.trim();
-const amountVal=amount.value.trim();
-if(!nameVal||!phoneVal||!amountVal) return alert('Fill all fields');
-await addDoc(collection(db,'leads'),{name:nameVal,phone:phoneVal,type:type.value,amount:amountVal,status:'Pending',agentEmail:currentUser.email,created:new Date()});
+try{
+const nameVal=(name.value||'').trim();
+const phoneVal=(phone.value||'').trim();
+const amountVal=(amount.value||'').trim();
+
+if(!nameVal||!phoneVal||!amountVal){
+alert('Fill all fields');
+return;
+}
+
+await addDoc(collection(db,'leads'),{
+name:nameVal,
+phone:phoneVal,
+type:type.value||'Auto Loan',
+amount:Number(amountVal)||0,
+status:'Pending',
+agentEmail:currentUser.email||'',
+created:new Date()
+});
+
+// UI RESET
 closeModal();
-name.value='';phone.value='';amount.value='';
+name.value='';
+phone.value='';
+amount.value='';
+
+alert('Lead Saved Successfully');
+
+}catch(err){
+console.error('Lead Save Error:',err);
+alert('Lead save failed — check console');
+}
 };
 
 window.openModal=()=>modal.classList.remove('hidden');
