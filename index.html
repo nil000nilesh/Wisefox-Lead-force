@@ -94,6 +94,7 @@ let currentUser = null;
 
 // GOOGLE LOGIN
 window.googleLogin = async () => {
+try {
 const result = await signInWithPopup(auth, provider);
 const user = result.user;
 
@@ -108,23 +109,40 @@ return;
 
 currentUser = userDocSnap.docs[0].data();
 startApp();
+
+} catch (err) {
+console.warn('Popup blocked or COOP issue → switching to redirect login');
+// ---- COOP / POPUP BLOCK FIX ----
+await signInWithRedirect(auth, provider);
+}
 };
 
 // SIGNUP
 window.completeSignup = async () => {
 const user = window.tempUser;
+
+// ---- VALIDATION FIX (prevent undefined error) ----
+const mobileVal = (mobile.value || '').trim();
+const locationVal = (location.value || '').trim();
+
+if (!mobileVal) return alert('Enter mobile number');
+if (!locationVal) return alert('Enter location');
+
 const role = user.email === 'nil000nilesh@gmail.com' ? 'admin' : 'new';
 
 await setDoc(doc(db, "users", user.uid), {
-name: user.displayName,
-email: user.email,
-mobile: mobile.value,
-location: location.value,
+name: user.displayName || '',
+email: user.email || '',
+mobile: mobileVal,
+location: locationVal,
 role: role,
 parentEmail: null
 });
 
 currentUser = { name: user.displayName, email: user.email, role };
+signupBox.classList.add('hidden');
+startApp();
+};
 signupBox.classList.add('hidden');
 startApp();
 };
