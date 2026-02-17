@@ -76,7 +76,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -121,12 +121,19 @@ await signInWithRedirect(auth, provider);
 window.completeSignup = async () => {
 const user = window.tempUser;
 
-// ---- VALIDATION FIX (prevent undefined error) ----
-const mobileVal = (mobile.value || '').trim();
-const locationVal = (location.value || '').trim();
+// ---- STRICT VALIDATION (NO UNDEFINED TO FIRESTORE) ----
+const mobileVal = (document.getElementById('mobile').value || '').trim();
+const locationVal = (document.getElementById('location').value || '').trim();
 
-if (!mobileVal) return alert('Enter mobile number');
-if (!locationVal) return alert('Enter location');
+if (!mobileVal) {
+alert('Enter mobile number');
+return;
+}
+
+if (!locationVal) {
+alert('Enter location');
+return;
+}
 
 const role = user.email === 'nil000nilesh@gmail.com' ? 'admin' : 'new';
 
@@ -139,10 +146,7 @@ role: role,
 parentEmail: null
 });
 
-currentUser = { name: user.displayName, email: user.email, role };
-signupBox.classList.add('hidden');
-startApp();
-};
+currentUser = { name: user.displayName || '', email: user.email || '', role };
 signupBox.classList.add('hidden');
 startApp();
 };
