@@ -162,9 +162,18 @@ document.getElementById('authBox').classList.add('hidden');
 document.getElementById('app').classList.remove('hidden');
 loadLeads();
 
+// ---- ADMIN POWERS ----
 if(currentUser.role==='admin'){
   document.getElementById('adminPanel').classList.remove('hidden');
   loadNewUsers();
+}
+
+// ---- DSA CAN SEE USERS ONLY AFTER ADMIN LINKS SUBDSA ----
+if(currentUser.role==='dsa'){
+  document.getElementById('dsaPanel').classList.remove('hidden');
+  document.getElementById('mySubList').classList.remove('hidden');
+  loadMySubDSA();
+}
 }
 
 if(currentUser.role==='dsa'){
