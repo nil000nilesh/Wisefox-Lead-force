@@ -66,15 +66,15 @@
 <div id="modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center">
 <div class="bg-white p-4 rounded w-80">
 <h3 class="font-bold mb-2">Generate Lead</h3>
-<input id="name" placeholder="Client Name" class="w-full border p-2 mb-2" />
-<input id="phone" placeholder="Mobile" class="w-full border p-2 mb-2" />
+<input id="leadName" placeholder="Client Name" class="w-full border p-2 mb-2" />
+<input id="leadPhone" placeholder="Mobile" class="w-full border p-2 mb-2" />
 <select id="type" class="w-full border p-2 mb-2">
 <option>Personal Loan</option>
 <option>Home Loan</option>
 <option>Business Loan</option>
 <option>Auto Loan</option>
 </select>
-<input id="amount" placeholder="Amount" class="w-full border p-2 mb-2" />
+<input id="leadAmount" placeholder="Amount" class="w-full border p-2 mb-2" />
 <button onclick="saveLead()" class="w-full bg-indigo-600 text-white p-2 mb-1">Save Lead</button>
 <button onclick="closeModal()" class="w-full text-gray-500">Cancel</button>
 </div>
@@ -175,9 +175,10 @@ list.innerHTML+=`<div class='border p-2 rounded'><b>${l.name}</b><br>${l.type} |
 // SAVE LEAD (FIXED)
 window.saveLead=async()=>{
 try{
-const nameVal=(name.value||'').trim();
-const phoneVal=(phone.value||'').trim();
-const amountVal=(amount.value||'').trim();
+const nameVal=(document.getElementById('leadName').value||'').trim();
+const phoneVal=(document.getElementById('leadPhone').value||'').trim();
+const amountVal=(document.getElementById('leadAmount').value||'').trim();
+const typeVal=(document.getElementById('type').value||'Auto Loan');
 
 if(!nameVal||!phoneVal||!amountVal){
 alert('Fill all fields');
@@ -187,7 +188,7 @@ return;
 await addDoc(collection(db,'leads'),{
 name:nameVal,
 phone:phoneVal,
-type:type.value||'Auto Loan',
+type:typeVal,
 amount:Number(amountVal)||0,
 status:'Pending',
 agentEmail:currentUser.email||'',
@@ -196,9 +197,9 @@ created:new Date()
 
 // UI RESET
 closeModal();
-name.value='';
-phone.value='';
-amount.value='';
+document.getElementById('leadName').value='';
+document.getElementById('leadPhone').value='';
+document.getElementById('leadAmount').value='';
 
 alert('Lead Saved Successfully');
 
