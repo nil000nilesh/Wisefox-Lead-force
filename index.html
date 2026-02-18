@@ -197,7 +197,11 @@ let btn='';
 if(currentUser.role==='dsa' || currentUser.role==='admin'){
 btn=`<button onclick="openStatusModal('${d.id}','${l.status||'Pending'}')" class='text-xs bg-indigo-100 px-2 mt-1'>Update Status</button>`;
 }
-list.innerHTML+=`<div class='border p-2 rounded'><b>${l.name}</b><br>${l.type} | ₹${l.amount}<br>📱 ${l.phone}<br>Status: <b>${l.status||'Pending'}</b><br>${btn}</div>`;
+let adminBtns='';
+if(currentUser.role==='admin'){
+adminBtns=`<button onclick="deleteLead('${d.id}')" class='text-xs bg-red-200 px-2 ml-1'>Delete</button>`;
+}
+list.innerHTML+=`<div class='border p-2 rounded'><b>${l.name}</b><br>${l.type} | ₹${l.amount}<br>📱 ${l.phone}<br>Status: <b>${l.status||'Pending'}</b><br>${btn} ${adminBtns}</div>`;
 });
 });}
 
@@ -211,6 +215,13 @@ const typeVal=(document.getElementById('type').value||'Auto Loan');
 
 if(!nameVal||!phoneVal||!amountVal){
 alert('Fill all fields');
+return;
+}
+
+// BLOCK CHECK
+const userSnap=await getDocs(query(collection(db,'users'),where('email','==',currentUser.email)));
+if(!userSnap.empty && userSnap.docs[0].data().blocked){
+alert('You are blocked by Admin. Cannot add lead');
 return;
 }
 
@@ -280,12 +291,32 @@ let roleBtn='';
 if(u.role!=='dsa') roleBtn+=`<button onclick="setRole('${d.id}','dsa')" class='text-xs bg-green-200 px-2 mr-1'>Make DSA</button>`;
 roleBtn+=`<button onclick="makeSubDSA('${d.id}')" class='text-xs bg-blue-200 px-2'>Make SubDSA</button>`;
 
+let blockBtn='';
+let deleteUserBtn='';
+if(currentUser.role==='admin'){
+blockBtn=`<button onclick="toggleBlock('${d.id}','${u.blocked?'yes':'no'}')" class='text-xs bg-yellow-200 px-2 mr-1'>${u.blocked?'Unblock':'Block'}</button>`;
+deleteUserBtn=`<button onclick="deleteUser('${d.id}')" class='text-xs bg-red-200 px-2'>Delete</button>`;
+}
 userList.innerHTML+=`<div class='border p-2 rounded'>
-<b>${u.name||''}</b><br>${u.email||''}<br>Role: ${u.role||'new'}<br>${roleBtn}
+<b>${u.name||''}</b><br>${u.email||''}<br>Role: ${u.role||'new'}<br>${roleBtn} ${blockBtn} ${deleteUserBtn}
 </div>`;
 });
 });
 }
+
+// ADMIN DELETE USER
+window.deleteUser=async(id)=>{
+if(currentUser.role!=='admin') return;
+if(!confirm('Delete this user?')) return;
+await deleteDoc(doc(db,'users',id));
+};
+
+// ADMIN BLOCK / UNBLOCK USER
+window.toggleBlock=async(id,state)=>{
+if(currentUser.role!=='admin') return;
+const blocked=(state!=='yes');
+await updateDoc(doc(db,'users',id),{blocked});
+};
 
 window.makeSubDSA=async(id)=>{
 const parent=document.getElementById('parentDSASelect').value;
@@ -298,6 +329,13 @@ alert('SubDSA linked under selected DSA');
 };
 
 window.setRole=async(id,role)=>updateDoc(doc(db,'users',id),{role});
+
+// ADMIN DELETE LEAD
+window.deleteLead=async(id)=>{
+if(currentUser.role!=='admin') return;
+if(!confirm('Delete this lead?')) return;
+await deleteDoc(doc(db,'leads',id));
+};
 
 // DSA SUBDSA
 window.createSubDSA=async()=>{
