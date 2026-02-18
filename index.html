@@ -39,6 +39,23 @@
 <div id="leadsPage">
 <button onclick="openModal()" class="w-full bg-indigo-600 text-white py-2 rounded mb-3">+ Generate Lead</button>
 <div id="list" class="space-y-2"></div>
+
+<!-- STATUS UPDATE MODAL -->
+<div id="statusModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center">
+<div class="bg-white p-4 rounded w-80">
+<h3 class="font-bold mb-2">Update Status</h3>
+<select id="newStatus" class="w-full border p-2 mb-2">
+<option>Pending</option>
+<option>Contacted</option>
+<option>In Process</option>
+<option>Sanctioned</option>
+<option>Disbursed</option>
+<option>Rejected</option>
+</select>
+<button onclick="saveStatus()" class="w-full bg-indigo-600 text-white p-2 mb-1">Update</button>
+<button onclick="closeStatusModal()" class="w-full text-gray-500">Cancel</button>
+</div>
+</div>
 </div>
 
 <!-- USERS PAGE -->
@@ -56,8 +73,12 @@
 </div>
 
 <div id="adminPanel" class="hidden">
-<h3 class="font-bold mb-2">New Users</h3>
+<h3 class="font-bold mb-2">All Users</h3>
+<label class="text-sm">Select Parent DSA (for SubDSA)</label>
+<select id="parentDSASelect" class="w-full border p-2 mb-2"></select>
+<h3 class="font-bold mb-2">All Users</h3>
 <div id="userList" class="space-y-2"></div>
+</div>
 </div>
 </div>
 </div>
@@ -168,7 +189,11 @@ list.innerHTML='';
 snap.forEach(d=>{
 const l=d.data();
 if(currentUser.role==='subdsa'&&l.agentEmail!==currentUser.email)return;
-list.innerHTML+=`<div class='border p-2 rounded'><b>${l.name}</b><br>${l.type} | ₹${l.amount}<br>📱 ${l.phone}</div>`;
+let btn='';
+if(currentUser.role==='dsa' || currentUser.role==='admin'){
+btn=`<button onclick="openStatusModal('${d.id}','${l.status||'Pending'}')" class='text-xs bg-indigo-100 px-2 mt-1'>Update Status</button>`;
+}
+list.innerHTML+=`<div class='border p-2 rounded'><b>${l.name}</b><br>${l.type} | ₹${l.amount}<br>📱 ${l.phone}<br>Status: <b>${l.status||'Pending'}</b><br>${btn}</div>`;
 });
 });}
 
@@ -210,13 +235,61 @@ alert('Lead save failed — check console');
 };
 
 window.openModal=()=>modal.classList.remove('hidden');
+
+// STATUS MODAL
+let currentLeadId=null;
+window.openStatusModal=(id,status)=>{
+currentLeadId=id;
+document.getElementById('newStatus').value=status||'Pending';
+document.getElementById('statusModal').classList.remove('hidden');
+};
+window.closeStatusModal=()=>document.getElementById('statusModal').classList.add('hidden');
+window.saveStatus=async()=>{
+if(!currentLeadId)return;
+const s=document.getElementById('newStatus').value;
+await updateDoc(doc(db,'leads',currentLeadId),{status:s});
+closeStatusModal();
+};
 window.closeModal=()=>modal.classList.add('hidden');
 
 // ADMIN USERS
 function loadNewUsers(){
+// ---- LOAD DSA DROPDOWN ----
+const dsaQuery=query(collection(db,'users'),where('role','==','dsa'));
+onSnapshot(dsaQuery,snap=>{
+const sel=document.getElementById('parentDSASelect');
+if(!sel) return;
+sel.innerHTML='<option value="">Select DSA</option>';
+snap.forEach(d=>{
+const u=d.data();
+sel.innerHTML+=`<option value="${u.email}">${u.name||u.email}</option>`;
+});
+});
 onSnapshot(collection(db,'users'),snap=>{
 userList.innerHTML='';
-snap.forEach(d=>{const u=d.data();if(u.role!=='new')return;userList.innerHTML+=`<div class='border p-2 rounded'>${u.name}<br>${u.email}<button onclick="setRole('${d.id}','dsa')" class='text-xs bg-green-200 px-2 ml-1'>Make DSA</button></div>`;});});}
+snap.forEach(d=>{
+const u=d.data();
+let roleBtn='';
+
+if(u.role!=='dsa') roleBtn+=`<button onclick="setRole('${d.id}','dsa')" class='text-xs bg-green-200 px-2 mr-1'>Make DSA</button>`;
+
+roleBtn+=`<button onclick="makeSubDSA('${d.id}')" class='text-xs bg-blue-200 px-2'>Make SubDSA</button>`;
+
+userList.innerHTML+=`<div class='border p-2 rounded'>
+<b>${u.name||''}</b><br>${u.email||''}<br>Role: ${u.role||'new'}<br>${roleBtn}
+</div>`;
+});
+});}
+
+window.makeSubDSA=async(id)=>{
+const parent=document.getElementById('parentDSASelect').value;
+if(!parent){
+alert('Select Parent DSA');
+return;
+}
+await updateDoc(doc(db,'users',id),{role:'subdsa',parentEmail:parent});
+alert('SubDSA linked under selected DSA');
+};);}
 window.setRole=async(id,role)=>updateDoc(doc(db,'users',id),{role});
 
 // DSA SUBDSA
