@@ -50,7 +50,7 @@
             <div id="signupBox" class="hidden h-full flex flex-col justify-center fade-in">
                 <h3 class="text-xl font-bold mb-1 text-slate-800">Complete Profile</h3>
                 <div class="space-y-4 mt-4">
-                    <input id="mobile" placeholder="Mobile Number" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-3 focus:outline-none" />
+                    <input id="mobile" type="number" placeholder="Mobile Number (10 digits)" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-3 focus:outline-none" />
                     <input id="location" placeholder="Location / City" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-3 focus:outline-none" />
                     <button onclick="completeSignup()" class="w-full bg-indigo-600 text-white font-semibold py-3.5 rounded-xl shadow-lg mt-4">
                         Create Account
@@ -78,7 +78,7 @@
                         <h3 class="font-bold text-slate-700 mb-3 text-sm uppercase tracking-wide">Add Sub-DSA</h3>
                         <div class="space-y-3">
                             <input id="subEmail" placeholder="User Email" class="input-field w-full border border-slate-200 rounded-lg p-2.5 text-sm" />
-                            <input id="subMobile" placeholder="User Mobile" class="input-field w-full border border-slate-200 rounded-lg p-2.5 text-sm" />
+                            <input id="subMobile" type="number" placeholder="User Mobile" class="input-field w-full border border-slate-200 rounded-lg p-2.5 text-sm" />
                             <button onclick="createSubDSA()" class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium">Link Sub-DSA</button>
                         </div>
                     </div>
@@ -102,7 +102,9 @@
             <h3 class="font-bold text-lg mb-4">New Lead</h3>
             <div class="space-y-3">
                 <input id="leadName" placeholder="Client Name" class="w-full border p-2.5 rounded-lg bg-slate-50" />
-                <input id="leadPhone" placeholder="Mobile" class="w-full border p-2.5 rounded-lg bg-slate-50" />
+                <input id="leadPhone" type="number" placeholder="Mobile (10 Digits)" class="w-full border p-2.5 rounded-lg bg-slate-50" />
+                <input id="leadAddress" placeholder="Client Address / City" class="w-full border p-2.5 rounded-lg bg-slate-50" />
+                
                 <select id="type" class="w-full border p-2.5 rounded-lg bg-slate-50">
                     <option>Personal Loan</option>
                     <option>Home Loan</option>
@@ -182,20 +184,14 @@
         };
 
         async function handleLogin(user){
-            // Check if user exists by email to prevent duplicates
             const snap = await getDocs(query(collection(db, "users"), where("email","==",user.email)));
-            
             if(snap.empty){
-                // Show Signup Box only if strictly no user found
                 document.getElementById('authBox').classList.add('hidden');
                 document.getElementById('signupBox').classList.remove('hidden');
                 window.tempUser=user; 
                 return;
             }
-            
-            // Load existing user
             currentUser = snap.docs[0].data();
-            // Store ID for reference
             currentUser.id = snap.docs[0].id; 
             startApp();
         }
@@ -205,26 +201,24 @@
             const mobileVal = (document.getElementById('mobile').value||'').trim();
             const locationVal = (document.getElementById('location').value||'').trim();
             
+            // 10-DIGIT VALIDATION FOR SIGNUP
             if(!mobileVal || !locationVal) return alert('Enter full details');
-            
+            if(mobileVal.length !== 10) return alert('Mobile number must be exactly 10 digits!');
+
             const role = user.email === 'nil000nilesh@gmail.com' ? 'admin' : 'new';
             
-            // DUPLICATE CHECK: Double check if user exists before creating
             const q = query(collection(db, "users"), where("email", "==", user.email));
             const snap = await getDocs(q);
             
             if(!snap.empty){
-                // If user exists (maybe phantom data), UPDATE instead of Create
                 const existingId = snap.docs[0].id;
                 await updateDoc(doc(db,'users',existingId), {
                     mobile: mobileVal,
                     location: locationVal,
-                    // Do not overwrite role if it exists
                 });
                 currentUser = snap.docs[0].data();
                 currentUser.id = existingId;
             } else {
-                // Completely new user -> Create with UID as ID
                 await setDoc(doc(db,'users',user.uid), {
                     name: user.displayName, 
                     email: user.email, 
@@ -301,14 +295,27 @@
                         adminBtns = `<button onclick="deleteLead('${d.id}')" class='text-xs text-red-500 bg-red-50 px-2 py-1 rounded ml-2'><i class="fa-solid fa-trash"></i></button>`;
                     }
 
+                    // UPDATED LEAD CARD UI (Shows Address & Agent Name)
                     list.innerHTML += `
                     <div class='bg-white p-4 rounded-xl shadow-sm border border-slate-100 relative mb-3'>
                         <div class="flex justify-between items-start mb-2">
-                            <div><h4 class="font-bold text-slate-800">${l.name}</h4><span class="text-xs text-slate-500">${l.type}</span></div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-lg">${l.name}</h4>
+                                <span class="text-xs text-slate-500">${l.type}</span>
+                            </div>
                             <span class="text-xs px-2 py-1 rounded-full font-medium border ${statusClass}">${l.status||'Pending'}</span>
                         </div>
+                        
+                        <div class="mb-2 space-y-1">
+                             <div class="text-sm text-slate-600"><i class="fa-solid fa-phone text-slate-400 mr-2 w-4"></i> ${l.phone}</div>
+                             <div class="text-sm text-slate-600"><i class="fa-solid fa-location-dot text-slate-400 mr-2 w-4"></i> ${l.address || 'No Address Provided'}</div>
+                        </div>
+
                         <div class="flex justify-between items-end mt-3 border-t border-slate-50 pt-3">
-                            <div><div class="text-sm font-bold text-slate-700">₹${Number(l.amount).toLocaleString('en-IN')}</div><div class="text-xs text-slate-400">${l.phone}</div></div>
+                            <div>
+                                <div class="text-sm font-bold text-slate-700">₹${Number(l.amount).toLocaleString('en-IN')}</div>
+                                <div class="text-[10px] text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded mt-1 inline-block">By: ${l.agentName || 'Unknown Agent'}</div>
+                            </div>
                             <div class="flex items-center">${btn} ${adminBtns}</div>
                         </div>
                     </div>`;
@@ -317,20 +324,36 @@
         }
 
         window.saveLead = async () => {
-            const name = document.getElementById('leadName').value;
-            const phone = document.getElementById('leadPhone').value;
-            const amount = document.getElementById('leadAmount').value;
+            const name = document.getElementById('leadName').value.trim();
+            const phone = document.getElementById('leadPhone').value.trim();
+            const address = document.getElementById('leadAddress').value.trim();
+            const amount = document.getElementById('leadAmount').value.trim();
             const type = document.getElementById('type').value;
-            if(!name || !phone) return alert('Fill required fields');
+
+            if(!name || !phone || !amount) return alert('Fill required fields');
+            
+            // 10-DIGIT VALIDATION FOR LEAD
+            if(phone.length !== 10) return alert('Client Mobile number must be exactly 10 digits!');
             
             const userSnap = await getDocs(query(collection(db,'users'), where('email','==',currentUser.email)));
             if(!userSnap.empty && userSnap.docs[0].data().blocked) return alert('Blocked by Admin');
 
             await addDoc(collection(db,'leads'), {
-                name, phone, type, amount: Number(amount)||0, status: 'Pending', agentEmail: currentUser.email, created: new Date()
+                name, 
+                phone, 
+                address: address || '', // Saving Address
+                type, 
+                amount: Number(amount)||0, 
+                status: 'Pending', 
+                agentEmail: currentUser.email, 
+                agentName: currentUser.name || 'Unknown', // Saving Agent Name
+                created: new Date()
             });
             closeModal();
             document.getElementById('leadName').value='';
+            document.getElementById('leadPhone').value='';
+            document.getElementById('leadAddress').value='';
+            document.getElementById('leadAmount').value='';
         };
 
         window.openModal = () => document.getElementById('modal').classList.remove('hidden');
@@ -348,8 +371,7 @@
             closeStatusModal();
         };
 
-        // --- UPDATED ADMIN USER LOGIC START ---
-        
+        // ADMIN USERS
         let targetSubDSAId = null; 
 
         function loadNewUsers(){
@@ -394,7 +416,6 @@
                          actionButtons = `<div class="text-[10px] text-slate-400 mt-1 pt-2 border-t border-slate-50 italic">Admin Access (Protected)</div>`;
                     }
 
-                    // ADDED MOBILE AND LOCATION DISPLAY HERE
                     userList.innerHTML += `
                     <div class='bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2'>
                         <div class="flex justify-between items-start">
@@ -437,7 +458,6 @@
                 closeSubDSAModal();
             }
         }
-        // --- UPDATED ADMIN USER LOGIC END ---
 
         window.deleteUser = async(id) => {
             if(currentUser.role !== 'admin') return;
@@ -460,6 +480,11 @@
 
         window.createSubDSA = async () => {
             const email = document.getElementById('subEmail').value.trim();
+            const mobile = document.getElementById('subMobile').value.trim();
+            
+            // 10-DIGIT VALIDATION FOR DSA ADDING SUBDSA
+            if(mobile.length !== 10) return alert('Sub-DSA Mobile number must be 10 digits!');
+
             const snap = await getDocs(query(collection(db,'users'), where('email','==',email)));
             if(snap.empty) return alert('User not found');
             const docSnap = snap.docs[0];
