@@ -1,357 +1,563 @@
-<!-- WISEFOX LEADAPP — UPDATED UI + FIXED LEAD SAVE + SEPARATE PAGES -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Wisefox LeadApp</title>
-<script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Wisefox LeadApp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .input-field { transition: all 0.3s ease; }
+        .input-field:focus { border-color: #4F46E5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+        /* Smooth fade in */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-slate-100 text-slate-800 h-screen overflow-hidden flex justify-center items-center">
 
-<div class="max-w-md mx-auto bg-white min-h-screen shadow p-4">
+    <div class="w-full max-w-md h-full sm:h-[90vh] sm:rounded-3xl bg-white shadow-2xl relative flex flex-col overflow-hidden">
+        
+        <div class="bg-indigo-600 text-white p-5 pt-8 shadow-md z-10">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="font-bold text-xl tracking-tight"><i class="fa-solid fa-fox mr-2"></i>Wisefox</h2>
+                    <p class="text-xs text-indigo-200 opacity-90">Lead Management System</p>
+                </div>
+                <button onclick="logout()" id="logoutBtn" class="hidden bg-white/20 hover:bg-white/30 p-2 rounded-full transition">
+                    <i class="fa-solid fa-power-off text-white"></i>
+                </button>
+            </div>
+        </div>
 
-<h2 class="font-bold text-lg mb-3">Wisefox LeadApp</h2>
+        <div class="flex-1 overflow-y-auto hide-scrollbar p-4 relative">
 
-<!-- LOGIN -->
-<div id="authBox" class="space-y-2">
-<button onclick="googleLogin()" class="w-full bg-red-500 text-white p-2 rounded">Login with Google</button>
-</div>
+            <div id="authBox" class="h-full flex flex-col justify-center items-center space-y-6 fade-in">
+                <div class="text-center mb-4">
+                    <div class="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 text-3xl">
+                        <i class="fa-solid fa-user-lock"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-800">Welcome Back</h3>
+                    <p class="text-slate-500 text-sm">Sign in to access your leads</p>
+                </div>
+                <button onclick="googleLogin()" class="w-full max-w-xs bg-white border border-slate-300 text-slate-700 font-medium py-3 rounded-xl shadow-sm hover:bg-slate-50 hover:shadow-md transition flex items-center justify-center gap-3">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="G">
+                    Continue with Google
+                </button>
+            </div>
 
-<!-- SIGNUP -->
-<div id="signupBox" class="hidden space-y-2 mt-3">
-<input id="mobile" placeholder="Mobile Number" class="w-full border p-2" />
-<input id="location" placeholder="Location" class="w-full border p-2" />
-<button onclick="completeSignup()" class="w-full bg-indigo-600 text-white p-2">Complete Signup</button>
-</div>
+            <div id="signupBox" class="hidden h-full flex flex-col justify-center fade-in">
+                <h3 class="text-xl font-bold mb-1 text-slate-800">Complete Profile</h3>
+                <p class="text-slate-500 text-sm mb-6">Just a few more details to get started.</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase">Mobile Number</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-phone absolute left-3 top-3.5 text-slate-400"></i>
+                            <input id="mobile" placeholder="9876543210" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-3 pl-10 focus:outline-none" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase">Location / City</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-map-pin absolute left-3 top-3.5 text-slate-400"></i>
+                            <input id="location" placeholder="e.g. Mumbai" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-3 pl-10 focus:outline-none" />
+                        </div>
+                    </div>
+                    <button onclick="completeSignup()" class="w-full bg-indigo-600 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition mt-4">
+                        Create Account <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
 
-<!-- MAIN APP -->
-<div id="app" class="hidden">
+            <div id="app" class="hidden pb-20 fade-in">
+                
+                <div class="bg-slate-200/50 p-1 rounded-xl flex mb-6 sticky top-0 backdrop-blur-md z-10 border border-slate-200">
+                    <button onclick="showPage('leads')" id="tab-leads" class="flex-1 py-2 rounded-lg text-sm font-medium transition-all bg-white text-indigo-600 shadow-sm">
+                        <i class="fa-solid fa-list-check mr-1"></i> Leads
+                    </button>
+                    <button onclick="showPage('users')" id="tab-users" class="flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all">
+                        <i class="fa-solid fa-users mr-1"></i> Team
+                    </button>
+                </div>
 
-<!-- TOP NAV -->
-<div class="flex gap-2 mb-3">
-<button onclick="showPage('leads')" class="bg-indigo-600 text-white px-3 py-1 rounded">Leads</button>
-<button onclick="showPage('users')" class="bg-gray-300 px-3 py-1 rounded">Users</button>
-<button onclick="logout()" class="ml-auto bg-gray-200 px-3 py-1 rounded">Logout</button>
-</div>
+                <div id="leadsPage">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-700">My Leads</h3>
+                    </div>
 
-<!-- LEADS PAGE -->
-<div id="leadsPage">
-<button onclick="openModal()" class="w-full bg-indigo-600 text-white py-2 rounded mb-3">+ Generate Lead</button>
-<div id="list" class="space-y-2"></div>
+                    <button onclick="openModal()" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl shadow-lg shadow-indigo-200 hover:shadow-xl transition mb-5 flex items-center justify-center font-medium">
+                        <i class="fa-solid fa-plus-circle mr-2"></i> Add New Lead
+                    </button>
 
-<!-- STATUS UPDATE MODAL -->
-<div id="statusModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center">
-<div class="bg-white p-4 rounded w-80">
-<h3 class="font-bold mb-2">Update Status</h3>
-<select id="newStatus" class="w-full border p-2 mb-2">
-<option>Pending</option>
-<option>Contacted</option>
-<option>In Process</option>
-<option>Sanctioned</option>
-<option>Disbursed</option>
-<option>Rejected</option>
-</select>
-<button onclick="saveStatus()" class="w-full bg-indigo-600 text-white p-2 mb-1">Update</button>
-<button onclick="closeStatusModal()" class="w-full text-gray-500">Cancel</button>
-</div>
-</div>
-</div>
+                    <div id="list" class="space-y-3 pb-10"></div>
+                </div>
 
-<!-- USERS PAGE -->
-<div id="usersPage" class="hidden">
-<div id="dsaPanel" class="hidden mb-3">
-<h3 class="font-bold">Create Sub‑DSA</h3>
-<input id="subEmail" placeholder="User Email" class="w-full border p-2 mb-1" />
-<input id="subMobile" placeholder="Mobile" class="w-full border p-2 mb-1" />
-<button onclick="createSubDSA()" class="w-full bg-blue-600 text-white p-2">Create Sub‑DSA</button>
-</div>
+                <div id="usersPage" class="hidden space-y-6">
+                    
+                    <div id="dsaPanel" class="hidden bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-slate-700 mb-3 text-sm uppercase tracking-wide border-b pb-2">
+                            <i class="fa-solid fa-user-plus text-indigo-500 mr-1"></i> Add Sub-DSA
+                        </h3>
+                        <div class="space-y-3">
+                            <input id="subEmail" placeholder="User Email Address" class="input-field w-full border border-slate-200 rounded-lg p-2.5 text-sm" />
+                            <input id="subMobile" placeholder="User Mobile" class="input-field w-full border border-slate-200 rounded-lg p-2.5 text-sm" />
+                            <button onclick="createSubDSA()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-medium transition">
+                                Link Sub-DSA
+                            </button>
+                        </div>
+                    </div>
 
-<div id="mySubList" class="hidden">
-<h3 class="font-bold mb-2">My Sub‑DSA Team</h3>
-<div id="subList" class="space-y-2"></div>
-</div>
+                    <div id="mySubList" class="hidden">
+                        <h3 class="font-bold text-slate-700 mb-2">My Team</h3>
+                        <div id="subList" class="space-y-2"></div>
+                    </div>
 
-<div id="adminPanel" class="hidden">
-<h3 class="font-bold mb-2">All Users</h3>
-<label class="text-sm">Select Parent DSA (for SubDSA)</label>
-<select id="parentDSASelect" class="w-full border p-2 mb-2"></select>
-<h3 class="font-bold mb-2">All Users</h3>
-<div id="userList" class="space-y-2"></div>
-</div>
-</div>
-</div>
-</div>
+                    <div id="adminPanel" class="hidden">
+                        <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 mb-4">
+                            <h3 class="font-bold text-amber-800 mb-2 text-xs uppercase">Admin Control: Link SubDSA</h3>
+                            <select id="parentDSASelect" class="w-full border border-amber-200 bg-white rounded p-2 text-sm mb-0 focus:outline-none"></select>
+                        </div>
+                        
+                        <h3 class="font-bold text-slate-700 mb-3">All Users Directory</h3>
+                        <div id="userList" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<!-- ADD LEAD MODAL -->
-<div id="modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center">
-<div class="bg-white p-4 rounded w-80">
-<h3 class="font-bold mb-2">Generate Lead</h3>
-<input id="leadName" placeholder="Client Name" class="w-full border p-2 mb-2" />
-<input id="leadPhone" placeholder="Mobile" class="w-full border p-2 mb-2" />
-<select id="type" class="w-full border p-2 mb-2">
-<option>Personal Loan</option>
-<option>Home Loan</option>
-<option>Business Loan</option>
-<option>Auto Loan</option>
-</select>
-<input id="leadAmount" placeholder="Amount" class="w-full border p-2 mb-2" />
-<button onclick="saveLead()" class="w-full bg-indigo-600 text-white p-2 mb-1">Save Lead</button>
-<button onclick="closeModal()" class="w-full text-gray-500">Cancel</button>
-</div>
-</div>
+    <div id="modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-all duration-300">
+        <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-slide-up">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="font-bold text-lg text-slate-800">New Loan Lead</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <div class="space-y-3">
+                <div class="relative">
+                    <i class="fa-regular fa-user absolute left-3 top-3 text-slate-400"></i>
+                    <input id="leadName" placeholder="Client Name" class="w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 pl-9 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" />
+                </div>
+                
+                <div class="relative">
+                    <i class="fa-solid fa-mobile-screen absolute left-3 top-3 text-slate-400"></i>
+                    <input id="leadPhone" placeholder="Mobile Number" type="tel" class="w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 pl-9 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" />
+                </div>
+                
+                <div class="relative">
+                    <i class="fa-solid fa-layer-group absolute left-3 top-3 text-slate-400"></i>
+                    <select id="type" class="w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 pl-9 focus:ring-2 focus:ring-indigo-500 focus:outline-none appearance-none">
+                        <option>Personal Loan</option>
+                        <option>Home Loan</option>
+                        <option>Business Loan</option>
+                        <option>Auto Loan</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-slate-400 text-xs pointer-events-none"></i>
+                </div>
+                
+                <div class="relative">
+                    <i class="fa-solid fa-indian-rupee-sign absolute left-3 top-3 text-slate-400"></i>
+                    <input id="leadAmount" placeholder="Amount Required" type="number" class="w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 pl-9 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" />
+                </div>
 
-</div>
+                <button onclick="saveLead()" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl shadow-lg hover:bg-indigo-700 transition mt-2">
+                    Submit Lead
+                </button>
+            </div>
+        </div>
+    </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <div id="statusModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl scale-100 transition-transform">
+            <h3 class="font-bold text-lg mb-1 text-slate-800">Update Status</h3>
+            <p class="text-xs text-slate-500 mb-4">Change the current stage of this lead.</p>
+            
+            <div class="relative mb-4">
+                <select id="newStatus" class="w-full border border-slate-200 bg-slate-50 rounded-lg p-3 focus:outline-none font-medium text-slate-700">
+                    <option class="text-yellow-600">Pending</option>
+                    <option class="text-blue-600">Contacted</option>
+                    <option class="text-indigo-600">In Process</option>
+                    <option class="text-green-600">Sanctioned</option>
+                    <option class="text-emerald-700">Disbursed</option>
+                    <option class="text-red-600">Rejected</option>
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-3 top-4 text-slate-400 text-xs pointer-events-none"></i>
+            </div>
 
-const firebaseConfig = {
-apiKey: "AIzaSyBz9bUrnOMu6I_OQ2cTHsRbVJUGlNs9c_E",
-authDomain: "wisfox-lead-app.firebaseapp.com",
-projectId: "wisfox-lead-app"
-};
+            <div class="flex gap-2">
+                <button onclick="closeStatusModal()" class="flex-1 text-slate-500 py-2 hover:bg-slate-50 rounded-lg transition">Cancel</button>
+                <button onclick="saveStatus()" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg shadow hover:bg-indigo-700 transition">Update</button>
+            </div>
+        </div>
+    </div>
 
-const appFirebase = initializeApp(firebaseConfig);
-const auth = getAuth(appFirebase);
-const db = getFirestore(appFirebase);
-const provider = new GoogleAuthProvider();
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-let currentUser = null;
+        const firebaseConfig = {
+            apiKey: "AIzaSyBz9bUrnOMu6I_OQ2cTHsRbVJUGlNs9c_E",
+            authDomain: "wisfox-lead-app.firebaseapp.com",
+            projectId: "wisfox-lead-app"
+        };
 
-// LOGIN
-window.googleLogin = async () => {
-try {
-const result = await signInWithPopup(auth, provider);
-handleLogin(result.user);
-} catch {
-await signInWithRedirect(auth, provider);
-}
-};
+        const appFirebase = initializeApp(firebaseConfig);
+        const auth = getAuth(appFirebase);
+        const db = getFirestore(appFirebase);
+        const provider = new GoogleAuthProvider();
 
-async function handleLogin(user){
-const snap = await getDocs(query(collection(db, "users"), where("email","==",user.email)));
-if(snap.empty){
-authBox.classList.add('hidden');
-signupBox.classList.remove('hidden');
-window.tempUser=user;return;
-}
-currentUser=snap.docs[0].data();
-startApp();
-}
+        let currentUser = null;
 
-// SIGNUP
-window.completeSignup = async () => {
-const user=window.tempUser;
-const mobileVal=(mobile.value||'').trim();
-const locationVal=(location.value||'').trim();
-if(!mobileVal||!locationVal) return alert('Enter full details');
-const role=user.email==='nil000nilesh@gmail.com'?'admin':'new';
-await setDoc(doc(db,'users',user.uid),{name:user.displayName,email:user.email,mobile:mobileVal,location:locationVal,role,parentEmail:null});
-currentUser={name:user.displayName,email:user.email,role};
-signupBox.classList.add('hidden');
-startApp();
-};
+        // LOGIN
+        window.googleLogin = async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                handleLogin(result.user);
+            } catch (error) {
+                console.log(error);
+                await signInWithRedirect(auth, provider);
+            }
+        };
 
-function startApp(){
-// ---- HIDE LOGIN BUTTON AFTER LOGIN ----
-document.getElementById('authBox').classList.add('hidden');
+        async function handleLogin(user){
+            const snap = await getDocs(query(collection(db, "users"), where("email","==",user.email)));
+            if(snap.empty){
+                document.getElementById('authBox').classList.add('hidden');
+                document.getElementById('signupBox').classList.remove('hidden');
+                window.tempUser=user; return;
+            }
+            currentUser=snap.docs[0].data();
+            startApp();
+        }
 
-document.getElementById('app').classList.remove('hidden');
-loadLeads();
+        // SIGNUP
+        window.completeSignup = async () => {
+            const user = window.tempUser;
+            const mobileVal = (document.getElementById('mobile').value||'').trim();
+            const locationVal = (document.getElementById('location').value||'').trim();
+            
+            if(!mobileVal || !locationVal) return alert('Please enter full details');
+            
+            const role = user.email === 'nil000nilesh@gmail.com' ? 'admin' : 'new';
+            
+            await setDoc(doc(db,'users',user.uid), {
+                name: user.displayName,
+                email: user.email,
+                mobile: mobileVal,
+                location: locationVal,
+                role,
+                parentEmail: null
+            });
+            
+            currentUser = {name: user.displayName, email: user.email, role};
+            document.getElementById('signupBox').classList.add('hidden');
+            startApp();
+        };
 
-// ---- ADMIN POWERS ----
-if(currentUser.role==='admin'){
-  document.getElementById('adminPanel').classList.remove('hidden');
-  loadNewUsers();
-}
+        function startApp(){
+            document.getElementById('authBox').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden'); // Show logout btn in header
 
-// ---- DSA CAN SEE USERS ONLY AFTER ADMIN LINKS SUBDSA ----
+            loadLeads();
 
+            if(currentUser.role === 'admin'){
+                document.getElementById('adminPanel').classList.remove('hidden');
+                loadNewUsers();
+            }
 
-if(currentUser.role==='dsa'){
-  document.getElementById('dsaPanel').classList.remove('hidden');
-  document.getElementById('mySubList').classList.remove('hidden');
-  loadMySubDSA();
-}
-}
+            if(currentUser.role === 'dsa'){
+                document.getElementById('dsaPanel').classList.remove('hidden');
+                document.getElementById('mySubList').classList.remove('hidden');
+                loadMySubDSA();
+            }
+        }
 
-window.logout=()=>signOut(auth).then(()=>location.reload());
+        window.logout = () => signOut(auth).then(() => location.reload());
 
-// PAGE SWITCH
-window.showPage=(p)=>{
-leadsPage.classList.toggle('hidden',p!=='leads');
-usersPage.classList.toggle('hidden',p!=='users');
-};
+        // PAGE SWITCH UI LOGIC
+        window.showPage = (p) => {
+            document.getElementById('leadsPage').classList.toggle('hidden', p !== 'leads');
+            document.getElementById('usersPage').classList.toggle('hidden', p !== 'users');
+            
+            // Tab styling update
+            const tLead = document.getElementById('tab-leads');
+            const tUser = document.getElementById('tab-users');
+            
+            if(p === 'leads'){
+                tLead.className = "flex-1 py-2 rounded-lg text-sm font-medium transition-all bg-white text-indigo-600 shadow-sm";
+                tUser.className = "flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all";
+            } else {
+                tUser.className = "flex-1 py-2 rounded-lg text-sm font-medium transition-all bg-white text-indigo-600 shadow-sm";
+                tLead.className = "flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all";
+            }
+        };
 
-// LOAD LEADS
-function loadLeads(){
-onSnapshot(collection(db,'leads'),snap=>{
-list.innerHTML='';
-snap.forEach(d=>{
-const l=d.data();
-if(currentUser.role==='subdsa'&&l.agentEmail!==currentUser.email)return;
-let btn='';
-if(currentUser.role==='dsa' || currentUser.role==='admin'){
-btn=`<button onclick="openStatusModal('${d.id}','${l.status||'Pending'}')" class='text-xs bg-indigo-100 px-2 mt-1'>Update Status</button>`;
-}
-let adminBtns='';
-if(currentUser.role==='admin'){
-adminBtns=`<button onclick="deleteLead('${d.id}')" class='text-xs bg-red-200 px-2 ml-1'>Delete</button>`;
-}
-list.innerHTML+=`<div class='border p-2 rounded'><b>${l.name}</b><br>${l.type} | ₹${l.amount}<br>📱 ${l.phone}<br>Status: <b>${l.status||'Pending'}</b><br>${btn} ${adminBtns}</div>`;
-});
-});}
+        // HELPER FOR STATUS COLORS
+        function getStatusColor(status) {
+            switch(status) {
+                case 'Disbursed': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+                case 'Sanctioned': return 'bg-green-100 text-green-700 border-green-200';
+                case 'Rejected': return 'bg-red-100 text-red-700 border-red-200';
+                case 'In Process': return 'bg-blue-100 text-blue-700 border-blue-200';
+                default: return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+            }
+        }
 
-// SAVE LEAD (FIXED)
-window.saveLead=async()=>{
-try{
-const nameVal=(document.getElementById('leadName').value||'').trim();
-const phoneVal=(document.getElementById('leadPhone').value||'').trim();
-const amountVal=(document.getElementById('leadAmount').value||'').trim();
-const typeVal=(document.getElementById('type').value||'Auto Loan');
+        // HELPER FOR ICONS BASED ON LOAN TYPE
+        function getLoanIcon(type) {
+            if(type.includes('Home')) return 'fa-house-chimney';
+            if(type.includes('Car') || type.includes('Auto')) return 'fa-car';
+            if(type.includes('Business')) return 'fa-briefcase';
+            return 'fa-sack-dollar';
+        }
 
-if(!nameVal||!phoneVal||!amountVal){
-alert('Fill all fields');
-return;
-}
+        // LOAD LEADS (UI RENDERING UPDATED)
+        function loadLeads(){
+            const list = document.getElementById('list');
+            onSnapshot(collection(db,'leads'), snap => {
+                list.innerHTML = '';
+                if(snap.empty) {
+                    list.innerHTML = `<div class="text-center text-slate-400 mt-10"><i class="fa-regular fa-folder-open text-4xl mb-2"></i><br>No leads found</div>`;
+                }
+                snap.forEach(d => {
+                    const l = d.data();
+                    if(currentUser.role === 'subdsa' && l.agentEmail !== currentUser.email) return;
 
-// BLOCK CHECK
-const userSnap=await getDocs(query(collection(db,'users'),where('email','==',currentUser.email)));
-if(!userSnap.empty && userSnap.docs[0].data().blocked){
-alert('You are blocked by Admin. Cannot add lead');
-return;
-}
+                    const statusClass = getStatusColor(l.status||'Pending');
+                    const iconClass = getLoanIcon(l.type || '');
 
-await addDoc(collection(db,'leads'),{
-name:nameVal,
-phone:phoneVal,
-type:typeVal,
-amount:Number(amountVal)||0,
-status:'Pending',
-agentEmail:currentUser.email||'',
-created:new Date()
-});
+                    let btn = '';
+                    if(currentUser.role === 'dsa' || currentUser.role === 'admin'){
+                        btn = `<button onclick="openStatusModal('${d.id}','${l.status||'Pending'}')" class='text-xs font-semibold text-indigo-600 hover:bg-indigo-50 px-2 py-1 rounded transition'>Edit Status</button>`;
+                    }
 
-// UI RESET
-closeModal();
-document.getElementById('leadName').value='';
-document.getElementById('leadPhone').value='';
-document.getElementById('leadAmount').value='';
+                    let adminBtns = '';
+                    if(currentUser.role === 'admin'){
+                        adminBtns = `<button onclick="deleteLead('${d.id}')" class='text-xs text-red-500 hover:bg-red-50 px-2 py-1 rounded ml-2'><i class="fa-solid fa-trash"></i></button>`;
+                    }
 
-alert('Lead Saved Successfully');
+                    // UPDATED CARD HTML
+                    list.innerHTML += `
+                    <div class='bg-white p-4 rounded-xl shadow-sm border border-slate-100 relative hover:shadow-md transition-all fade-in'>
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                    <i class="fa-solid ${iconClass}"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 leading-tight">${l.name}</h4>
+                                    <span class="text-xs text-slate-500">${l.type}</span>
+                                </div>
+                            </div>
+                            <span class="text-xs px-2 py-1 rounded-full font-medium border ${statusClass}">${l.status||'Pending'}</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-end mt-3 border-t border-slate-50 pt-3">
+                            <div>
+                                <div class="text-sm font-bold text-slate-700">₹${Number(l.amount).toLocaleString('en-IN')}</div>
+                                <div class="text-xs text-slate-400"><i class="fa-solid fa-phone mr-1"></i> ${l.phone}</div>
+                            </div>
+                            <div class="flex items-center">
+                                ${btn} ${adminBtns}
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            });
+        }
 
-}catch(err){
-console.error('Lead Save Error:',err);
-alert('Lead save failed — check console');
-}
-};
+        // SAVE LEAD
+        window.saveLead = async () => {
+            try {
+                const nameVal = (document.getElementById('leadName').value||'').trim();
+                const phoneVal = (document.getElementById('leadPhone').value||'').trim();
+                const amountVal = (document.getElementById('leadAmount').value||'').trim();
+                const typeVal = (document.getElementById('type').value||'Auto Loan');
 
-window.openModal=()=>modal.classList.remove('hidden');
+                if(!nameVal || !phoneVal || !amountVal){
+                    alert('Please fill all fields');
+                    return;
+                }
 
-// STATUS MODAL
-let currentLeadId=null;
-window.openStatusModal=(id,status)=>{
-currentLeadId=id;
-document.getElementById('newStatus').value=status||'Pending';
-document.getElementById('statusModal').classList.remove('hidden');
-};
-window.closeStatusModal=()=>document.getElementById('statusModal').classList.add('hidden');
-window.saveStatus=async()=>{
-if(!currentLeadId)return;
-const s=document.getElementById('newStatus').value;
-await updateDoc(doc(db,'leads',currentLeadId),{status:s});
-closeStatusModal();
-};
-window.closeModal=()=>modal.classList.add('hidden');
+                // BLOCK CHECK
+                const userSnap = await getDocs(query(collection(db,'users'), where('email','==',currentUser.email)));
+                if(!userSnap.empty && userSnap.docs[0].data().blocked){
+                    alert('You are blocked by Admin. Cannot add lead');
+                    return;
+                }
 
-// ADMIN USERS
-function loadNewUsers(){
-// ---- LOAD DSA DROPDOWN ----
-const dsaQuery=query(collection(db,'users'),where('role','==','dsa'));
-onSnapshot(dsaQuery,snap=>{
-const sel=document.getElementById('parentDSASelect');
-if(!sel) return;
-sel.innerHTML='<option value="">Select DSA</option>';
-snap.forEach(d=>{
-const u=d.data();
-sel.innerHTML+=`<option value="${u.email}">${u.name||u.email}</option>`;
-});
-});
+                await addDoc(collection(db,'leads'), {
+                    name: nameVal,
+                    phone: phoneVal,
+                    type: typeVal,
+                    amount: Number(amountVal)||0,
+                    status: 'Pending',
+                    agentEmail: currentUser.email||'',
+                    created: new Date()
+                });
 
-// ---- LOAD ALL USERS LIST ----
-onSnapshot(collection(db,'users'),snap=>{
-userList.innerHTML='';
-snap.forEach(d=>{
-const u=d.data();
-let roleBtn='';
+                closeModal();
+                document.getElementById('leadName').value = '';
+                document.getElementById('leadPhone').value = '';
+                document.getElementById('leadAmount').value = '';
+                
+                // Optional: Show a nice toast here instead of alert in future
+                // alert('Lead Saved Successfully'); 
 
-if(u.role!=='dsa') roleBtn+=`<button onclick="setRole('${d.id}','dsa')" class='text-xs bg-green-200 px-2 mr-1'>Make DSA</button>`;
-roleBtn+=`<button onclick="makeSubDSA('${d.id}')" class='text-xs bg-blue-200 px-2'>Make SubDSA</button>`;
+            } catch(err){
+                console.error('Lead Save Error:',err);
+                alert('Lead save failed — check console');
+            }
+        };
 
-let blockBtn='';
-let deleteUserBtn='';
-if(currentUser.role==='admin'){
-blockBtn=`<button onclick="toggleBlock('${d.id}','${u.blocked?'yes':'no'}')" class='text-xs bg-yellow-200 px-2 mr-1'>${u.blocked?'Unblock':'Block'}</button>`;
-deleteUserBtn=`<button onclick="deleteUser('${d.id}')" class='text-xs bg-red-200 px-2'>Delete</button>`;
-}
-userList.innerHTML+=`<div class='border p-2 rounded'>
-<b>${u.name||''}</b><br>${u.email||''}<br>Role: ${u.role||'new'}<br>${roleBtn} ${blockBtn} ${deleteUserBtn}
-</div>`;
-});
-});
-}
+        window.openModal = () => document.getElementById('modal').classList.remove('hidden');
+        window.closeModal = () => document.getElementById('modal').classList.add('hidden');
 
-// ADMIN DELETE USER
-window.deleteUser=async(id)=>{
-if(currentUser.role!=='admin') return;
-if(!confirm('Delete this user?')) return;
-await deleteDoc(doc(db,'users',id));
-};
+        // STATUS MODAL LOGIC
+        let currentLeadId = null;
+        window.openStatusModal = (id, status) => {
+            currentLeadId = id;
+            document.getElementById('newStatus').value = status || 'Pending';
+            document.getElementById('statusModal').classList.remove('hidden');
+        };
+        window.closeStatusModal = () => document.getElementById('statusModal').classList.add('hidden');
+        
+        window.saveStatus = async () => {
+            if(!currentLeadId) return;
+            const s = document.getElementById('newStatus').value;
+            await updateDoc(doc(db,'leads',currentLeadId), {status:s});
+            closeStatusModal();
+        };
 
-// ADMIN BLOCK / UNBLOCK USER
-window.toggleBlock=async(id,state)=>{
-if(currentUser.role!=='admin') return;
-const blocked=(state!=='yes');
-await updateDoc(doc(db,'users',id),{blocked});
-};
+        // ADMIN USERS (UI RENDERING UPDATED)
+        function loadNewUsers(){
+            const dsaQuery = query(collection(db,'users'), where('role','==','dsa'));
+            onSnapshot(dsaQuery, snap => {
+                const sel = document.getElementById('parentDSASelect');
+                if(!sel) return;
+                sel.innerHTML = '<option value="">Select Parent DSA</option>';
+                snap.forEach(d => {
+                    const u = d.data();
+                    sel.innerHTML += `<option value="${u.email}">${u.name||u.email}</option>`;
+                });
+            });
 
-window.makeSubDSA=async(id)=>{
-const parent=document.getElementById('parentDSASelect').value;
-if(!parent){
-alert('Select Parent DSA');
-return;
-}
-await updateDoc(doc(db,'users',id),{role:'subdsa',parentEmail:parent});
-alert('SubDSA linked under selected DSA');
-};
+            onSnapshot(collection(db,'users'), snap => {
+                const userList = document.getElementById('userList');
+                userList.innerHTML = '';
+                snap.forEach(d => {
+                    const u = d.data();
+                    
+                    let roleBadgeColor = 'bg-gray-100 text-gray-600';
+                    if(u.role === 'admin') roleBadgeColor = 'bg-red-100 text-red-700';
+                    if(u.role === 'dsa') roleBadgeColor = 'bg-purple-100 text-purple-700';
+                    if(u.role === 'subdsa') roleBadgeColor = 'bg-blue-100 text-blue-700';
 
-window.setRole=async(id,role)=>updateDoc(doc(db,'users',id),{role});
+                    let roleBtn = '';
+                    if(u.role !== 'dsa') roleBtn += `<button onclick="setRole('${d.id}','dsa')" class='text-[10px] bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200'>Make DSA</button>`;
+                    roleBtn += `<button onclick="makeSubDSA('${d.id}')" class='text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200 ml-1'>Make SubDSA</button>`;
 
-// ADMIN DELETE LEAD
-window.deleteLead=async(id)=>{
-if(currentUser.role!=='admin') return;
-if(!confirm('Delete this lead?')) return;
-await deleteDoc(doc(db,'leads',id));
-};
+                    let blockBtn = '';
+                    let deleteUserBtn = '';
+                    if(currentUser.role === 'admin'){
+                        blockBtn = `<button onclick="toggleBlock('${d.id}','${u.blocked?'yes':'no'}')" class='text-[10px] ${u.blocked ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700'} px-2 py-1 rounded ml-1 border border-amber-200'>${u.blocked ? 'Unblock' : 'Block'}</button>`;
+                        deleteUserBtn = `<button onclick="deleteUser('${d.id}')" class='text-[10px] bg-red-50 text-red-700 px-2 py-1 rounded ml-1 border border-red-200'><i class="fa-solid fa-trash"></i></button>`;
+                    }
 
-// DSA SUBDSA
-window.createSubDSA=async()=>{
-const email=subEmail.value.trim();
-const snap=await getDocs(query(collection(db,'users'),where('email','==',email)));
-if(snap.empty)return alert('User not found');
-const docSnap=snap.docs[0];
-if(docSnap.data().role!=='new')return alert('User already engaged');
-await updateDoc(doc(db,'users',docSnap.id),{role:'subdsa',parentEmail:currentUser.email});
-alert('SubDSA created');
-};
+                    // UPDATED USER CARD HTML
+                    userList.innerHTML += `
+                    <div class='bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2'>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-bold text-sm text-slate-800">${u.name||'Unknown'}</div>
+                                <div class="text-xs text-slate-500">${u.email}</div>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded ${roleBadgeColor}">${u.role||'new'}</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1 mt-1 pt-2 border-t border-slate-50">
+                            ${roleBtn} ${blockBtn} ${deleteUserBtn}
+                        </div>
+                    </div>`;
+                });
+            });
+        }
 
-function loadMySubDSA(){
-const q=query(collection(db,'users'),where('parentEmail','==',currentUser.email));
-onSnapshot(q,snap=>{subList.innerHTML='';snap.forEach(d=>{const u=d.data();subList.innerHTML+=`<div class='border p-2 rounded bg-blue-50'><b>${u.name}</b><br>${u.email}<br>${u.mobile}</div>`;});});}
+        window.deleteUser = async(id) => {
+            if(currentUser.role !== 'admin') return;
+            if(!confirm('Delete this user?')) return;
+            await deleteDoc(doc(db,'users',id));
+        };
 
-</script>
+        window.toggleBlock = async(id, state) => {
+            if(currentUser.role !== 'admin') return;
+            const blocked = (state !== 'yes');
+            await updateDoc(doc(db,'users',id), {blocked});
+        };
+
+        window.makeSubDSA = async(id) => {
+            const parent = document.getElementById('parentDSASelect').value;
+            if(!parent){
+                alert('Select Parent DSA first from the dropdown above');
+                return;
+            }
+            await updateDoc(doc(db,'users',id), {role:'subdsa', parentEmail:parent});
+            alert('SubDSA linked successfully');
+        };
+
+        window.setRole = async(id, role) => updateDoc(doc(db,'users',id), {role});
+
+        window.deleteLead = async(id) => {
+            if(currentUser.role !== 'admin') return;
+            if(!confirm('Permanently delete this lead?')) return;
+            await deleteDoc(doc(db,'leads',id));
+        };
+
+        // DSA SUBDSA
+        window.createSubDSA = async () => {
+            const email = document.getElementById('subEmail').value.trim();
+            const snap = await getDocs(query(collection(db,'users'), where('email','==',email)));
+            if(snap.empty) return alert('User email not found in system');
+            
+            const docSnap = snap.docs[0];
+            if(docSnap.data().role !== 'new') return alert('User is already assigned a role');
+            
+            await updateDoc(doc(db,'users',docSnap.id), {role:'subdsa', parentEmail:currentUser.email});
+            alert('SubDSA added to your team');
+            document.getElementById('subEmail').value = '';
+            document.getElementById('subMobile').value = '';
+        };
+
+        function loadMySubDSA(){
+            const q = query(collection(db,'users'), where('parentEmail','==',currentUser.email));
+            onSnapshot(q, snap => {
+                const subList = document.getElementById('subList');
+                subList.innerHTML = '';
+                if(snap.empty) subList.innerHTML = '<div class="text-xs text-slate-400">No team members yet.</div>';
+                
+                snap.forEach(d => {
+                    const u = d.data();
+                    subList.innerHTML += `
+                    <div class='bg-blue-50/50 p-3 rounded-lg border border-blue-100 flex items-center gap-3'>
+                        <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-xs">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-slate-700">${u.name}</div>
+                            <div class="text-xs text-slate-500">${u.mobile}</div>
+                        </div>
+                    </div>`;
+                });
+            });
+        }
+    </script>
 </body>
 </html>
