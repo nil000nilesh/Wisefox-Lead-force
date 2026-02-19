@@ -24,7 +24,7 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h2 class="font-bold text-xl tracking-tight"><i class="fa-solid fa-fox mr-2"></i>Wisefox</h2>
-                    <p class="text-xs text-indigo-200 opacity-90">Lead Management System</p>
+                    <p class="text-xs text-indigo-200 opacity-90" id="userRoleDisplay">Lead Management System</p>
                 </div>
                 <button onclick="logout()" id="logoutBtn" class="hidden bg-white/20 hover:bg-white/30 p-2 rounded-full transition">
                     <i class="fa-solid fa-power-off text-white"></i>
@@ -66,8 +66,8 @@
                 </div>
 
                 <div id="leadsPage">
-                    <button onclick="openModal()" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl shadow-lg mb-5 font-medium">
-                        <i class="fa-solid fa-plus-circle mr-2"></i> Add New Lead
+                    <button onclick="openModal()" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl shadow-lg mb-5 font-medium flex items-center justify-center">
+                        <i class="fa-solid fa-plus-circle mr-2"></i> Generate New Lead
                     </button>
                     <div id="list" class="space-y-3 pb-10"></div>
                 </div>
@@ -78,7 +78,7 @@
                         <h3 class="font-bold text-slate-700 mb-3 text-sm uppercase tracking-wide">Add Sub-DSA</h3>
                         <div class="space-y-3">
                             <input id="subEmail" placeholder="User Email" class="input-field w-full border border-slate-200 rounded-lg p-2.5 text-sm" />
-                            <input id="subMobile" type="number" placeholder="User Mobile" class="input-field w-full border border-slate-200 rounded-lg p-2.5 text-sm" />
+                            <input id="subMobile" type="number" placeholder="User Mobile (10 digits)" class="input-field w-full border border-slate-200 rounded-lg p-2.5 text-sm" />
                             <button onclick="createSubDSA()" class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium">Link Sub-DSA</button>
                         </div>
                     </div>
@@ -99,22 +99,23 @@
 
     <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-            <h3 class="font-bold text-lg mb-4">New Lead</h3>
+            <h3 class="font-bold text-lg mb-4 text-slate-800">New Lead Details</h3>
             <div class="space-y-3">
-                <input id="leadName" placeholder="Client Name" class="w-full border p-2.5 rounded-lg bg-slate-50" />
-                <input id="leadPhone" type="number" placeholder="Mobile (10 Digits)" class="w-full border p-2.5 rounded-lg bg-slate-50" />
-                <input id="leadAddress" placeholder="Client Address / City" class="w-full border p-2.5 rounded-lg bg-slate-50" />
+                <input id="leadName" placeholder="Client Name" class="w-full border border-slate-300 p-2.5 rounded-lg bg-slate-50 focus:outline-none focus:border-indigo-500" />
+                <input id="leadPhone" type="number" placeholder="Mobile No (10 Digits)" class="w-full border border-slate-300 p-2.5 rounded-lg bg-slate-50 focus:outline-none focus:border-indigo-500" />
                 
-                <select id="type" class="w-full border p-2.5 rounded-lg bg-slate-50">
+                <textarea id="leadAddress" placeholder="Full Address / City" rows="2" class="w-full border border-slate-300 p-2.5 rounded-lg bg-slate-50 focus:outline-none focus:border-indigo-500"></textarea>
+                
+                <select id="type" class="w-full border border-slate-300 p-2.5 rounded-lg bg-slate-50 focus:outline-none focus:border-indigo-500">
                     <option>Personal Loan</option>
                     <option>Home Loan</option>
                     <option>Business Loan</option>
                     <option>Auto Loan</option>
                 </select>
-                <input id="leadAmount" placeholder="Amount" type="number" class="w-full border p-2.5 rounded-lg bg-slate-50" />
-                <div class="flex gap-2 mt-4">
-                    <button onclick="closeModal()" class="flex-1 py-2 text-slate-500">Cancel</button>
-                    <button onclick="saveLead()" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg shadow">Save</button>
+                <input id="leadAmount" placeholder="Amount Required" type="number" class="w-full border border-slate-300 p-2.5 rounded-lg bg-slate-50 focus:outline-none focus:border-indigo-500" />
+                <div class="flex gap-2 mt-4 pt-2 border-t border-slate-100">
+                    <button onclick="closeModal()" class="flex-1 py-2 text-slate-500 hover:bg-slate-100 rounded-lg">Cancel</button>
+                    <button onclick="saveLead()" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg shadow hover:bg-indigo-700">Save Lead</button>
                 </div>
             </div>
         </div>
@@ -123,7 +124,7 @@
     <div id="statusModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
         <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl">
             <h3 class="font-bold text-lg mb-4">Update Status</h3>
-            <select id="newStatus" class="w-full border p-3 rounded-lg mb-4 bg-slate-50">
+            <select id="newStatus" class="w-full border p-3 rounded-lg mb-4 bg-slate-50 focus:outline-none">
                 <option>Pending</option>
                 <option>Contacted</option>
                 <option>In Process</option>
@@ -141,19 +142,15 @@
     <div id="subDSAModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
         <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl">
             <h3 class="font-bold text-lg mb-2 text-slate-800">Assign Parent DSA</h3>
-            <p class="text-xs text-slate-500 mb-4">Select the DSA who will manage this Sub-DSA.</p>
-            
             <label class="text-xs font-bold text-slate-600 uppercase">Select DSA</label>
-            <div class="relative mb-4">
+            <div class="relative mb-4 mt-2">
                 <select id="modalDSASelect" class="w-full border border-slate-200 bg-slate-50 rounded-lg p-3 focus:outline-none font-medium text-slate-700">
                     <option value="">-- Choose DSA --</option>
                 </select>
-                <i class="fa-solid fa-chevron-down absolute right-3 top-4 text-slate-400 text-xs pointer-events-none"></i>
             </div>
-
             <div class="flex gap-2">
-                <button onclick="closeSubDSAModal()" class="flex-1 text-slate-500 py-2 hover:bg-slate-50 rounded-lg transition">Cancel</button>
-                <button onclick="confirmSubDSALink()" class="flex-1 bg-blue-600 text-white py-2 rounded-lg shadow hover:bg-blue-700 transition">Link Now</button>
+                <button onclick="closeSubDSAModal()" class="flex-1 text-slate-500 py-2 hover:bg-slate-50 rounded-lg">Cancel</button>
+                <button onclick="confirmSubDSALink()" class="flex-1 bg-blue-600 text-white py-2 rounded-lg shadow">Link Now</button>
             </div>
         </div>
     </div>
@@ -175,12 +172,19 @@
         const provider = new GoogleAuthProvider();
 
         let currentUser = null;
+        
+        // --- NEW VARIABLES FOR LEAD FILTERING ---
+        window.mySubDSAEmails = []; // Store emails of SubDSAs
+        window.latestLeadsSnap = null; // Store latest leads data
 
         window.googleLogin = async () => {
             try {
                 const result = await signInWithPopup(auth, provider);
                 handleLogin(result.user);
-            } catch { await signInWithRedirect(auth, provider); }
+            } catch (error) { 
+                console.error("Google Login Error:", error);
+                await signInWithRedirect(auth, provider); 
+            }
         };
 
         async function handleLogin(user){
@@ -201,31 +205,21 @@
             const mobileVal = (document.getElementById('mobile').value||'').trim();
             const locationVal = (document.getElementById('location').value||'').trim();
             
-            // 10-DIGIT VALIDATION FOR SIGNUP
             if(!mobileVal || !locationVal) return alert('Enter full details');
             if(mobileVal.length !== 10) return alert('Mobile number must be exactly 10 digits!');
 
             const role = user.email === 'nil000nilesh@gmail.com' ? 'admin' : 'new';
-            
             const q = query(collection(db, "users"), where("email", "==", user.email));
             const snap = await getDocs(q);
             
             if(!snap.empty){
                 const existingId = snap.docs[0].id;
-                await updateDoc(doc(db,'users',existingId), {
-                    mobile: mobileVal,
-                    location: locationVal,
-                });
+                await updateDoc(doc(db,'users',existingId), { mobile: mobileVal, location: locationVal });
                 currentUser = snap.docs[0].data();
                 currentUser.id = existingId;
             } else {
                 await setDoc(doc(db,'users',user.uid), {
-                    name: user.displayName, 
-                    email: user.email, 
-                    mobile: mobileVal, 
-                    location: locationVal, 
-                    role, 
-                    parentEmail: null
+                    name: user.displayName, email: user.email, mobile: mobileVal, location: locationVal, role, parentEmail: null
                 });
                 currentUser = {name: user.displayName, email: user.email, role, mobile: mobileVal, location: locationVal};
             }
@@ -238,6 +232,10 @@
             document.getElementById('authBox').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
             document.getElementById('logoutBtn').classList.remove('hidden');
+            
+            // Show Role in Header
+            document.getElementById('userRoleDisplay').innerText = `Logged in as: ${currentUser.role.toUpperCase()}`;
+
             loadLeads();
             
             if(currentUser.role === 'admin'){
@@ -277,49 +275,68 @@
             }
         }
 
-        function loadLeads(){
+        // --- UPDATED LEAD RENDERING LOGIC ---
+        function renderLeads() {
+            if (!window.latestLeadsSnap) return;
             const list = document.getElementById('list');
-            onSnapshot(collection(db,'leads'), snap => {
-                list.innerHTML = '';
-                snap.forEach(d => {
-                    const l = d.data();
-                    if(currentUser.role === 'subdsa' && l.agentEmail !== currentUser.email) return;
-                    const statusClass = getStatusColor(l.status||'Pending');
+            list.innerHTML = '';
+            
+            window.latestLeadsSnap.forEach(d => {
+                const l = d.data();
+                
+                // --- VISIBILITY CHECK ---
+                let canView = false;
+                if (currentUser.role === 'admin') {
+                    canView = true; // Admin sees all
+                } else if (l.agentEmail === currentUser.email) {
+                    canView = true; // User sees their own leads
+                } else if (currentUser.role === 'dsa' && window.mySubDSAEmails.includes(l.agentEmail)) {
+                    canView = true; // DSA sees leads from their Sub-DSAs
+                }
+                
+                if (!canView) return; // Skip if not authorized
+
+                const statusClass = getStatusColor(l.status||'Pending');
+                
+                let btn = '';
+                if(currentUser.role === 'dsa' || currentUser.role === 'admin'){
+                    btn = `<button onclick="openStatusModal('${d.id}','${l.status||'Pending'}')" class='text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded'>Edit Status</button>`;
+                }
+                let adminBtns = '';
+                if(currentUser.role === 'admin'){
+                    adminBtns = `<button onclick="deleteLead('${d.id}')" class='text-xs text-red-500 bg-red-50 px-2 py-1 rounded ml-2'><i class="fa-solid fa-trash"></i></button>`;
+                }
+
+                list.innerHTML += `
+                <div class='bg-white p-4 rounded-xl shadow-sm border border-slate-200 relative mb-3'>
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-lg">${l.name}</h4>
+                            <span class="text-xs font-semibold text-slate-500">${l.type}</span>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full font-bold border ${statusClass}">${l.status||'Pending'}</span>
+                    </div>
                     
-                    let btn = '';
-                    if(currentUser.role === 'dsa' || currentUser.role === 'admin'){
-                        btn = `<button onclick="openStatusModal('${d.id}','${l.status||'Pending'}')" class='text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded'>Edit Status</button>`;
-                    }
-                    let adminBtns = '';
-                    if(currentUser.role === 'admin'){
-                        adminBtns = `<button onclick="deleteLead('${d.id}')" class='text-xs text-red-500 bg-red-50 px-2 py-1 rounded ml-2'><i class="fa-solid fa-trash"></i></button>`;
-                    }
+                    <div class="mb-3 mt-1 space-y-1 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                         <div class="text-sm text-slate-600"><i class="fa-solid fa-phone text-slate-400 mr-2 w-4"></i> ${l.phone}</div>
+                         <div class="text-sm text-slate-600"><i class="fa-solid fa-location-dot text-slate-400 mr-2 w-4"></i> ${l.address || 'NA'}</div>
+                    </div>
 
-                    // UPDATED LEAD CARD UI (Shows Address & Agent Name)
-                    list.innerHTML += `
-                    <div class='bg-white p-4 rounded-xl shadow-sm border border-slate-100 relative mb-3'>
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <h4 class="font-bold text-slate-800 text-lg">${l.name}</h4>
-                                <span class="text-xs text-slate-500">${l.type}</span>
-                            </div>
-                            <span class="text-xs px-2 py-1 rounded-full font-medium border ${statusClass}">${l.status||'Pending'}</span>
+                    <div class="flex justify-between items-end mt-2 pt-2 border-t border-slate-100">
+                        <div>
+                            <div class="text-sm font-bold text-slate-800">₹${Number(l.amount).toLocaleString('en-IN')}</div>
+                            <div class="text-[10px] text-indigo-700 font-bold bg-indigo-100 px-2 py-1 rounded mt-1 inline-block"><i class="fa-regular fa-user mr-1"></i> By: ${l.agentName || 'Unknown'}</div>
                         </div>
-                        
-                        <div class="mb-2 space-y-1">
-                             <div class="text-sm text-slate-600"><i class="fa-solid fa-phone text-slate-400 mr-2 w-4"></i> ${l.phone}</div>
-                             <div class="text-sm text-slate-600"><i class="fa-solid fa-location-dot text-slate-400 mr-2 w-4"></i> ${l.address || 'No Address Provided'}</div>
-                        </div>
+                        <div class="flex items-center">${btn} ${adminBtns}</div>
+                    </div>
+                </div>`;
+            });
+        }
 
-                        <div class="flex justify-between items-end mt-3 border-t border-slate-50 pt-3">
-                            <div>
-                                <div class="text-sm font-bold text-slate-700">₹${Number(l.amount).toLocaleString('en-IN')}</div>
-                                <div class="text-[10px] text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded mt-1 inline-block">By: ${l.agentName || 'Unknown Agent'}</div>
-                            </div>
-                            <div class="flex items-center">${btn} ${adminBtns}</div>
-                        </div>
-                    </div>`;
-                });
+        function loadLeads(){
+            onSnapshot(collection(db,'leads'), snap => {
+                window.latestLeadsSnap = snap;
+                renderLeads();
             });
         }
 
@@ -330,25 +347,17 @@
             const amount = document.getElementById('leadAmount').value.trim();
             const type = document.getElementById('type').value;
 
-            if(!name || !phone || !amount) return alert('Fill required fields');
-            
-            // 10-DIGIT VALIDATION FOR LEAD
-            if(phone.length !== 10) return alert('Client Mobile number must be exactly 10 digits!');
+            if(!name || !phone || !amount || !address) return alert('Please fill all fields including Address!');
+            if(phone.length !== 10) return alert('Mobile number must be exactly 10 digits!');
             
             const userSnap = await getDocs(query(collection(db,'users'), where('email','==',currentUser.email)));
             if(!userSnap.empty && userSnap.docs[0].data().blocked) return alert('Blocked by Admin');
 
             await addDoc(collection(db,'leads'), {
-                name, 
-                phone, 
-                address: address || '', // Saving Address
-                type, 
-                amount: Number(amount)||0, 
-                status: 'Pending', 
-                agentEmail: currentUser.email, 
-                agentName: currentUser.name || 'Unknown', // Saving Agent Name
-                created: new Date()
+                name, phone, address, type, amount: Number(amount)||0, status: 'Pending', 
+                agentEmail: currentUser.email, agentName: currentUser.name || 'Unknown', created: new Date()
             });
+            
             closeModal();
             document.getElementById('leadName').value='';
             document.getElementById('leadPhone').value='';
@@ -391,7 +400,6 @@
                 userList.innerHTML = '';
                 snap.forEach(d => {
                     const u = d.data();
-                    
                     let roleBadgeColor = 'bg-gray-100 text-gray-600';
                     if(u.role === 'admin') roleBadgeColor = 'bg-red-100 text-red-700';
                     if(u.role === 'dsa') roleBadgeColor = 'bg-purple-100 text-purple-700';
@@ -400,13 +408,10 @@
                     let actionButtons = '';
                     if(u.role !== 'admin') {
                         let makeDSABtn = '';
-                        if(u.role !== 'dsa') {
-                            makeDSABtn = `<button onclick="setRole('${d.id}','dsa')" class='text-[10px] bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200'>Make DSA</button>`;
-                        }
+                        if(u.role !== 'dsa') makeDSABtn = `<button onclick="setRole('${d.id}','dsa')" class='text-[10px] bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200'>Make DSA</button>`;
                         const makeSubDSABtn = `<button onclick="openSubDSAModal('${d.id}')" class='text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200 ml-1'>Make SubDSA</button>`;
 
-                        let blockBtn = '';
-                        let deleteUserBtn = '';
+                        let blockBtn = ''; let deleteUserBtn = '';
                         if(currentUser.role === 'admin'){
                             blockBtn = `<button onclick="toggleBlock('${d.id}','${u.blocked?'yes':'no'}')" class='text-[10px] ${u.blocked ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700'} px-2 py-1 rounded ml-1 border border-amber-200'>${u.blocked ? 'Unblock' : 'Block'}</button>`;
                             deleteUserBtn = `<button onclick="deleteUser('${d.id}')" class='text-[10px] bg-red-50 text-red-700 px-2 py-1 rounded ml-1 border border-red-200'><i class="fa-solid fa-trash"></i></button>`;
@@ -423,9 +428,7 @@
                                 <div class="font-bold text-sm text-slate-800">${u.name||'Unknown'}</div>
                                 <div class="text-xs text-slate-500 mb-1">${u.email}</div>
                                 <div class="text-[10px] text-slate-500 bg-slate-50 p-1.5 rounded-md flex items-center gap-2">
-                                    <span><i class="fa-solid fa-phone text-slate-400 mr-1"></i>${u.mobile || 'NA'}</span>
-                                    <span class="text-slate-300">|</span>
-                                    <span><i class="fa-solid fa-map-pin text-slate-400 mr-1"></i>${u.location || 'NA'}</span>
+                                    <span><i class="fa-solid fa-phone text-slate-400 mr-1"></i>${u.mobile || 'NA'}</span><span class="text-slate-300">|</span><span><i class="fa-solid fa-map-pin text-slate-400 mr-1"></i>${u.location || 'NA'}</span>
                                 </div>
                             </div>
                             <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded ${roleBadgeColor} whitespace-nowrap ml-2">${u.role||'new'}</span>
@@ -436,22 +439,12 @@
             });
         }
 
-        window.openSubDSAModal = (id) => {
-            targetSubDSAId = id;
-            document.getElementById('subDSAModal').classList.remove('hidden');
-        }
-        
-        window.closeSubDSAModal = () => {
-            targetSubDSAId = null;
-            document.getElementById('subDSAModal').classList.add('hidden');
-        }
+        window.openSubDSAModal = (id) => { targetSubDSAId = id; document.getElementById('subDSAModal').classList.remove('hidden'); }
+        window.closeSubDSAModal = () => { targetSubDSAId = null; document.getElementById('subDSAModal').classList.add('hidden'); }
 
         window.confirmSubDSALink = async () => {
             const parentEmail = document.getElementById('modalDSASelect').value;
-            if(!parentEmail) {
-                alert('Please select a DSA first');
-                return;
-            }
+            if(!parentEmail) return alert('Please select a DSA first');
             if(targetSubDSAId) {
                 await updateDoc(doc(db,'users',targetSubDSAId), {role:'subdsa', parentEmail:parentEmail});
                 alert('User linked to DSA successfully');
@@ -459,32 +452,15 @@
             }
         }
 
-        window.deleteUser = async(id) => {
-            if(currentUser.role !== 'admin') return;
-            if(!confirm('Delete this user?')) return;
-            await deleteDoc(doc(db,'users',id));
-        };
-
-        window.toggleBlock = async(id, state) => {
-            if(currentUser.role !== 'admin') return;
-            const blocked = (state !== 'yes');
-            await updateDoc(doc(db,'users',id), {blocked});
-        };
-
+        window.deleteUser = async(id) => { if(currentUser.role === 'admin' && confirm('Delete this user?')) await deleteDoc(doc(db,'users',id)); };
+        window.toggleBlock = async(id, state) => { if(currentUser.role === 'admin') await updateDoc(doc(db,'users',id), {blocked: (state !== 'yes')}); };
         window.setRole = async(id, role) => updateDoc(doc(db,'users',id), {role});
-        window.deleteLead = async(id) => {
-            if(currentUser.role !== 'admin') return;
-            if(!confirm('Delete this lead?')) return;
-            await deleteDoc(doc(db,'leads',id));
-        };
+        window.deleteLead = async(id) => { if(currentUser.role === 'admin' && confirm('Delete this lead?')) await deleteDoc(doc(db,'leads',id)); };
 
         window.createSubDSA = async () => {
             const email = document.getElementById('subEmail').value.trim();
             const mobile = document.getElementById('subMobile').value.trim();
-            
-            // 10-DIGIT VALIDATION FOR DSA ADDING SUBDSA
             if(mobile.length !== 10) return alert('Sub-DSA Mobile number must be 10 digits!');
-
             const snap = await getDocs(query(collection(db,'users'), where('email','==',email)));
             if(snap.empty) return alert('User not found');
             const docSnap = snap.docs[0];
@@ -498,14 +474,19 @@
             onSnapshot(q, snap => {
                 const subList = document.getElementById('subList');
                 subList.innerHTML = '';
+                window.mySubDSAEmails = []; // Reset emails array
+                
                 snap.forEach(d => {
                     const u = d.data();
+                    window.mySubDSAEmails.push(u.email); // Store email for lead filtering
                     subList.innerHTML += `
                     <div class='bg-blue-50/50 p-3 rounded-lg border border-blue-100 flex items-center gap-3'>
                         <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-xs"><i class="fa-solid fa-user"></i></div>
                         <div><div class="font-bold text-sm text-slate-700">${u.name}</div><div class="text-xs text-slate-500">${u.mobile}</div></div>
                     </div>`;
                 });
+                
+                renderLeads(); // Re-render leads now that we have updated SubDSA list
             });
         }
     </script>
