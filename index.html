@@ -20,7 +20,7 @@
 
     <div class="w-full max-w-md h-full sm:h-[90vh] sm:rounded-3xl bg-white shadow-2xl relative flex flex-col overflow-hidden">
         
-        <div class="bg-indigo-600 text-white p-5 pt-8 shadow-md z-10">
+        <div class="bg-indigo-600 text-white p-5 pt-8 shadow-md z-10 flex-shrink-0">
             <div class="flex justify-between items-center">
                 <div>
                     <h2 class="font-bold text-xl tracking-tight"><i class="fa-solid fa-fox mr-2"></i>Wisefox</h2>
@@ -56,7 +56,7 @@
                         <button onclick="toggleAuthMode()" class="text-indigo-600 font-bold ml-1 hover:underline">Sign Up</button>
                     </div>
 
-                    <div class="flex items-center my-5">
+                    <div class="flex items-center my-4">
                         <div class="flex-grow border-t border-slate-200"></div>
                         <span class="px-3 text-slate-400 text-xs font-medium">OR</span>
                         <div class="flex-grow border-t border-slate-200"></div>
@@ -66,6 +66,77 @@
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="G">
                         Continue with Google
                     </button>
+
+                    <button onclick="openCalculator()" class="w-full bg-slate-800 text-white font-medium py-3 rounded-xl shadow-sm hover:bg-slate-900 transition flex items-center justify-center gap-3 mt-4">
+                        <i class="fa-solid fa-calculator"></i> Financial Calculator
+                    </button>
+                </div>
+            </div>
+
+            <div id="calculatorPage" class="hidden h-full flex-col fade-in pb-10">
+                <div class="flex items-center mb-6 border-b border-slate-200 pb-3">
+                    <button onclick="closeCalculator()" class="text-slate-500 hover:text-indigo-600 transition mr-3">
+                        <i class="fa-solid fa-arrow-left text-xl"></i>
+                    </button>
+                    <h3 class="text-xl font-bold text-slate-800">Advanced Calculator</h3>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase">What do you want to calculate?</label>
+                        <select id="calcMode" onchange="updateCalcUI()" class="w-full border border-slate-300 rounded-lg p-3 mt-1 bg-white focus:outline-none focus:border-indigo-500 font-medium text-indigo-700">
+                            <option value="emi">Calculate EMI</option>
+                            <option value="amount">Calculate Loan Amount</option>
+                            <option value="roi">Calculate ROI (%)</option>
+                            <option value="term">Calculate Tenure (Term)</option>
+                        </select>
+                    </div>
+
+                    <div id="calcInputAmount" class="relative">
+                        <label class="text-xs font-semibold text-slate-600">Loan Amount (₹)</label>
+                        <input id="cAmount" type="number" placeholder="e.g. 500000" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-3 mt-1 focus:outline-none" />
+                    </div>
+
+                    <div id="calcInputEMI" class="relative hidden">
+                        <label class="text-xs font-semibold text-slate-600">Monthly EMI (₹)</label>
+                        <input id="cEmi" type="number" placeholder="e.g. 15000" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-3 mt-1 focus:outline-none" />
+                    </div>
+
+                    <div id="calcInputROI" class="relative">
+                        <label class="text-xs font-semibold text-slate-600">Rate of Interest (% p.a.)</label>
+                        <input id="cRoi" type="number" step="0.1" placeholder="e.g. 8.5" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-3 mt-1 focus:outline-none" />
+                    </div>
+
+                    <div id="calcInputTerm" class="relative">
+                        <label class="text-xs font-semibold text-slate-600">Tenure (in Months)</label>
+                        <input id="cTerm" type="number" placeholder="e.g. 60 (for 5 years)" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-3 mt-1 focus:outline-none" />
+                    </div>
+
+                    <button onclick="performCalculation()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg mt-4 transition">
+                        Calculate Now
+                    </button>
+
+                    <div id="calcResultBox" class="hidden mt-6 bg-slate-800 text-white p-5 rounded-2xl shadow-xl">
+                        <div class="text-center mb-4 border-b border-slate-600 pb-4">
+                            <p class="text-sm text-emerald-400 font-semibold uppercase tracking-wider mb-1" id="resMainTitle">Your Monthly EMI</p>
+                            <h2 class="text-3xl font-bold" id="resMainValue">₹0</h2>
+                        </div>
+                        
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Principal Amount</span>
+                                <span class="font-semibold" id="resPrincipal">₹0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Total Interest Paid</span>
+                                <span class="font-semibold text-red-400" id="resInterest">₹0</span>
+                            </div>
+                            <div class="flex justify-between border-t border-slate-600 pt-3">
+                                <span class="text-slate-300 font-bold">Total Payment (Till Maturity)</span>
+                                <span class="font-bold text-emerald-400" id="resTotal">₹0</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -97,7 +168,6 @@
                 </div>
 
                 <div id="usersPage" class="hidden space-y-6">
-                    
                     <div id="dsaPanel" class="hidden bg-white p-4 rounded-xl shadow-sm border border-slate-100">
                         <h3 class="font-bold text-slate-700 mb-3 text-sm uppercase tracking-wide">Add Sub-DSA</h3>
                         <div class="space-y-3">
@@ -177,9 +247,9 @@
         </div>
     </div>
 
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // Added Email Auth functions
         import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -198,7 +268,127 @@
         window.mySubDSAEmails = [];
         window.latestLeadsSnap = null;
 
-        // --- NEW: EMAIL / PASSWORD LOGIC ---
+        // --- CALCULATOR LOGIC START ---
+        window.openCalculator = () => {
+            document.getElementById('authBox').classList.add('hidden');
+            document.getElementById('calculatorPage').classList.remove('hidden');
+            document.getElementById('calculatorPage').classList.add('flex');
+            document.getElementById('calcResultBox').classList.add('hidden');
+        };
+
+        window.closeCalculator = () => {
+            document.getElementById('calculatorPage').classList.add('hidden');
+            document.getElementById('calculatorPage').classList.remove('flex');
+            document.getElementById('authBox').classList.remove('hidden');
+        };
+
+        window.updateCalcUI = () => {
+            const mode = document.getElementById('calcMode').value;
+            document.getElementById('calcInputAmount').classList.remove('hidden');
+            document.getElementById('calcInputEMI').classList.remove('hidden');
+            document.getElementById('calcInputROI').classList.remove('hidden');
+            document.getElementById('calcInputTerm').classList.remove('hidden');
+            document.getElementById('calcResultBox').classList.add('hidden');
+
+            // Hide the input that we are trying to calculate
+            if (mode === 'emi') document.getElementById('calcInputEMI').classList.add('hidden');
+            if (mode === 'amount') document.getElementById('calcInputAmount').classList.add('hidden');
+            if (mode === 'roi') document.getElementById('calcInputROI').classList.add('hidden');
+            if (mode === 'term') document.getElementById('calcInputTerm').classList.add('hidden');
+            
+            // Clear fields
+            document.getElementById('cAmount').value = '';
+            document.getElementById('cEmi').value = '';
+            document.getElementById('cRoi').value = '';
+            document.getElementById('cTerm').value = '';
+        };
+
+        function formatCurrency(num) {
+            return "₹" + Math.round(num).toLocaleString('en-IN');
+        }
+
+        window.performCalculation = () => {
+            const mode = document.getElementById('calcMode').value;
+            const pInput = parseFloat(document.getElementById('cAmount').value);
+            const eInput = parseFloat(document.getElementById('cEmi').value);
+            const rInput = parseFloat(document.getElementById('cRoi').value);
+            const nInput = parseFloat(document.getElementById('cTerm').value);
+
+            let p = pInput || 0, e = eInput || 0, r = rInput || 0, n = nInput || 0;
+            let resultMain = 0, totalPayment = 0, totalInterest = 0, finalP = 0;
+            
+            try {
+                if (mode === 'emi') {
+                    if(!p || !r || !n) return alert("Please enter Loan Amount, ROI and Tenure.");
+                    let monthlyRate = r / 12 / 100;
+                    e = (p * monthlyRate * Math.pow(1 + monthlyRate, n)) / (Math.pow(1 + monthlyRate, n) - 1);
+                    resultMain = e;
+                    finalP = p;
+                    document.getElementById('resMainTitle').innerText = "Monthly EMI";
+                    document.getElementById('resMainValue').innerText = formatCurrency(resultMain);
+
+                } else if (mode === 'amount') {
+                    if(!e || !r || !n) return alert("Please enter EMI, ROI and Tenure.");
+                    let monthlyRate = r / 12 / 100;
+                    p = (e * (Math.pow(1 + monthlyRate, n) - 1)) / (monthlyRate * Math.pow(1 + monthlyRate, n));
+                    resultMain = p;
+                    finalP = p;
+                    document.getElementById('resMainTitle').innerText = "Max Loan Eligibility";
+                    document.getElementById('resMainValue').innerText = formatCurrency(resultMain);
+
+                } else if (mode === 'term') {
+                    if(!p || !e || !r) return alert("Please enter Loan Amount, EMI and ROI.");
+                    let monthlyRate = r / 12 / 100;
+                    if (e <= p * monthlyRate) return alert("EMI is too low to cover the monthly interest!");
+                    n = Math.log(e / (e - p * monthlyRate)) / Math.log(1 + monthlyRate);
+                    resultMain = Math.ceil(n);
+                    finalP = p;
+                    e = eInput; // Use actual inputted EMI for total calculations
+                    document.getElementById('resMainTitle').innerText = "Total Tenure";
+                    document.getElementById('resMainValue').innerText = resultMain + " Months";
+                    n = resultMain; // use rounded months for totals
+
+                } else if (mode === 'roi') {
+                    if(!p || !e || !n) return alert("Please enter Loan Amount, EMI and Tenure.");
+                    if(e * n <= p) return alert("Total payment (EMI * Term) must be greater than Loan Amount.");
+                    
+                    // Binary search to find ROI
+                    let low = 0.000001, high = 100.0, mid = 0;
+                    while (high - low > 0.00001) {
+                        mid = (low + high) / 2;
+                        let mRate = mid / 12 / 100;
+                        let calcE = (p * mRate * Math.pow(1 + mRate, n)) / (Math.pow(1 + mRate, n) - 1);
+                        if (calcE > e) high = mid; else low = mid;
+                    }
+                    resultMain = mid;
+                    finalP = p;
+                    document.getElementById('resMainTitle').innerText = "Rate of Interest";
+                    document.getElementById('resMainValue').innerText = resultMain.toFixed(2) + "% p.a.";
+                }
+
+                // Summary Calculations
+                if (mode !== 'roi' && mode !== 'term') {
+                    totalPayment = e * n;
+                    totalInterest = totalPayment - finalP;
+                } else {
+                    totalPayment = e * n;
+                    totalInterest = totalPayment - finalP;
+                }
+
+                document.getElementById('resPrincipal').innerText = formatCurrency(finalP);
+                document.getElementById('resInterest').innerText = formatCurrency(totalInterest > 0 ? totalInterest : 0);
+                document.getElementById('resTotal').innerText = formatCurrency(totalPayment > 0 ? totalPayment : 0);
+                
+                document.getElementById('calcResultBox').classList.remove('hidden');
+
+            } catch (err) {
+                alert("Calculation Error. Please check your inputs.");
+            }
+        };
+        // --- CALCULATOR LOGIC END ---
+
+
+        // --- AUTH LOGIC START ---
         let isLoginMode = true;
 
         window.toggleAuthMode = () => {
@@ -213,56 +403,39 @@
         window.handleEmailAuth = async () => {
             const email = document.getElementById('emailInput').value.trim();
             const password = document.getElementById('passwordInput').value.trim();
-
             if(!email || !password) return alert("Please enter both Email and Password!");
             if(password.length < 6) return alert("Password must be at least 6 characters long!");
-
             try {
-                let result;
-                if(isLoginMode) {
-                    result = await signInWithEmailAndPassword(auth, email, password);
-                } else {
-                    result = await createUserWithEmailAndPassword(auth, email, password);
-                }
+                let result = isLoginMode 
+                    ? await signInWithEmailAndPassword(auth, email, password)
+                    : await createUserWithEmailAndPassword(auth, email, password);
                 await handleLogin(result.user);
             } catch (error) {
-                console.error("Auth Error:", error);
                 if (error.code === 'auth/email-already-in-use') alert("This email is already registered. Please Login instead.");
                 else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') alert("Incorrect Email or Password!");
                 else alert("Authentication Failed: " + error.message);
             }
         };
 
-        // --- GOOGLE LOGIN ---
         window.googleLogin = async () => {
             try {
                 const result = await signInWithPopup(auth, provider);
                 await handleLogin(result.user);
             } catch (error) { 
-                console.error("Google Login Error:", error);
-                try {
-                    await signInWithRedirect(auth, provider); 
-                } catch (err) {
-                    alert("Login failed. Please try Email/Password login.");
-                }
+                try { await signInWithRedirect(auth, provider); } 
+                catch (err) { alert("Login failed. Please try Email/Password login."); }
             }
         };
 
         async function handleLogin(user){
             const snap = await getDocs(query(collection(db, "users"), where("email","==",user.email)));
-            
             if(snap.empty){
-                // Hide Auth, Show Profile Completion
                 document.getElementById('authBox').classList.add('hidden');
                 document.getElementById('signupBox').classList.remove('hidden');
-                
-                // Pre-fill name if it came from Google
                 if(user.displayName) document.getElementById('profileName').value = user.displayName;
-                
                 window.tempUser = user; 
                 return;
             }
-            
             currentUser = snap.docs[0].data();
             currentUser.id = snap.docs[0].id; 
             startApp();
@@ -292,7 +465,6 @@
                 });
                 currentUser = {name: nameVal, email: user.email, role, mobile: mobileVal, location: locationVal};
             }
-
             document.getElementById('signupBox').classList.add('hidden');
             startApp();
         };
@@ -301,9 +473,7 @@
             document.getElementById('authBox').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
             document.getElementById('logoutBtn').classList.remove('hidden');
-            
             document.getElementById('userRoleDisplay').innerText = `Role: ${currentUser.role.toUpperCase()}`;
-
             loadLeads();
             
             if(currentUser.role === 'admin'){
@@ -319,6 +489,7 @@
 
         window.logout = () => signOut(auth).then(() => location.reload());
 
+        // --- UI & TAB SWITCHING ---
         window.showPage = (p) => {
             document.getElementById('leadsPage').classList.toggle('hidden', p !== 'leads');
             document.getElementById('usersPage').classList.toggle('hidden', p !== 'users');
@@ -350,20 +521,14 @@
             
             window.latestLeadsSnap.forEach(d => {
                 const l = d.data();
-                
                 let canView = false;
-                if (currentUser.role === 'admin') {
-                    canView = true;
-                } else if (l.agentEmail === currentUser.email) {
-                    canView = true;
-                } else if (currentUser.role === 'dsa' && window.mySubDSAEmails.includes(l.agentEmail)) {
-                    canView = true;
-                }
+                if (currentUser.role === 'admin') canView = true;
+                else if (l.agentEmail === currentUser.email) canView = true;
+                else if (currentUser.role === 'dsa' && window.mySubDSAEmails.includes(l.agentEmail)) canView = true;
                 
                 if (!canView) return;
 
                 const statusClass = getStatusColor(l.status||'Pending');
-                
                 let btn = '';
                 if(currentUser.role === 'dsa' || currentUser.role === 'admin'){
                     btn = `<button onclick="openStatusModal('${d.id}','${l.status||'Pending'}')" class='text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded'>Edit Status</button>`;
@@ -400,10 +565,7 @@
         }
 
         function loadLeads(){
-            onSnapshot(collection(db,'leads'), snap => {
-                window.latestLeadsSnap = snap;
-                renderLeads();
-            });
+            onSnapshot(collection(db,'leads'), snap => { window.latestLeadsSnap = snap; renderLeads(); });
         }
 
         window.saveLead = async () => {
@@ -423,42 +585,28 @@
                 name, phone, address, type, amount: Number(amount)||0, status: 'Pending', 
                 agentEmail: currentUser.email, agentName: currentUser.name || 'Unknown', created: new Date()
             });
-            
             closeModal();
-            document.getElementById('leadName').value='';
-            document.getElementById('leadPhone').value='';
-            document.getElementById('leadAddress').value='';
-            document.getElementById('leadAmount').value='';
+            document.getElementById('leadName').value=''; document.getElementById('leadPhone').value='';
+            document.getElementById('leadAddress').value=''; document.getElementById('leadAmount').value='';
         };
 
         window.openModal = () => document.getElementById('modal').classList.remove('hidden');
         window.closeModal = () => document.getElementById('modal').classList.add('hidden');
 
         let currentLeadId = null;
-        window.openStatusModal = (id, status) => {
-            currentLeadId = id;
-            document.getElementById('newStatus').value = status || 'Pending';
-            document.getElementById('statusModal').classList.remove('hidden');
-        };
+        window.openStatusModal = (id, status) => { currentLeadId = id; document.getElementById('newStatus').value = status || 'Pending'; document.getElementById('statusModal').classList.remove('hidden'); };
         window.closeStatusModal = () => document.getElementById('statusModal').classList.add('hidden');
-        window.saveStatus = async () => {
-            await updateDoc(doc(db,'leads',currentLeadId), {status: document.getElementById('newStatus').value});
-            closeStatusModal();
-        };
+        window.saveStatus = async () => { await updateDoc(doc(db,'leads',currentLeadId), {status: document.getElementById('newStatus').value}); closeStatusModal(); };
 
-        // ADMIN USERS
+        // --- ADMIN USERS ---
         let targetSubDSAId = null; 
-
         function loadNewUsers(){
             const dsaQuery = query(collection(db,'users'), where('role','==','dsa'));
             onSnapshot(dsaQuery, snap => {
                 const sel = document.getElementById('modalDSASelect');
                 if(!sel) return;
                 sel.innerHTML = '<option value="">-- Choose DSA --</option>';
-                snap.forEach(d => {
-                    const u = d.data();
-                    sel.innerHTML += `<option value="${u.email}">${u.name||u.email}</option>`;
-                });
+                snap.forEach(d => { const u = d.data(); sel.innerHTML += `<option value="${u.email}">${u.name||u.email}</option>`; });
             });
 
             onSnapshot(collection(db,'users'), snap => {
@@ -541,7 +689,6 @@
                 const subList = document.getElementById('subList');
                 subList.innerHTML = '';
                 window.mySubDSAEmails = []; 
-                
                 snap.forEach(d => {
                     const u = d.data();
                     window.mySubDSAEmails.push(u.email); 
@@ -551,7 +698,6 @@
                         <div><div class="font-bold text-sm text-slate-700">${u.name}</div><div class="text-xs text-slate-500">${u.mobile}</div></div>
                     </div>`;
                 });
-                
                 renderLeads(); 
             });
         }
