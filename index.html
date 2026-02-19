@@ -10,11 +10,8 @@
 
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .input-field { transition: all 0.3s ease; }
         .input-field:focus { border-color: #4F46E5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
-        /* Smooth fade in */
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -43,7 +40,6 @@
                         <i class="fa-solid fa-user-lock"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-slate-800">Welcome Back</h3>
-                    <p class="text-slate-500 text-sm">Sign in to access your leads</p>
                 </div>
                 <button onclick="googleLogin()" class="w-full max-w-xs bg-white border border-slate-300 text-slate-700 font-medium py-3 rounded-xl shadow-sm hover:bg-slate-50 hover:shadow-md transition flex items-center justify-center gap-3">
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="G">
@@ -53,25 +49,11 @@
 
             <div id="signupBox" class="hidden h-full flex flex-col justify-center fade-in">
                 <h3 class="text-xl font-bold mb-1 text-slate-800">Complete Profile</h3>
-                <p class="text-slate-500 text-sm mb-6">Just a few more details to get started.</p>
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase">Mobile Number</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-phone absolute left-3 top-3.5 text-slate-400"></i>
-                            <input id="mobile" placeholder="9876543210" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-3 pl-10 focus:outline-none" />
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1 uppercase">Location / City</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-map-pin absolute left-3 top-3.5 text-slate-400"></i>
-                            <input id="location" placeholder="e.g. Mumbai" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-3 pl-10 focus:outline-none" />
-                        </div>
-                    </div>
-                    <button onclick="completeSignup()" class="w-full bg-indigo-600 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition mt-4">
-                        Create Account <i class="fa-solid fa-arrow-right ml-2"></i>
+                <div class="space-y-4 mt-4">
+                    <input id="mobile" placeholder="Mobile Number" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-3 focus:outline-none" />
+                    <input id="location" placeholder="Location / City" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-3 focus:outline-none" />
+                    <button onclick="completeSignup()" class="w-full bg-indigo-600 text-white font-semibold py-3.5 rounded-xl shadow-lg mt-4">
+                        Create Account
                     </button>
                 </div>
             </div>
@@ -79,38 +61,25 @@
             <div id="app" class="hidden pb-20 fade-in">
                 
                 <div class="bg-slate-200/50 p-1 rounded-xl flex mb-6 sticky top-0 backdrop-blur-md z-10 border border-slate-200">
-                    <button onclick="showPage('leads')" id="tab-leads" class="flex-1 py-2 rounded-lg text-sm font-medium transition-all bg-white text-indigo-600 shadow-sm">
-                        <i class="fa-solid fa-list-check mr-1"></i> Leads
-                    </button>
-                    <button onclick="showPage('users')" id="tab-users" class="flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all">
-                        <i class="fa-solid fa-users mr-1"></i> Team
-                    </button>
+                    <button onclick="showPage('leads')" id="tab-leads" class="flex-1 py-2 rounded-lg text-sm font-medium transition-all bg-white text-indigo-600 shadow-sm">Leads</button>
+                    <button onclick="showPage('users')" id="tab-users" class="flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all">Team</button>
                 </div>
 
                 <div id="leadsPage">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-slate-700">My Leads</h3>
-                    </div>
-
-                    <button onclick="openModal()" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl shadow-lg shadow-indigo-200 hover:shadow-xl transition mb-5 flex items-center justify-center font-medium">
+                    <button onclick="openModal()" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl shadow-lg mb-5 font-medium">
                         <i class="fa-solid fa-plus-circle mr-2"></i> Add New Lead
                     </button>
-
                     <div id="list" class="space-y-3 pb-10"></div>
                 </div>
 
                 <div id="usersPage" class="hidden space-y-6">
                     
                     <div id="dsaPanel" class="hidden bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                        <h3 class="font-bold text-slate-700 mb-3 text-sm uppercase tracking-wide border-b pb-2">
-                            <i class="fa-solid fa-user-plus text-indigo-500 mr-1"></i> Add Sub-DSA
-                        </h3>
+                        <h3 class="font-bold text-slate-700 mb-3 text-sm uppercase tracking-wide">Add Sub-DSA</h3>
                         <div class="space-y-3">
-                            <input id="subEmail" placeholder="User Email Address" class="input-field w-full border border-slate-200 rounded-lg p-2.5 text-sm" />
+                            <input id="subEmail" placeholder="User Email" class="input-field w-full border border-slate-200 rounded-lg p-2.5 text-sm" />
                             <input id="subMobile" placeholder="User Mobile" class="input-field w-full border border-slate-200 rounded-lg p-2.5 text-sm" />
-                            <button onclick="createSubDSA()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-medium transition">
-                                Link Sub-DSA
-                            </button>
+                            <button onclick="createSubDSA()" class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium">Link Sub-DSA</button>
                         </div>
                     </div>
 
@@ -120,11 +89,6 @@
                     </div>
 
                     <div id="adminPanel" class="hidden">
-                        <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 mb-4">
-                            <h3 class="font-bold text-amber-800 mb-2 text-xs uppercase">Admin Control: Link SubDSA</h3>
-                            <select id="parentDSASelect" class="w-full border border-amber-200 bg-white rounded p-2 text-sm mb-0 focus:outline-none"></select>
-                        </div>
-                        
                         <h3 class="font-bold text-slate-700 mb-3">All Users Directory</h3>
                         <div id="userList" class="space-y-3"></div>
                     </div>
@@ -133,67 +97,61 @@
         </div>
     </div>
 
-    <div id="modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-all duration-300">
-        <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-slide-up">
-            <div class="flex justify-between items-center mb-5">
-                <h3 class="font-bold text-lg text-slate-800">New Loan Lead</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            
+    <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+            <h3 class="font-bold text-lg mb-4">New Lead</h3>
             <div class="space-y-3">
-                <div class="relative">
-                    <i class="fa-regular fa-user absolute left-3 top-3 text-slate-400"></i>
-                    <input id="leadName" placeholder="Client Name" class="w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 pl-9 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" />
+                <input id="leadName" placeholder="Client Name" class="w-full border p-2.5 rounded-lg bg-slate-50" />
+                <input id="leadPhone" placeholder="Mobile" class="w-full border p-2.5 rounded-lg bg-slate-50" />
+                <select id="type" class="w-full border p-2.5 rounded-lg bg-slate-50">
+                    <option>Personal Loan</option>
+                    <option>Home Loan</option>
+                    <option>Business Loan</option>
+                    <option>Auto Loan</option>
+                </select>
+                <input id="leadAmount" placeholder="Amount" type="number" class="w-full border p-2.5 rounded-lg bg-slate-50" />
+                <div class="flex gap-2 mt-4">
+                    <button onclick="closeModal()" class="flex-1 py-2 text-slate-500">Cancel</button>
+                    <button onclick="saveLead()" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg shadow">Save</button>
                 </div>
-                
-                <div class="relative">
-                    <i class="fa-solid fa-mobile-screen absolute left-3 top-3 text-slate-400"></i>
-                    <input id="leadPhone" placeholder="Mobile Number" type="tel" class="w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 pl-9 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" />
-                </div>
-                
-                <div class="relative">
-                    <i class="fa-solid fa-layer-group absolute left-3 top-3 text-slate-400"></i>
-                    <select id="type" class="w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 pl-9 focus:ring-2 focus:ring-indigo-500 focus:outline-none appearance-none">
-                        <option>Personal Loan</option>
-                        <option>Home Loan</option>
-                        <option>Business Loan</option>
-                        <option>Auto Loan</option>
-                    </select>
-                    <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-slate-400 text-xs pointer-events-none"></i>
-                </div>
-                
-                <div class="relative">
-                    <i class="fa-solid fa-indian-rupee-sign absolute left-3 top-3 text-slate-400"></i>
-                    <input id="leadAmount" placeholder="Amount Required" type="number" class="w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 pl-9 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" />
-                </div>
-
-                <button onclick="saveLead()" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl shadow-lg hover:bg-indigo-700 transition mt-2">
-                    Submit Lead
-                </button>
             </div>
         </div>
     </div>
 
     <div id="statusModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl scale-100 transition-transform">
-            <h3 class="font-bold text-lg mb-1 text-slate-800">Update Status</h3>
-            <p class="text-xs text-slate-500 mb-4">Change the current stage of this lead.</p>
+        <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl">
+            <h3 class="font-bold text-lg mb-4">Update Status</h3>
+            <select id="newStatus" class="w-full border p-3 rounded-lg mb-4 bg-slate-50">
+                <option>Pending</option>
+                <option>Contacted</option>
+                <option>In Process</option>
+                <option>Sanctioned</option>
+                <option>Disbursed</option>
+                <option>Rejected</option>
+            </select>
+            <div class="flex gap-2">
+                <button onclick="closeStatusModal()" class="flex-1 text-slate-500">Cancel</button>
+                <button onclick="saveStatus()" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="subDSAModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl">
+            <h3 class="font-bold text-lg mb-2 text-slate-800">Assign Parent DSA</h3>
+            <p class="text-xs text-slate-500 mb-4">Select the DSA who will manage this Sub-DSA.</p>
             
+            <label class="text-xs font-bold text-slate-600 uppercase">Select DSA</label>
             <div class="relative mb-4">
-                <select id="newStatus" class="w-full border border-slate-200 bg-slate-50 rounded-lg p-3 focus:outline-none font-medium text-slate-700">
-                    <option class="text-yellow-600">Pending</option>
-                    <option class="text-blue-600">Contacted</option>
-                    <option class="text-indigo-600">In Process</option>
-                    <option class="text-green-600">Sanctioned</option>
-                    <option class="text-emerald-700">Disbursed</option>
-                    <option class="text-red-600">Rejected</option>
+                <select id="modalDSASelect" class="w-full border border-slate-200 bg-slate-50 rounded-lg p-3 focus:outline-none font-medium text-slate-700">
+                    <option value="">-- Choose DSA --</option>
                 </select>
                 <i class="fa-solid fa-chevron-down absolute right-3 top-4 text-slate-400 text-xs pointer-events-none"></i>
             </div>
 
             <div class="flex gap-2">
-                <button onclick="closeStatusModal()" class="flex-1 text-slate-500 py-2 hover:bg-slate-50 rounded-lg transition">Cancel</button>
-                <button onclick="saveStatus()" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg shadow hover:bg-indigo-700 transition">Update</button>
+                <button onclick="closeSubDSAModal()" class="flex-1 text-slate-500 py-2 hover:bg-slate-50 rounded-lg transition">Cancel</button>
+                <button onclick="confirmSubDSALink()" class="flex-1 bg-blue-600 text-white py-2 rounded-lg shadow hover:bg-blue-700 transition">Link Now</button>
             </div>
         </div>
     </div>
@@ -216,15 +174,11 @@
 
         let currentUser = null;
 
-        // LOGIN
         window.googleLogin = async () => {
             try {
                 const result = await signInWithPopup(auth, provider);
                 handleLogin(result.user);
-            } catch (error) {
-                console.log(error);
-                await signInWithRedirect(auth, provider);
-            }
+            } catch { await signInWithRedirect(auth, provider); }
         };
 
         async function handleLogin(user){
@@ -238,25 +192,15 @@
             startApp();
         }
 
-        // SIGNUP
         window.completeSignup = async () => {
             const user = window.tempUser;
             const mobileVal = (document.getElementById('mobile').value||'').trim();
             const locationVal = (document.getElementById('location').value||'').trim();
-            
-            if(!mobileVal || !locationVal) return alert('Please enter full details');
-            
+            if(!mobileVal || !locationVal) return alert('Enter full details');
             const role = user.email === 'nil000nilesh@gmail.com' ? 'admin' : 'new';
-            
             await setDoc(doc(db,'users',user.uid), {
-                name: user.displayName,
-                email: user.email,
-                mobile: mobileVal,
-                location: locationVal,
-                role,
-                parentEmail: null
+                name: user.displayName, email: user.email, mobile: mobileVal, location: locationVal, role, parentEmail: null
             });
-            
             currentUser = {name: user.displayName, email: user.email, role};
             document.getElementById('signupBox').classList.add('hidden');
             startApp();
@@ -265,15 +209,12 @@
         function startApp(){
             document.getElementById('authBox').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
-            document.getElementById('logoutBtn').classList.remove('hidden'); // Show logout btn in header
-
+            document.getElementById('logoutBtn').classList.remove('hidden');
             loadLeads();
-
             if(currentUser.role === 'admin'){
                 document.getElementById('adminPanel').classList.remove('hidden');
                 loadNewUsers();
             }
-
             if(currentUser.role === 'dsa'){
                 document.getElementById('dsaPanel').classList.remove('hidden');
                 document.getElementById('mySubList').classList.remove('hidden');
@@ -283,25 +224,20 @@
 
         window.logout = () => signOut(auth).then(() => location.reload());
 
-        // PAGE SWITCH UI LOGIC
         window.showPage = (p) => {
             document.getElementById('leadsPage').classList.toggle('hidden', p !== 'leads');
             document.getElementById('usersPage').classList.toggle('hidden', p !== 'users');
-            
-            // Tab styling update
             const tLead = document.getElementById('tab-leads');
             const tUser = document.getElementById('tab-users');
-            
             if(p === 'leads'){
-                tLead.className = "flex-1 py-2 rounded-lg text-sm font-medium transition-all bg-white text-indigo-600 shadow-sm";
-                tUser.className = "flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all";
+                tLead.className = "flex-1 py-2 rounded-lg text-sm font-medium bg-white text-indigo-600 shadow-sm";
+                tUser.className = "flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600";
             } else {
-                tUser.className = "flex-1 py-2 rounded-lg text-sm font-medium transition-all bg-white text-indigo-600 shadow-sm";
-                tLead.className = "flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600 transition-all";
+                tUser.className = "flex-1 py-2 rounded-lg text-sm font-medium bg-white text-indigo-600 shadow-sm";
+                tLead.className = "flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-indigo-600";
             }
         };
 
-        // HELPER FOR STATUS COLORS
         function getStatusColor(status) {
             switch(status) {
                 case 'Disbursed': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
@@ -312,117 +248,59 @@
             }
         }
 
-        // HELPER FOR ICONS BASED ON LOAN TYPE
-        function getLoanIcon(type) {
-            if(type.includes('Home')) return 'fa-house-chimney';
-            if(type.includes('Car') || type.includes('Auto')) return 'fa-car';
-            if(type.includes('Business')) return 'fa-briefcase';
-            return 'fa-sack-dollar';
-        }
-
-        // LOAD LEADS (UI RENDERING UPDATED)
         function loadLeads(){
             const list = document.getElementById('list');
             onSnapshot(collection(db,'leads'), snap => {
                 list.innerHTML = '';
-                if(snap.empty) {
-                    list.innerHTML = `<div class="text-center text-slate-400 mt-10"><i class="fa-regular fa-folder-open text-4xl mb-2"></i><br>No leads found</div>`;
-                }
                 snap.forEach(d => {
                     const l = d.data();
                     if(currentUser.role === 'subdsa' && l.agentEmail !== currentUser.email) return;
-
                     const statusClass = getStatusColor(l.status||'Pending');
-                    const iconClass = getLoanIcon(l.type || '');
-
+                    
                     let btn = '';
                     if(currentUser.role === 'dsa' || currentUser.role === 'admin'){
-                        btn = `<button onclick="openStatusModal('${d.id}','${l.status||'Pending'}')" class='text-xs font-semibold text-indigo-600 hover:bg-indigo-50 px-2 py-1 rounded transition'>Edit Status</button>`;
+                        btn = `<button onclick="openStatusModal('${d.id}','${l.status||'Pending'}')" class='text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded'>Edit Status</button>`;
                     }
-
                     let adminBtns = '';
                     if(currentUser.role === 'admin'){
-                        adminBtns = `<button onclick="deleteLead('${d.id}')" class='text-xs text-red-500 hover:bg-red-50 px-2 py-1 rounded ml-2'><i class="fa-solid fa-trash"></i></button>`;
+                        adminBtns = `<button onclick="deleteLead('${d.id}')" class='text-xs text-red-500 bg-red-50 px-2 py-1 rounded ml-2'><i class="fa-solid fa-trash"></i></button>`;
                     }
 
-                    // UPDATED CARD HTML
                     list.innerHTML += `
-                    <div class='bg-white p-4 rounded-xl shadow-sm border border-slate-100 relative hover:shadow-md transition-all fade-in'>
+                    <div class='bg-white p-4 rounded-xl shadow-sm border border-slate-100 relative mb-3'>
                         <div class="flex justify-between items-start mb-2">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                                    <i class="fa-solid ${iconClass}"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-slate-800 leading-tight">${l.name}</h4>
-                                    <span class="text-xs text-slate-500">${l.type}</span>
-                                </div>
-                            </div>
+                            <div><h4 class="font-bold text-slate-800">${l.name}</h4><span class="text-xs text-slate-500">${l.type}</span></div>
                             <span class="text-xs px-2 py-1 rounded-full font-medium border ${statusClass}">${l.status||'Pending'}</span>
                         </div>
-                        
                         <div class="flex justify-between items-end mt-3 border-t border-slate-50 pt-3">
-                            <div>
-                                <div class="text-sm font-bold text-slate-700">₹${Number(l.amount).toLocaleString('en-IN')}</div>
-                                <div class="text-xs text-slate-400"><i class="fa-solid fa-phone mr-1"></i> ${l.phone}</div>
-                            </div>
-                            <div class="flex items-center">
-                                ${btn} ${adminBtns}
-                            </div>
+                            <div><div class="text-sm font-bold text-slate-700">₹${Number(l.amount).toLocaleString('en-IN')}</div><div class="text-xs text-slate-400">${l.phone}</div></div>
+                            <div class="flex items-center">${btn} ${adminBtns}</div>
                         </div>
                     </div>`;
                 });
             });
         }
 
-        // SAVE LEAD
         window.saveLead = async () => {
-            try {
-                const nameVal = (document.getElementById('leadName').value||'').trim();
-                const phoneVal = (document.getElementById('leadPhone').value||'').trim();
-                const amountVal = (document.getElementById('leadAmount').value||'').trim();
-                const typeVal = (document.getElementById('type').value||'Auto Loan');
+            const name = document.getElementById('leadName').value;
+            const phone = document.getElementById('leadPhone').value;
+            const amount = document.getElementById('leadAmount').value;
+            const type = document.getElementById('type').value;
+            if(!name || !phone) return alert('Fill required fields');
+            
+            const userSnap = await getDocs(query(collection(db,'users'), where('email','==',currentUser.email)));
+            if(!userSnap.empty && userSnap.docs[0].data().blocked) return alert('Blocked by Admin');
 
-                if(!nameVal || !phoneVal || !amountVal){
-                    alert('Please fill all fields');
-                    return;
-                }
-
-                // BLOCK CHECK
-                const userSnap = await getDocs(query(collection(db,'users'), where('email','==',currentUser.email)));
-                if(!userSnap.empty && userSnap.docs[0].data().blocked){
-                    alert('You are blocked by Admin. Cannot add lead');
-                    return;
-                }
-
-                await addDoc(collection(db,'leads'), {
-                    name: nameVal,
-                    phone: phoneVal,
-                    type: typeVal,
-                    amount: Number(amountVal)||0,
-                    status: 'Pending',
-                    agentEmail: currentUser.email||'',
-                    created: new Date()
-                });
-
-                closeModal();
-                document.getElementById('leadName').value = '';
-                document.getElementById('leadPhone').value = '';
-                document.getElementById('leadAmount').value = '';
-                
-                // Optional: Show a nice toast here instead of alert in future
-                // alert('Lead Saved Successfully'); 
-
-            } catch(err){
-                console.error('Lead Save Error:',err);
-                alert('Lead save failed — check console');
-            }
+            await addDoc(collection(db,'leads'), {
+                name, phone, type, amount: Number(amount)||0, status: 'Pending', agentEmail: currentUser.email, created: new Date()
+            });
+            closeModal();
+            document.getElementById('leadName').value='';
         };
 
         window.openModal = () => document.getElementById('modal').classList.remove('hidden');
         window.closeModal = () => document.getElementById('modal').classList.add('hidden');
 
-        // STATUS MODAL LOGIC
         let currentLeadId = null;
         window.openStatusModal = (id, status) => {
             currentLeadId = id;
@@ -430,21 +308,23 @@
             document.getElementById('statusModal').classList.remove('hidden');
         };
         window.closeStatusModal = () => document.getElementById('statusModal').classList.add('hidden');
-        
         window.saveStatus = async () => {
-            if(!currentLeadId) return;
-            const s = document.getElementById('newStatus').value;
-            await updateDoc(doc(db,'leads',currentLeadId), {status:s});
+            await updateDoc(doc(db,'leads',currentLeadId), {status: document.getElementById('newStatus').value});
             closeStatusModal();
         };
 
-        // ADMIN USERS (UI RENDERING UPDATED)
+        // --- UPDATED ADMIN USER LOGIC START ---
+        
+        // 1. New variable to store ID for SubDSA linking
+        let targetSubDSAId = null; 
+
         function loadNewUsers(){
+            // Populate the Modal Dropdown (Instead of the top bar)
             const dsaQuery = query(collection(db,'users'), where('role','==','dsa'));
             onSnapshot(dsaQuery, snap => {
-                const sel = document.getElementById('parentDSASelect');
+                const sel = document.getElementById('modalDSASelect');
                 if(!sel) return;
-                sel.innerHTML = '<option value="">Select Parent DSA</option>';
+                sel.innerHTML = '<option value="">-- Choose DSA --</option>';
                 snap.forEach(d => {
                     const u = d.data();
                     sel.innerHTML += `<option value="${u.email}">${u.name||u.email}</option>`;
@@ -462,18 +342,30 @@
                     if(u.role === 'dsa') roleBadgeColor = 'bg-purple-100 text-purple-700';
                     if(u.role === 'subdsa') roleBadgeColor = 'bg-blue-100 text-blue-700';
 
-                    let roleBtn = '';
-                    if(u.role !== 'dsa') roleBtn += `<button onclick="setRole('${d.id}','dsa')" class='text-[10px] bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200'>Make DSA</button>`;
-                    roleBtn += `<button onclick="makeSubDSA('${d.id}')" class='text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200 ml-1'>Make SubDSA</button>`;
+                    // 2. Hide Buttons for Admin Users
+                    let actionButtons = '';
+                    
+                    if(u.role !== 'admin') {
+                        // Only show these buttons if user is NOT admin
+                        let makeDSABtn = '';
+                        if(u.role !== 'dsa') {
+                            makeDSABtn = `<button onclick="setRole('${d.id}','dsa')" class='text-[10px] bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200'>Make DSA</button>`;
+                        }
+                        
+                        // Updated Make SubDSA Button calls openSubDSAModal
+                        const makeSubDSABtn = `<button onclick="openSubDSAModal('${d.id}')" class='text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200 ml-1'>Make SubDSA</button>`;
 
-                    let blockBtn = '';
-                    let deleteUserBtn = '';
-                    if(currentUser.role === 'admin'){
-                        blockBtn = `<button onclick="toggleBlock('${d.id}','${u.blocked?'yes':'no'}')" class='text-[10px] ${u.blocked ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700'} px-2 py-1 rounded ml-1 border border-amber-200'>${u.blocked ? 'Unblock' : 'Block'}</button>`;
-                        deleteUserBtn = `<button onclick="deleteUser('${d.id}')" class='text-[10px] bg-red-50 text-red-700 px-2 py-1 rounded ml-1 border border-red-200'><i class="fa-solid fa-trash"></i></button>`;
+                        let blockBtn = '';
+                        let deleteUserBtn = '';
+                        if(currentUser.role === 'admin'){
+                            blockBtn = `<button onclick="toggleBlock('${d.id}','${u.blocked?'yes':'no'}')" class='text-[10px] ${u.blocked ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700'} px-2 py-1 rounded ml-1 border border-amber-200'>${u.blocked ? 'Unblock' : 'Block'}</button>`;
+                            deleteUserBtn = `<button onclick="deleteUser('${d.id}')" class='text-[10px] bg-red-50 text-red-700 px-2 py-1 rounded ml-1 border border-red-200'><i class="fa-solid fa-trash"></i></button>`;
+                        }
+                        actionButtons = `<div class="flex flex-wrap gap-1 mt-1 pt-2 border-t border-slate-50">${makeDSABtn} ${makeSubDSABtn} ${blockBtn} ${deleteUserBtn}</div>`;
+                    } else {
+                         actionButtons = `<div class="text-[10px] text-slate-400 mt-1 pt-2 border-t border-slate-50 italic">Admin Access (Protected)</div>`;
                     }
 
-                    // UPDATED USER CARD HTML
                     userList.innerHTML += `
                     <div class='bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2'>
                         <div class="flex justify-between items-start">
@@ -483,13 +375,36 @@
                             </div>
                             <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded ${roleBadgeColor}">${u.role||'new'}</span>
                         </div>
-                        <div class="flex flex-wrap gap-1 mt-1 pt-2 border-t border-slate-50">
-                            ${roleBtn} ${blockBtn} ${deleteUserBtn}
-                        </div>
+                        ${actionButtons}
                     </div>`;
                 });
             });
         }
+
+        // 3. New SubDSA Logic
+        window.openSubDSAModal = (id) => {
+            targetSubDSAId = id;
+            document.getElementById('subDSAModal').classList.remove('hidden');
+        }
+        
+        window.closeSubDSAModal = () => {
+            targetSubDSAId = null;
+            document.getElementById('subDSAModal').classList.add('hidden');
+        }
+
+        window.confirmSubDSALink = async () => {
+            const parentEmail = document.getElementById('modalDSASelect').value;
+            if(!parentEmail) {
+                alert('Please select a DSA first');
+                return;
+            }
+            if(targetSubDSAId) {
+                await updateDoc(doc(db,'users',targetSubDSAId), {role:'subdsa', parentEmail:parentEmail});
+                alert('User linked to DSA successfully');
+                closeSubDSAModal();
+            }
+        }
+        // --- UPDATED ADMIN USER LOGIC END ---
 
         window.deleteUser = async(id) => {
             if(currentUser.role !== 'admin') return;
@@ -503,37 +418,21 @@
             await updateDoc(doc(db,'users',id), {blocked});
         };
 
-        window.makeSubDSA = async(id) => {
-            const parent = document.getElementById('parentDSASelect').value;
-            if(!parent){
-                alert('Select Parent DSA first from the dropdown above');
-                return;
-            }
-            await updateDoc(doc(db,'users',id), {role:'subdsa', parentEmail:parent});
-            alert('SubDSA linked successfully');
-        };
-
         window.setRole = async(id, role) => updateDoc(doc(db,'users',id), {role});
-
         window.deleteLead = async(id) => {
             if(currentUser.role !== 'admin') return;
-            if(!confirm('Permanently delete this lead?')) return;
+            if(!confirm('Delete this lead?')) return;
             await deleteDoc(doc(db,'leads',id));
         };
 
-        // DSA SUBDSA
         window.createSubDSA = async () => {
             const email = document.getElementById('subEmail').value.trim();
             const snap = await getDocs(query(collection(db,'users'), where('email','==',email)));
-            if(snap.empty) return alert('User email not found in system');
-            
+            if(snap.empty) return alert('User not found');
             const docSnap = snap.docs[0];
-            if(docSnap.data().role !== 'new') return alert('User is already assigned a role');
-            
+            if(docSnap.data().role !== 'new') return alert('User already assigned');
             await updateDoc(doc(db,'users',docSnap.id), {role:'subdsa', parentEmail:currentUser.email});
-            alert('SubDSA added to your team');
-            document.getElementById('subEmail').value = '';
-            document.getElementById('subMobile').value = '';
+            alert('SubDSA added');
         };
 
         function loadMySubDSA(){
@@ -541,19 +440,12 @@
             onSnapshot(q, snap => {
                 const subList = document.getElementById('subList');
                 subList.innerHTML = '';
-                if(snap.empty) subList.innerHTML = '<div class="text-xs text-slate-400">No team members yet.</div>';
-                
                 snap.forEach(d => {
                     const u = d.data();
                     subList.innerHTML += `
                     <div class='bg-blue-50/50 p-3 rounded-lg border border-blue-100 flex items-center gap-3'>
-                        <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-xs">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-                        <div>
-                            <div class="font-bold text-sm text-slate-700">${u.name}</div>
-                            <div class="text-xs text-slate-500">${u.mobile}</div>
-                        </div>
+                        <div class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-xs"><i class="fa-solid fa-user"></i></div>
+                        <div><div class="font-bold text-sm text-slate-700">${u.name}</div><div class="text-xs text-slate-500">${u.mobile}</div></div>
                     </div>`;
                 });
             });
