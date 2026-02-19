@@ -182,13 +182,21 @@
         };
 
         async function handleLogin(user){
+            // Check if user exists by email to prevent duplicates
             const snap = await getDocs(query(collection(db, "users"), where("email","==",user.email)));
+            
             if(snap.empty){
+                // Show Signup Box only if strictly no user found
                 document.getElementById('authBox').classList.add('hidden');
                 document.getElementById('signupBox').classList.remove('hidden');
-                window.tempUser=user; return;
+                window.tempUser=user; 
+                return;
             }
-            currentUser=snap.docs[0].data();
+            
+            // Load existing user
+            currentUser = snap.docs[0].data();
+            // Store ID for reference
+            currentUser.id = snap.docs[0].id; 
             startApp();
         }
 
@@ -196,12 +204,38 @@
             const user = window.tempUser;
             const mobileVal = (document.getElementById('mobile').value||'').trim();
             const locationVal = (document.getElementById('location').value||'').trim();
+            
             if(!mobileVal || !locationVal) return alert('Enter full details');
+            
             const role = user.email === 'nil000nilesh@gmail.com' ? 'admin' : 'new';
-            await setDoc(doc(db,'users',user.uid), {
-                name: user.displayName, email: user.email, mobile: mobileVal, location: locationVal, role, parentEmail: null
-            });
-            currentUser = {name: user.displayName, email: user.email, role};
+            
+            // DUPLICATE CHECK: Double check if user exists before creating
+            const q = query(collection(db, "users"), where("email", "==", user.email));
+            const snap = await getDocs(q);
+            
+            if(!snap.empty){
+                // If user exists (maybe phantom data), UPDATE instead of Create
+                const existingId = snap.docs[0].id;
+                await updateDoc(doc(db,'users',existingId), {
+                    mobile: mobileVal,
+                    location: locationVal,
+                    // Do not overwrite role if it exists
+                });
+                currentUser = snap.docs[0].data();
+                currentUser.id = existingId;
+            } else {
+                // Completely new user -> Create with UID as ID
+                await setDoc(doc(db,'users',user.uid), {
+                    name: user.displayName, 
+                    email: user.email, 
+                    mobile: mobileVal, 
+                    location: locationVal, 
+                    role, 
+                    parentEmail: null
+                });
+                currentUser = {name: user.displayName, email: user.email, role, mobile: mobileVal, location: locationVal};
+            }
+
             document.getElementById('signupBox').classList.add('hidden');
             startApp();
         };
@@ -211,6 +245,7 @@
             document.getElementById('app').classList.remove('hidden');
             document.getElementById('logoutBtn').classList.remove('hidden');
             loadLeads();
+            
             if(currentUser.role === 'admin'){
                 document.getElementById('adminPanel').classList.remove('hidden');
                 loadNewUsers();
@@ -315,11 +350,9 @@
 
         // --- UPDATED ADMIN USER LOGIC START ---
         
-        // 1. New variable to store ID for SubDSA linking
         let targetSubDSAId = null; 
 
         function loadNewUsers(){
-            // Populate the Modal Dropdown (Instead of the top bar)
             const dsaQuery = query(collection(db,'users'), where('role','==','dsa'));
             onSnapshot(dsaQuery, snap => {
                 const sel = document.getElementById('modalDSASelect');
@@ -342,17 +375,12 @@
                     if(u.role === 'dsa') roleBadgeColor = 'bg-purple-100 text-purple-700';
                     if(u.role === 'subdsa') roleBadgeColor = 'bg-blue-100 text-blue-700';
 
-                    // 2. Hide Buttons for Admin Users
                     let actionButtons = '';
-                    
                     if(u.role !== 'admin') {
-                        // Only show these buttons if user is NOT admin
                         let makeDSABtn = '';
                         if(u.role !== 'dsa') {
                             makeDSABtn = `<button onclick="setRole('${d.id}','dsa')" class='text-[10px] bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200'>Make DSA</button>`;
                         }
-                        
-                        // Updated Make SubDSA Button calls openSubDSAModal
                         const makeSubDSABtn = `<button onclick="openSubDSAModal('${d.id}')" class='text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200 ml-1'>Make SubDSA</button>`;
 
                         let blockBtn = '';
@@ -366,14 +394,20 @@
                          actionButtons = `<div class="text-[10px] text-slate-400 mt-1 pt-2 border-t border-slate-50 italic">Admin Access (Protected)</div>`;
                     }
 
+                    // ADDED MOBILE AND LOCATION DISPLAY HERE
                     userList.innerHTML += `
                     <div class='bg-white p-3 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2'>
                         <div class="flex justify-between items-start">
-                            <div>
+                            <div class="w-full">
                                 <div class="font-bold text-sm text-slate-800">${u.name||'Unknown'}</div>
-                                <div class="text-xs text-slate-500">${u.email}</div>
+                                <div class="text-xs text-slate-500 mb-1">${u.email}</div>
+                                <div class="text-[10px] text-slate-500 bg-slate-50 p-1.5 rounded-md flex items-center gap-2">
+                                    <span><i class="fa-solid fa-phone text-slate-400 mr-1"></i>${u.mobile || 'NA'}</span>
+                                    <span class="text-slate-300">|</span>
+                                    <span><i class="fa-solid fa-map-pin text-slate-400 mr-1"></i>${u.location || 'NA'}</span>
+                                </div>
                             </div>
-                            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded ${roleBadgeColor}">${u.role||'new'}</span>
+                            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded ${roleBadgeColor} whitespace-nowrap ml-2">${u.role||'new'}</span>
                         </div>
                         ${actionButtons}
                     </div>`;
@@ -381,7 +415,6 @@
             });
         }
 
-        // 3. New SubDSA Logic
         window.openSubDSAModal = (id) => {
             targetSubDSAId = id;
             document.getElementById('subDSAModal').classList.remove('hidden');
