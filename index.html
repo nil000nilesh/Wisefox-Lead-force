@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Wisefox LeadApp Pro</title>
+    <title>Wisefox LeadApp Secure</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; /* Text selection block */ }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .input-field:focus { border-color: #4F46E5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
@@ -18,7 +18,16 @@
         .toast-enter { animation: slideDown 0.3s ease-out forwards; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 h-screen overflow-hidden flex justify-center items-center relative">
+<body oncontextmenu="return false" class="bg-slate-100 text-slate-800 h-screen overflow-hidden flex justify-center items-center relative">
+    
+    <script>
+        document.onkeydown = function(e) {
+            if(event.keyCode == 123) return false; // F12
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // Ctrl+Shift+I
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; // Ctrl+Shift+J
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Ctrl+U
+        }
+    </script>
 
     <div id="toast" class="hidden fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] px-5 py-2.5 rounded-full shadow-xl text-sm font-semibold text-white flex items-center gap-2 min-w-[200px] justify-center">
         <i id="toastIcon" class="fa-solid fa-circle-check"></i>
@@ -30,17 +39,15 @@
         <div class="bg-indigo-600 text-white p-4 pt-6 shadow-md z-10 flex-shrink-0">
             <div class="flex justify-between items-center">
                 <div>
-                    <h2 class="font-bold text-lg tracking-tight"><i class="fa-solid fa-fox mr-2"></i>Wisefox Pro</h2>
+                    <h2 class="font-bold text-lg tracking-tight"><i class="fa-solid fa-shield-halved mr-2"></i>Wisefox Secure</h2>
                     <p class="text-[10px] text-indigo-200 opacity-90" id="userRoleDisplay">Lead Management System</p>
                 </div>
                 
                 <div class="flex items-center gap-2">
-                    
                     <button onclick="openNotifModal()" id="notifBtn" class="hidden relative bg-white/20 hover:bg-white/30 w-8 h-8 flex items-center justify-center rounded-full transition shadow-sm text-sm">
                         <i class="fa-solid fa-bell text-white"></i>
                         <span id="notifBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full hidden shadow-sm border border-indigo-600">0</span>
                     </button>
-
                     <button onclick="openCalculator()" id="innerCalcBtn" class="hidden bg-white/20 hover:bg-white/30 w-8 h-8 flex items-center justify-center rounded-full transition shadow-sm text-sm">
                         <i class="fa-solid fa-calculator text-white"></i>
                     </button>
@@ -59,7 +66,7 @@
                         <i class="fa-solid fa-user-lock"></i>
                     </div>
                     <h3 id="authTitle" class="text-xl font-bold text-slate-800">Welcome Back</h3>
-                    <p id="authSubtitle" class="text-xs text-slate-500">Sign in to your account</p>
+                    <p id="authSubtitle" class="text-xs text-slate-500">Sign in securely</p>
                 </div>
 
                 <div class="w-full max-w-xs space-y-3 mt-2">
@@ -146,7 +153,6 @@
                 </div>
 
                 <div id="leadsPage">
-                    
                     <div class="grid grid-cols-3 gap-2 mb-4">
                         <div class="bg-indigo-50 border border-indigo-100 p-2 rounded-lg text-center shadow-sm">
                             <div class="text-[10px] text-indigo-500 font-bold uppercase">Total Leads</div>
@@ -176,9 +182,7 @@
                 </div>
 
                 <div id="usersPage" class="hidden space-y-4">
-                    
                     <div id="myProfilePanel" class="mb-4"></div>
-
                     <div id="dsaPanel" class="hidden bg-white p-3 rounded-lg shadow-sm border border-slate-100">
                         <h3 class="font-bold text-slate-700 mb-2 text-xs uppercase tracking-wide">Add Sub-DSA</h3>
                         <div class="space-y-2">
@@ -187,7 +191,6 @@
                             <button onclick="createSubDSA()" class="w-full bg-blue-600 text-white py-2 rounded-md text-xs font-medium">Link Sub-DSA</button>
                         </div>
                     </div>
-                    
                     <div id="mySubList" class="hidden"><h3 class="font-bold text-slate-700 mb-2 text-sm">My Team</h3><div id="subList" class="space-y-2"></div></div>
                     <div id="adminPanel" class="hidden"><h3 class="font-bold text-slate-700 mb-2 text-sm">All Users Directory</h3><div id="userList" class="space-y-2"></div></div>
                 </div>
@@ -201,8 +204,7 @@
                 <h3 class="font-bold text-md text-slate-800"><i class="fa-solid fa-bell text-indigo-500 mr-2"></i> Pending Actions</h3>
                 <button onclick="closeNotifModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <div id="notifList" class="space-y-2 max-h-[60vh] overflow-y-auto hide-scrollbar">
-                </div>
+            <div id="notifList" class="space-y-2 max-h-[60vh] overflow-y-auto hide-scrollbar"></div>
         </div>
     </div>
 
@@ -282,48 +284,46 @@
         window.currentSort = 'new';
         window.currentQueryLeadId = null;
 
-        // --- HELPER: LIVE CLOCK & GREETING ---
-        window.startLiveClock = () => {
-            const updateClock = () => {
-                if(!currentUser) return;
-                const now = new Date();
-                const hours = now.getHours();
-                let greeting = 'Good Night'; let icon = '🌙';
-                if (hours >= 5 && hours < 12) { greeting = 'Good Morning'; icon = '☀️'; }
-                else if (hours >= 12 && hours < 17) { greeting = 'Good Afternoon'; icon = '🌤️'; }
-                else if (hours >= 17 && hours < 21) { greeting = 'Good Evening'; icon = '🌆'; }
-
-                const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-                const firstName = currentUser.name ? currentUser.name.split(' ')[0] : 'User';
-
-                document.getElementById('greetingMsg').innerHTML = `${greeting}, ${firstName} ${icon}`;
-                document.getElementById('liveClock').innerHTML = `<i class="fa-regular fa-clock"></i> ${timeString}`;
-                document.getElementById('userInitial').innerText = firstName.charAt(0).toUpperCase();
-            };
-            updateClock();
-            setInterval(updateClock, 60000); 
+        // --- SECURITY HELPER: XSS ESCAPING ---
+        window.escapeHTML = (str) => {
+            if (!str) return '';
+            return str.toString().replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])
+            );
         };
 
-        // --- HELPER: ID GENERATOR ---
         window.generate5DigitId = (str) => {
-            if(!str) return '00000';
-            let hash = 0;
+            if(!str) return '00000'; let hash = 0;
             for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); }
             return 10000 + (Math.abs(hash) % 90000); 
         };
 
-        // --- CUSTOM TOAST NOTIFICATIONS ---
+        window.startLiveClock = () => {
+            const updateClock = () => {
+                if(!currentUser) return;
+                const now = new Date(); const hours = now.getHours();
+                let greeting = 'Good Night'; let icon = '🌙';
+                if (hours >= 5 && hours < 12) { greeting = 'Good Morning'; icon = '☀️'; }
+                else if (hours >= 12 && hours < 17) { greeting = 'Good Afternoon'; icon = '🌤️'; }
+                else if (hours >= 17 && hours < 21) { greeting = 'Good Evening'; icon = '🌆'; }
+                const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                const firstName = window.escapeHTML(currentUser.name ? currentUser.name.split(' ')[0] : 'User');
+                document.getElementById('greetingMsg').innerHTML = `${greeting}, ${firstName} ${icon}`;
+                document.getElementById('liveClock').innerHTML = `<i class="fa-regular fa-clock"></i> ${timeString}`;
+                document.getElementById('userInitial').innerText = firstName.charAt(0).toUpperCase();
+            };
+            updateClock(); setInterval(updateClock, 60000); 
+        };
+
         window.showToast = (msg, type = 'success') => {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toastIcon');
+            const toast = document.getElementById('toast'); const icon = document.getElementById('toastIcon');
             document.getElementById('toastMsg').innerText = msg;
             toast.className = `toast-enter fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] px-5 py-2.5 rounded-full shadow-xl text-sm font-semibold text-white flex items-center gap-2 min-w-[200px] justify-center ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
             icon.className = type === 'success' ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-exclamation';
-            toast.classList.remove('hidden');
-            setTimeout(() => { toast.classList.add('hidden'); }, 3500);
+            toast.classList.remove('hidden'); setTimeout(() => { toast.classList.add('hidden'); }, 3500);
         };
 
-        // --- NOTIFICATION BELL LOGIC (ADMIN & DSA) ---
+        // --- NOTIFICATIONS ---
         window.openNotifModal = () => document.getElementById('notifModal').classList.remove('hidden');
         window.closeNotifModal = () => document.getElementById('notifModal').classList.add('hidden');
         window.goToUser = () => { window.closeNotifModal(); window.showPage('users'); };
@@ -331,21 +331,14 @@
 
         window.updateNotifications = () => {
             if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'dsa')) return;
-            const notifList = document.getElementById('notifList');
-            const badge = document.getElementById('notifBadge');
-            notifList.innerHTML = '';
-            let count = 0;
+            const notifList = document.getElementById('notifList'); const badge = document.getElementById('notifBadge');
+            notifList.innerHTML = ''; let count = 0;
 
             if (currentUser.role === 'admin') {
                 window.allUsers.forEach(u => {
                     if (u.role === 'new') {
-                        count++;
-                        const uid = `USR-${window.generate5DigitId(u.id)}`;
-                        notifList.innerHTML += `
-                            <div onclick="goToUser()" class="bg-blue-50 border border-blue-100 p-3 rounded-xl cursor-pointer hover:bg-blue-100 transition flex items-center justify-between mb-2 shadow-sm">
-                                <div><div class="text-[9px] text-blue-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-user-plus mr-1"></i> New Registration</div><div class="font-semibold text-sm text-slate-800">${u.name} <span class="text-[9px] text-slate-500 font-mono ml-1">#${uid}</span></div></div>
-                                <i class="fa-solid fa-chevron-right text-blue-400"></i>
-                            </div>`;
+                        count++; const uid = `USR-${window.generate5DigitId(u.id)}`;
+                        notifList.innerHTML += `<div onclick="goToUser()" class="bg-blue-50 border border-blue-100 p-3 rounded-xl cursor-pointer hover:bg-blue-100 transition flex items-center justify-between mb-2 shadow-sm"><div><div class="text-[9px] text-blue-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-user-plus mr-1"></i> New Registration</div><div class="font-semibold text-sm text-slate-800">${window.escapeHTML(u.name)} <span class="text-[9px] text-slate-500 font-mono ml-1">#${uid}</span></div></div><i class="fa-solid fa-chevron-right text-blue-400"></i></div>`;
                     }
                 });
             }
@@ -359,19 +352,11 @@
                 if (isTargetLead) {
                     if (l.status === 'Pending') {
                         count++;
-                        notifList.innerHTML += `
-                            <div onclick="goToLead()" class="bg-amber-50 border border-amber-100 p-3 rounded-xl cursor-pointer hover:bg-amber-100 transition flex items-center justify-between mb-2 shadow-sm">
-                                <div><div class="text-[9px] text-amber-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-file-invoice-dollar mr-1"></i> Lead Pending</div><div class="font-semibold text-sm text-slate-800">${l.name} <span class="text-[9px] text-slate-500 font-mono ml-1">#${lid}</span></div><div class="text-[10px] text-slate-600 mt-0.5 font-medium">₹${Number(l.amount).toLocaleString('en-IN')}</div></div>
-                                <i class="fa-solid fa-chevron-right text-amber-400"></i>
-                            </div>`;
+                        notifList.innerHTML += `<div onclick="goToLead()" class="bg-amber-50 border border-amber-100 p-3 rounded-xl cursor-pointer hover:bg-amber-100 transition flex items-center justify-between mb-2 shadow-sm"><div><div class="text-[9px] text-amber-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-file-invoice-dollar mr-1"></i> Lead Pending</div><div class="font-semibold text-sm text-slate-800">${window.escapeHTML(l.name)} <span class="text-[9px] text-slate-500 font-mono ml-1">#${lid}</span></div><div class="text-[10px] text-slate-600 mt-0.5 font-medium">₹${Number(l.amount).toLocaleString('en-IN')}</div></div><i class="fa-solid fa-chevron-right text-amber-400"></i></div>`;
                     }
                     if (l.hasQuery) {
                         count++;
-                        notifList.innerHTML += `
-                            <div onclick="goToLead()" class="bg-red-50 border border-red-200 p-3 rounded-xl cursor-pointer hover:bg-red-100 transition flex items-center justify-between mb-2 shadow-sm">
-                                <div><div class="text-[9px] text-red-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-circle-question mr-1"></i> New Query</div><div class="font-semibold text-sm text-slate-800">${l.name} <span class="text-[9px] text-slate-500 font-mono ml-1">#${lid}</span></div><div class="text-[10px] text-slate-600 mt-0.5 italic truncate w-48">"${l.queryMessage}"</div></div>
-                                <i class="fa-solid fa-chevron-right text-red-400"></i>
-                            </div>`;
+                        notifList.innerHTML += `<div onclick="goToLead()" class="bg-red-50 border border-red-200 p-3 rounded-xl cursor-pointer hover:bg-red-100 transition flex items-center justify-between mb-2 shadow-sm"><div><div class="text-[9px] text-red-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-circle-question mr-1"></i> New Query</div><div class="font-semibold text-sm text-slate-800">${window.escapeHTML(l.name)} <span class="text-[9px] text-slate-500 font-mono ml-1">#${lid}</span></div><div class="text-[10px] text-slate-600 mt-0.5 italic truncate w-48">"${window.escapeHTML(l.queryMessage)}"</div></div><i class="fa-solid fa-chevron-right text-red-400"></i></div>`;
                     }
                 }
             });
@@ -380,10 +365,8 @@
             else { badge.classList.add('hidden'); notifList.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 italic">No pending actions</div>'; }
         };
 
-        // --- QUERY LOGIC ---
-        window.openQueryModal = (id) => {
-            window.currentQueryLeadId = id; document.getElementById('queryText').value = ''; document.getElementById('queryModal').classList.remove('hidden');
-        };
+        // --- QUERIES ---
+        window.openQueryModal = (id) => { window.currentQueryLeadId = id; document.getElementById('queryText').value = ''; document.getElementById('queryModal').classList.remove('hidden'); };
         window.closeQueryModal = () => { window.currentQueryLeadId = null; document.getElementById('queryModal').classList.add('hidden'); };
         window.submitQuery = async () => {
             const text = document.getElementById('queryText').value.trim();
@@ -391,16 +374,13 @@
             const words = text.split(/\s+/);
             if(words.length > 20) return showToast(`Max 20 words! You typed ${words.length} words.`, 'error');
             if(window.currentQueryLeadId) {
-                await updateDoc(doc(db, 'leads', window.currentQueryLeadId), { hasQuery: true, queryMessage: text, queryDate: Date.now() });
+                await updateDoc(doc(db, 'leads', window.currentQueryLeadId), { hasQuery: true, queryMessage: window.escapeHTML(text), queryDate: Date.now() });
                 showToast('Query sent to Admin/DSA!'); window.closeQueryModal();
             }
         };
-        window.resolveQuery = async (id) => {
-            await updateDoc(doc(db, 'leads', id), { hasQuery: false, queryMessage: '' });
-            showToast('Query Marked as Resolved!');
-        };
+        window.resolveQuery = async (id) => { await updateDoc(doc(db, 'leads', id), { hasQuery: false, queryMessage: '' }); showToast('Query Marked as Resolved!'); };
 
-        // --- AUTH LOGIC ---
+        // --- AUTH ---
         let isLoginMode = true;
         window.toggleAuthMode = () => {
             isLoginMode = !isLoginMode;
@@ -415,10 +395,8 @@
             const email = document.getElementById('emailInput').value.trim(); const password = document.getElementById('passwordInput').value.trim();
             if(!email || !password) return showToast("Enter Email and Password!", 'error');
             if(password.length < 6) return showToast("Password min 6 chars!", 'error');
-            try {
-                let result = isLoginMode ? await signInWithEmailAndPassword(auth, email, password) : await createUserWithEmailAndPassword(auth, email, password);
-                await handleLogin(result.user);
-            } catch (error) { showToast(error.message.split('/')[1] || "Auth Failed", 'error'); }
+            try { let result = isLoginMode ? await signInWithEmailAndPassword(auth, email, password) : await createUserWithEmailAndPassword(auth, email, password); await handleLogin(result.user); } 
+            catch (error) { showToast(error.message.split('/')[1] || "Auth Failed", 'error'); }
         };
 
         window.googleLogin = async () => { try { const result = await signInWithPopup(auth, provider); await handleLogin(result.user); } catch (error) { signInWithRedirect(auth, provider); } };
@@ -445,40 +423,24 @@
             const role = user.email === 'nil000nilesh@gmail.com' ? 'admin' : 'new';
             const snap = await getDocs(query(collection(db, "users"), where("email", "==", user.email)));
             if(!snap.empty){
-                const existingId = snap.docs[0].id; await updateDoc(doc(db,'users',existingId), { name: nameVal, mobile: mobileVal, location: locationVal });
+                const existingId = snap.docs[0].id; await updateDoc(doc(db,'users',existingId), { name: window.escapeHTML(nameVal), mobile: window.escapeHTML(mobileVal), location: window.escapeHTML(locationVal) });
                 currentUser = snap.docs[0].data(); currentUser.id = existingId;
             } else {
-                await setDoc(doc(db,'users',user.uid), { name: nameVal, email: user.email, mobile: mobileVal, location: locationVal, role, parentEmail: null });
+                await setDoc(doc(db,'users',user.uid), { name: window.escapeHTML(nameVal), email: user.email, mobile: window.escapeHTML(mobileVal), location: window.escapeHTML(locationVal), role, parentEmail: null });
                 currentUser = {name: nameVal, email: user.email, role, mobile: mobileVal, location: locationVal}; currentUser.id = user.uid; 
             }
             document.getElementById('signupBox').classList.add('hidden'); showToast('Account Created Successfully!'); startApp();
         };
 
-        // --- RENDER MY PROFILE ---
         function renderMyProfile() {
             const uid = `USR-${window.generate5DigitId(currentUser.id)}`;
             document.getElementById('myProfilePanel').innerHTML = `
                 <div class="bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-4 rounded-xl shadow-md relative overflow-hidden">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-bold text-[10px] text-indigo-200 uppercase tracking-wider mb-1">My Profile</h3>
-                            <div class="font-black text-lg">${currentUser.name}</div>
-                            <div class="text-[10px] font-mono bg-black/20 px-2 py-0.5 rounded inline-block mt-1 mb-3">ID: #${uid}</div>
-                        </div>
-                        <span class="text-[10px] bg-white text-indigo-700 font-bold px-2 py-1 rounded shadow-sm uppercase">${currentUser.role}</span>
-                    </div>
-                    <div class="text-xs space-y-1.5 opacity-90">
-                        <div><i class="fa-solid fa-phone w-4 text-center"></i> ${currentUser.mobile}</div>
-                        <div><i class="fa-solid fa-envelope w-4 text-center"></i> ${currentUser.email}</div>
-                        <div><i class="fa-solid fa-map-pin w-4 text-center"></i> ${currentUser.location || 'N/A'}</div>
-                    </div>
-                    <button onclick="shareMyProfile()" class="absolute bottom-4 right-4 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-md transition flex items-center gap-1">
-                        <i class="fa-brands fa-whatsapp text-sm"></i> Share
-                    </button>
-                </div>
-            `;
+                    <div class="flex justify-between items-start"><div><h3 class="font-bold text-[10px] text-indigo-200 uppercase tracking-wider mb-1">My Profile</h3><div class="font-black text-lg">${window.escapeHTML(currentUser.name)}</div><div class="text-[10px] font-mono bg-black/20 px-2 py-0.5 rounded inline-block mt-1 mb-3">ID: #${uid}</div></div><span class="text-[10px] bg-white text-indigo-700 font-bold px-2 py-1 rounded shadow-sm uppercase">${currentUser.role}</span></div>
+                    <div class="text-xs space-y-1.5 opacity-90"><div><i class="fa-solid fa-phone w-4 text-center"></i> ${window.escapeHTML(currentUser.mobile)}</div><div><i class="fa-solid fa-envelope w-4 text-center"></i> ${window.escapeHTML(currentUser.email)}</div><div><i class="fa-solid fa-map-pin w-4 text-center"></i> ${window.escapeHTML(currentUser.location) || 'N/A'}</div></div>
+                    <button onclick="shareMyProfile()" class="absolute bottom-4 right-4 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-md transition flex items-center gap-1"><i class="fa-brands fa-whatsapp text-sm"></i> Share</button>
+                </div>`;
         }
-
         window.shareMyProfile = () => {
             const uid = `USR-${window.generate5DigitId(currentUser.id)}`;
             const text = `*Wisefox Profile Details*%0A%0A*Name:* ${currentUser.name}%0A*User ID:* ${uid}%0A*Role:* ${currentUser.role.toUpperCase()}%0A*Mobile:* ${currentUser.mobile}%0A*Location:* ${currentUser.location}%0A%0A_Sent via Wisefox LeadApp_`;
@@ -494,10 +456,7 @@
                 document.getElementById('notifBtn').classList.remove('hidden'); 
                 document.getElementById('exportBtn').classList.remove('hidden');
             }
-            
-            window.startLiveClock(); 
-            renderMyProfile(); 
-            loadLeads();
+            window.startLiveClock(); renderMyProfile(); loadLeads();
             if(currentUser.role === 'admin'){ document.getElementById('adminPanel').classList.remove('hidden'); loadNewUsers(); }
             if(currentUser.role === 'dsa'){ document.getElementById('dsaPanel').classList.remove('hidden'); document.getElementById('mySubList').classList.remove('hidden'); loadMySubDSA(); }
         }
@@ -512,14 +471,9 @@
         window.exportCSV = () => {
             if(window.processedLeads.length === 0) return showToast("No leads to export!", "error");
             let csv = "Lead ID,Name,Phone,Address,Type,Amount,Status,Agent\n";
-            window.processedLeads.forEach(l => {
-                const leadIdShort = `LD-${window.generate5DigitId(l.id)}`;
-                csv += `"${leadIdShort}","${l.name}","${l.phone}","${l.address}","${l.type}","${l.amount}","${l.status}","${l.agentName}"\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = 'Wisefox_Leads.csv'; a.click();
-            showToast("Report Exported Successfully!");
+            window.processedLeads.forEach(l => { const leadIdShort = `LD-${window.generate5DigitId(l.id)}`; csv += `"${leadIdShort}","${l.name}","${l.phone}","${l.address}","${l.type}","${l.amount}","${l.status}","${l.agentName}"\n`; });
+            const blob = new Blob([csv], { type: 'text/csv' }); const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'Wisefox_Leads.csv'; a.click(); showToast("Report Exported Successfully!");
         };
 
         function renderLeadsUI() {
@@ -534,78 +488,24 @@
             sortedArr.forEach(l => {
                 totalAmount += Number(l.amount);
                 const leadIdShort = `LD-${window.generate5DigitId(l.id)}`;
-                const statusClass = l.status === 'Disbursed' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 
-                                  l.status === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' : 
-                                  l.status === 'Sanctioned' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200';
+                const statusClass = l.status === 'Disbursed' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : l.status === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' : l.status === 'Sanctioned' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200';
                 
-                let waBtn = `<button onclick="shareOnWhatsApp('${leadIdShort}', '${l.name}', '${l.amount}', '${l.type}', '${l.status}')" class="text-[12px] text-green-600 bg-green-50 px-2 py-1 rounded ml-1 hover:bg-green-100"><i class="fa-brands fa-whatsapp text-sm"></i></button>`;
-                
-                // ONLY SUBDSA/NEW USER CAN ASK QUERY
+                let waBtn = `<button onclick="shareOnWhatsApp('${leadIdShort}', '${window.escapeHTML(l.name)}', '${l.amount}', '${l.type}', '${l.status}')" class="text-[12px] text-green-600 bg-green-50 px-2 py-1 rounded ml-1 hover:bg-green-100"><i class="fa-brands fa-whatsapp text-sm"></i></button>`;
                 let queryBtn = (currentUser.role === 'subdsa' || currentUser.role === 'new') ? `<button onclick="openQueryModal('${l.id}')" title="Ask a Query" class="text-[12px] text-orange-600 bg-orange-50 px-2 py-1 rounded ml-1 hover:bg-orange-100"><i class="fa-solid fa-comment-dots text-sm"></i></button>` : '';
-                
                 let btn = (currentUser.role === 'dsa' || currentUser.role === 'admin') ? `<button onclick="openStatusModal('${l.id}','${l.status}')" class='text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded ml-1 hover:bg-indigo-100'>Edit</button>` : '';
                 let adminBtns = currentUser.role === 'admin' ? `<button onclick="deleteLead('${l.id}')" class='text-[10px] text-red-500 bg-red-50 px-2 py-1 rounded ml-1 hover:bg-red-100'><i class="fa-solid fa-trash"></i></button>` : '';
                 
-                // QUERY DISPLAY BANNER (Only Admin/DSA can see the resolve button)
                 let queryDisplay = '';
                 if (l.hasQuery) {
                     let resolveBtn = (currentUser.role === 'admin' || currentUser.role === 'dsa') ? `<button onclick="resolveQuery('${l.id}')" class="ml-2 text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded hover:bg-indigo-200 font-bold text-[9px]">Resolve <i class="fa-solid fa-check"></i></button>` : '';
-                    queryDisplay = `<div class="mt-1.5 bg-red-50 border border-red-100 text-red-700 text-[10px] p-1.5 rounded flex justify-between items-center"><span class="italic font-medium"><i class="fa-solid fa-circle-question mr-1"></i> Q: ${l.queryMessage}</span> ${resolveBtn}</div>`;
+                    queryDisplay = `<div class="mt-1.5 bg-red-50 border border-red-100 text-red-700 text-[10px] p-1.5 rounded flex justify-between items-center"><span class="italic font-medium"><i class="fa-solid fa-circle-question mr-1"></i> Q: ${window.escapeHTML(l.queryMessage)}</span> ${resolveBtn}</div>`;
                 }
 
-                list.innerHTML += `
-                <div class='bg-white p-3 rounded-xl shadow-sm border border-slate-200 relative mb-3'>
-                    <div class="flex justify-between items-start mb-1.5">
-                        <div><h4 class="font-bold text-slate-800 text-sm">${l.name} <span class="text-[10px] font-mono text-slate-400 font-normal ml-1">#${leadIdShort}</span></h4><span class="text-[10px] font-semibold text-slate-500">${l.type}</span></div>
-                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold border ${statusClass}">${l.status||'Pending'}</span>
-                    </div>
-                    <div class="mb-2 space-y-0.5 bg-slate-50 p-1.5 rounded-lg border border-slate-100">
-                         <div class="text-xs text-slate-600"><i class="fa-solid fa-phone text-slate-400 mr-1.5 w-3"></i> ${l.phone}</div>
-                         <div class="text-xs text-slate-600 truncate"><i class="fa-solid fa-location-dot text-slate-400 mr-1.5 w-3"></i> ${l.address || 'NA'}</div>
-                    </div>
-                    ${queryDisplay}
-                    <div class="flex justify-between items-end mt-2 pt-1.5 border-t border-slate-100">
-                        <div><div class="text-sm font-bold text-slate-800">₹${Number(l.amount).toLocaleString('en-IN')}</div><div class="text-[9px] text-indigo-700 font-bold bg-indigo-100 px-1.5 py-0.5 rounded mt-0.5 inline-block"><i class="fa-regular fa-user mr-1"></i> By: ${l.agentName}</div></div>
-                        <div class="flex items-center">${waBtn} ${queryBtn} ${btn} ${adminBtns}</div>
-                    </div>
-                </div>`;
+                list.innerHTML += `<div class='bg-white p-3 rounded-xl shadow-sm border border-slate-200 relative mb-3'><div class="flex justify-between items-start mb-1.5"><div><h4 class="font-bold text-slate-800 text-sm">${window.escapeHTML(l.name)} <span class="text-[10px] font-mono text-slate-400 font-normal ml-1">#${leadIdShort}</span></h4><span class="text-[10px] font-semibold text-slate-500">${window.escapeHTML(l.type)}</span></div><span class="text-[10px] px-2 py-0.5 rounded-full font-bold border ${statusClass}">${l.status||'Pending'}</span></div><div class="mb-2 space-y-0.5 bg-slate-50 p-1.5 rounded-lg border border-slate-100"><div class="text-xs text-slate-600"><i class="fa-solid fa-phone text-slate-400 mr-1.5 w-3"></i> ${window.escapeHTML(l.phone)}</div><div class="text-xs text-slate-600 truncate"><i class="fa-solid fa-location-dot text-slate-400 mr-1.5 w-3"></i> ${window.escapeHTML(l.address) || 'NA'}</div></div>${queryDisplay}<div class="flex justify-between items-end mt-2 pt-1.5 border-t border-slate-100"><div><div class="text-sm font-bold text-slate-800">₹${Number(l.amount).toLocaleString('en-IN')}</div><div class="text-[9px] text-indigo-700 font-bold bg-indigo-100 px-1.5 py-0.5 rounded mt-0.5 inline-block"><i class="fa-regular fa-user mr-1"></i> By: ${window.escapeHTML(l.agentName)}</div></div><div class="flex items-center">${waBtn} ${queryBtn} ${btn} ${adminBtns}</div></div></div>`;
             });
             document.getElementById('dashCount').innerText = totalCount;
             document.getElementById('dashAmount').innerText = "₹" + (totalAmount >= 100000 ? (totalAmount/100000).toFixed(2) + "L" : totalAmount.toLocaleString('en-IN'));
         }
-
-        // --- SECURITY ROLE CHECK ON LEAD ADDITION ---
-        window.openModal = () => {
-            if(currentUser && currentUser.role === 'new') {
-                return showToast('Access Denied! Please wait for Admin to assign you a role.', 'error');
-            }
-            document.getElementById('modal').classList.remove('hidden');
-        };
-
-        window.closeModal = () => document.getElementById('modal').classList.add('hidden');
-
-        window.saveLead = async () => {
-            if(currentUser && currentUser.role === 'new') {
-                return showToast('Access Denied! Please wait for Admin to assign you a role.', 'error');
-            }
-
-            const btn = document.getElementById('submitLeadBtn');
-            const name = document.getElementById('leadName').value.trim(); const phone = document.getElementById('leadPhone').value.trim();
-            const address = document.getElementById('leadAddress').value.trim(); const amount = document.getElementById('leadAmount').value.trim(); const type = document.getElementById('type').value;
-
-            if(!name || !phone || !amount || !address) return showToast('Fill all fields!', 'error');
-            if(phone.length !== 10) return showToast('Mobile must be 10 digits!', 'error');
-            
-            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Saving...'; btn.classList.add('opacity-70', 'cursor-not-allowed');
-            try {
-                const userSnap = await getDocs(query(collection(db,'users'), where('email','==',currentUser.email)));
-                if(!userSnap.empty && userSnap.docs[0].data().blocked) throw new Error('Blocked by Admin');
-                await addDoc(collection(db,'leads'), { name, phone, address, type, amount: Number(amount)||0, status: 'Pending', agentEmail: currentUser.email, agentName: currentUser.name || 'Unknown', created: Date.now(), hasQuery: false, queryMessage: '' });
-                showToast('Lead Generated Successfully!'); closeModal();
-                document.getElementById('leadName').value=''; document.getElementById('leadPhone').value=''; document.getElementById('leadAddress').value=''; document.getElementById('leadAmount').value='';
-            } catch(e) { showToast(e.message || 'Error saving lead', 'error'); } 
-            finally { btn.disabled = false; btn.innerHTML = 'Save Lead'; btn.classList.remove('opacity-70', 'cursor-not-allowed'); }
-        };
 
         function loadLeads(){
             onSnapshot(collection(db,'leads'), snap => {
@@ -619,6 +519,33 @@
                 renderLeadsUI(); window.updateNotifications(); 
             });
         }
+
+        window.saveLead = async () => {
+            if(currentUser && currentUser.role === 'new') return showToast('Access Denied! Wait for Admin to assign role.', 'error');
+
+            const btn = document.getElementById('submitLeadBtn');
+            const name = document.getElementById('leadName').value.trim(); const phone = document.getElementById('leadPhone').value.trim();
+            const address = document.getElementById('leadAddress').value.trim(); const amount = document.getElementById('leadAmount').value.trim(); const type = document.getElementById('type').value;
+
+            if(!name || !phone || !amount || !address) return showToast('Fill all fields!', 'error');
+            if(phone.length !== 10) return showToast('Mobile must be 10 digits!', 'error');
+            
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Saving...'; btn.classList.add('opacity-70', 'cursor-not-allowed');
+            try {
+                const userSnap = await getDocs(query(collection(db,'users'), where('email','==',currentUser.email)));
+                if(!userSnap.empty && userSnap.docs[0].data().blocked) throw new Error('Blocked by Admin');
+                await addDoc(collection(db,'leads'), { name: window.escapeHTML(name), phone: window.escapeHTML(phone), address: window.escapeHTML(address), type: window.escapeHTML(type), amount: Number(amount)||0, status: 'Pending', agentEmail: currentUser.email, agentName: currentUser.name || 'Unknown', created: Date.now(), hasQuery: false, queryMessage: '' });
+                showToast('Lead Generated Successfully!'); closeModal();
+                document.getElementById('leadName').value=''; document.getElementById('leadPhone').value=''; document.getElementById('leadAddress').value=''; document.getElementById('leadAmount').value='';
+            } catch(e) { showToast(e.message || 'Error saving lead', 'error'); } 
+            finally { btn.disabled = false; btn.innerHTML = 'Save Lead'; btn.classList.remove('opacity-70', 'cursor-not-allowed'); }
+        };
+
+        window.openModal = () => {
+            if(currentUser && currentUser.role === 'new') return showToast('Access Denied! Wait for Admin to assign role.', 'error');
+            document.getElementById('modal').classList.remove('hidden');
+        };
+        window.closeModal = () => document.getElementById('modal').classList.add('hidden');
 
         let currentLeadId = null;
         window.openStatusModal = (id, status) => { currentLeadId = id; document.getElementById('newStatus').value = status || 'Pending'; document.getElementById('statusModal').classList.remove('hidden'); };
@@ -648,7 +575,7 @@
                         act = `<div class="flex flex-wrap gap-1 mt-1 pt-1.5 border-t border-slate-50">${md} ${ms} ${bl} ${dl}</div>`;
                     } else act = `<div class="text-[9px] text-slate-400 mt-1 pt-1.5 border-t border-slate-50 italic">Admin Access (Protected)</div>`;
                     
-                    userList.innerHTML += `<div class='bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-1.5'><div class="flex justify-between items-start"><div class="w-full"><div class="font-bold text-xs text-slate-800">${u.name||'Unknown'} <span class="text-[9px] font-mono text-slate-400 font-normal ml-1">#${userIdShort}</span></div><div class="text-[10px] text-slate-500 mb-1">${u.email}</div></div><span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${rc}">${u.role||'new'}</span></div>${act}</div>`;
+                    userList.innerHTML += `<div class='bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-1.5'><div class="flex justify-between items-start"><div class="w-full"><div class="font-bold text-xs text-slate-800">${window.escapeHTML(u.name)||'Unknown'} <span class="text-[9px] font-mono text-slate-400 font-normal ml-1">#${userIdShort}</span></div><div class="text-[10px] text-slate-500 mb-1">${window.escapeHTML(u.email)}</div></div><span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${rc}">${u.role||'new'}</span></div>${act}</div>`;
                 });
                 window.updateNotifications(); 
             });
@@ -676,7 +603,7 @@
                 const subList = document.getElementById('subList'); subList.innerHTML = ''; window.mySubDSAEmails = []; 
                 snap.forEach(d => {
                     const u = d.data(); window.mySubDSAEmails.push(u.email); const shortId = `USR-${window.generate5DigitId(d.id)}`;
-                    subList.innerHTML += `<div class='bg-blue-50/50 p-2 rounded-lg border border-blue-100 flex items-center gap-2'><div class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-[10px]"><i class="fa-solid fa-user"></i></div><div><div class="font-bold text-xs text-slate-700">${u.name} <span class="text-[9px] text-slate-400 font-normal">#${shortId}</span></div><div class="text-[10px] text-slate-500">${u.mobile}</div></div></div>`;
+                    subList.innerHTML += `<div class='bg-blue-50/50 p-2 rounded-lg border border-blue-100 flex items-center gap-2'><div class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-[10px]"><i class="fa-solid fa-user"></i></div><div><div class="font-bold text-xs text-slate-700">${window.escapeHTML(u.name)} <span class="text-[9px] text-slate-400 font-normal">#${shortId}</span></div><div class="text-[10px] text-slate-500">${window.escapeHTML(u.mobile)}</div></div></div>`;
                 });
                 renderLeadsUI(); 
             });
