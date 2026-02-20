@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
@@ -362,6 +363,30 @@
         window.currentSort = 'new';
         window.currentQueryLeadId = null;
 
+        // --- VOICE ASSISTANT (WEB SPEECH API - HINDI ACCENT) ---
+        window.speakText = (message) => {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Clear previous
+                const speech = new SpeechSynthesisUtterance(message);
+                speech.lang = 'hi-IN'; // Indian Hindi Accent for perfect pronunciation
+                speech.rate = 1;
+                speech.pitch = 1;
+                window.speechSynthesis.speak(speech);
+            }
+        };
+
+        // --- CONFETTI CELEBRATION (FLOWERS) ---
+        window.triggerCelebration = () => {
+            if(typeof confetti !== 'undefined'){
+                confetti({
+                    particleCount: 150,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors: ['#FFC0CB', '#FF69B4', '#4F46E5', '#10B981', '#F59E0B'] // Colorful Flower/Party Vibes
+                });
+            }
+        };
+
         // --- SECURITY & HELPERS ---
         window.escapeHTML = (str) => {
             if (!str) return '';
@@ -399,14 +424,12 @@
             toast.classList.remove('hidden'); setTimeout(() => { toast.classList.add('hidden'); }, 3500);
         };
 
-        // --- WHATSAPP APP SHARE (FRONT PAGE) ---
         window.shareAppWhatsApp = () => {
             const appUrl = window.location.href.split('?')[0]; 
             const text = `*Wisefox LeadApp Pro* 🚀%0A%0AThe Ultimate CRM for Loan Agents! Manage your leads, calculate EMI, FD, RD, and grow your team smartly.%0A%0A*Join now by clicking here:* %0A${appUrl}`;
             window.open(`https://wa.me/?text=${text}`, '_blank');
         };
 
-        // --- NOTIFICATIONS ---
         window.openNotifModal = () => document.getElementById('notifModal').classList.remove('hidden');
         window.closeNotifModal = () => document.getElementById('notifModal').classList.add('hidden');
         window.goToUser = () => { window.closeNotifModal(); window.showPage('users'); };
@@ -448,7 +471,6 @@
             else { badge.classList.add('hidden'); notifList.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 italic">No pending actions</div>'; }
         };
 
-        // --- QUERIES ---
         window.openQueryModal = (id) => { window.currentQueryLeadId = id; document.getElementById('queryText').value = ''; document.getElementById('queryModal').classList.remove('hidden'); };
         window.closeQueryModal = () => { window.currentQueryLeadId = null; document.getElementById('queryModal').classList.add('hidden'); };
         window.submitQuery = async () => {
@@ -470,7 +492,7 @@
             document.getElementById('authTitle').innerText = isLoginMode ? 'Welcome Back' : 'Create Account';
             document.getElementById('authSubtitle').innerText = isLoginMode ? 'Sign in securely to your account' : 'Sign up to get started securely';
             document.getElementById('mainAuthBtn').innerText = isLoginMode ? 'Login' : 'Sign Up';
-            document.getElementById('authToggleText').innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
+            document.getElementById('authToggleText').innerText = isLoginMode ? "Already have an account?" : "Don't have an account?";
             event.target.innerText = isLoginMode ? 'Sign Up' : 'Login';
         };
 
@@ -492,7 +514,13 @@
                 window.tempUser = user; return;
             }
             currentUser = snap.docs[0].data(); currentUser.id = snap.docs[0].id; 
-            showToast(`Welcome back, ${currentUser.name}!`); startApp();
+            showToast(`Welcome back, ${currentUser.name}!`); 
+            
+            // VOICE ASSISTANT (HINDI)
+            const firstName = currentUser.name ? currentUser.name.split(' ')[0] : 'User';
+            window.speakText(`${firstName}, Wisefox app mein aapka swagat hai. Aasha karte hain aapka din achha ja raha hoga.`);
+            
+            startApp();
         }
 
         window.completeSignup = async () => {
@@ -512,7 +540,13 @@
                 await setDoc(doc(db,'users',user.uid), { name: window.escapeHTML(nameVal), email: user.email, mobile: window.escapeHTML(mobileVal), location: window.escapeHTML(locationVal), role, parentEmail: null });
                 currentUser = {name: nameVal, email: user.email, role, mobile: mobileVal, location: locationVal}; currentUser.id = user.uid; 
             }
-            document.getElementById('signupBox').classList.add('hidden'); showToast('Account Created Successfully!'); startApp();
+            document.getElementById('signupBox').classList.add('hidden'); showToast('Account Created Successfully!'); 
+            
+            // VOICE ASSISTANT (HINDI)
+            const firstName = nameVal.split(' ')[0];
+            window.speakText(`${firstName}, Wisefox app mein aapka swagat hai. Aasha karte hain aapka din achha ja raha hoga.`);
+
+            startApp();
         };
 
         function renderMyProfile() {
@@ -625,8 +659,16 @@
                 const userSnap = await getDocs(query(collection(db,'users'), where('email','==',currentUser.email)));
                 if(!userSnap.empty && userSnap.docs[0].data().blocked) throw new Error('Blocked by Admin');
                 await addDoc(collection(db,'leads'), { name: window.escapeHTML(name), phone: window.escapeHTML(phone), address: window.escapeHTML(address), type: window.escapeHTML(type), amount: Number(amount)||0, status: 'Pending', agentEmail: currentUser.email, agentName: currentUser.name || 'Unknown', created: Date.now(), hasQuery: false, queryMessage: '' });
-                showToast('Lead Generated Successfully!'); closeModal();
+                
+                showToast('Lead Generated Successfully!'); 
+                closeModal();
                 document.getElementById('leadName').value=''; document.getElementById('leadPhone').value=''; document.getElementById('leadAddress').value=''; document.getElementById('leadAmount').value='';
+                
+                // --- CELEBRATION & VOICE ON SUCCESS ---
+                window.triggerCelebration();
+                const cleanName = window.escapeHTML(name);
+                window.speakText(`${cleanName} ki lead daalne ke liye aapka dhanyawad. Aapka din achha jaye.`);
+
             } catch(e) { showToast(e.message || 'Error saving lead', 'error'); } 
             finally { btn.disabled = false; btn.innerHTML = 'Save Lead'; btn.classList.remove('opacity-70', 'cursor-not-allowed'); }
         };
@@ -688,15 +730,13 @@
                 const subList = document.getElementById('subList'); subList.innerHTML = ''; window.mySubDSAEmails = []; 
                 snap.forEach(d => {
                     const u = d.data(); window.mySubDSAEmails.push(u.email); const shortId = `USR-${window.generate5DigitId(d.id)}`;
-                    subList.innerHTML += `<div class='bg-blue-50/50 p-2.5 rounded-xl border border-blue-100 flex items-center gap-3 mb-2'><div class="bg-gradient-to-tr from-blue-500 to-indigo-600 text-white w-8 h-8 rounded-lg flex items-center justify-center text-xs shadow-sm"><i class="fa-solid fa-user"></i></div><div><div class="font-bold text-sm text-slate-800">${window.escapeHTML(u.name)} <span class="text-[9px] text-slate-500 font-mono bg-white px-1 rounded ml-1">#${shortId}</span></div><div class="text-xs text-slate-500 font-medium">${window.escapeHTML(u.mobile)}</div></div></div>`;
+                    subList.innerHTML += `<div class='bg-blue-50/50 p-2.5 rounded-xl border border-blue-100 flex items-center gap-3 mb-2'><div class="bg-gradient-to-tr from-blue-500 to-indigo-600 text-white w-8 h-8 rounded-lg flex items-center justify-center text-xs shadow-sm"><i class="fa-solid fa-user"></i></div><div><div class="font-bold text-sm text-slate-800">${window.escapeHTML(u.name)} <span class="text-[9px] text-slate-400 font-normal">#${shortId}</span></div><div class="text-xs text-slate-500 font-medium">${window.escapeHTML(u.mobile)}</div></div></div>`;
                 });
                 renderLeadsUI(); 
             });
         }
 
-        // --- CALCULATOR MENUS & LOGIC ---
         window.showPage = (p) => { document.getElementById('leadsPage').classList.toggle('hidden', p !== 'leads'); document.getElementById('usersPage').classList.toggle('hidden', p !== 'users'); const tLead = document.getElementById('tab-leads'); const tUser = document.getElementById('tab-users'); if(p === 'leads'){ tLead.className = "flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-white text-indigo-600 shadow-sm"; tUser.className = "flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-indigo-600"; } else { tUser.className = "flex-1 py-2 rounded-lg text-xs font-bold bg-white text-indigo-600 shadow-sm"; tLead.className = "flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-indigo-600"; } };
-        
         window.openCalcMenu = () => { document.getElementById('authBox').classList.add('hidden'); document.getElementById('app').classList.add('hidden'); document.body.classList.remove('modern-bg'); document.getElementById('calculatorPage').classList.add('hidden'); document.getElementById('calcMenuPage').classList.remove('hidden'); document.getElementById('calcMenuPage').classList.add('flex'); };
         window.closeCalcMenu = () => { document.getElementById('calcMenuPage').classList.add('hidden'); document.getElementById('calcMenuPage').classList.remove('flex'); if (currentUser) { document.getElementById('app').classList.remove('hidden'); } else { document.getElementById('authBox').classList.remove('hidden'); document.body.classList.add('modern-bg'); } };
         window.openCalculator = window.openCalcMenu; 
