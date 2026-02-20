@@ -3,29 +3,31 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Wisefox LeadApp Secure</title>
+    <title>Wisefox LeadApp Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; /* Text selection block */ }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .input-field:focus { border-color: #4F46E5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
         .toast-enter { animation: slideDown 0.3s ease-out forwards; }
+        /* Modern UI Background Pattern */
+        .modern-bg { background-image: radial-gradient(circle at top right, #e0e7ff, transparent 40%), radial-gradient(circle at bottom left, #ede9fe, transparent 40%); }
     </style>
 </head>
-<body oncontextmenu="return false" class="bg-slate-100 text-slate-800 h-screen overflow-hidden flex justify-center items-center relative">
+<body oncontextmenu="return false" class="bg-slate-50 text-slate-800 h-screen overflow-hidden flex justify-center items-center relative modern-bg">
     
     <script>
         document.onkeydown = function(e) {
-            if(event.keyCode == 123) return false; // F12
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // Ctrl+Shift+I
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; // Ctrl+Shift+J
-            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Ctrl+U
+            if(event.keyCode == 123) return false; 
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; 
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; 
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; 
         }
     </script>
 
@@ -34,13 +36,15 @@
         <span id="toastMsg">Notification</span>
     </div>
 
-    <div class="w-full max-w-md h-full sm:h-[90vh] sm:rounded-3xl bg-white shadow-2xl relative flex flex-col overflow-hidden">
+    <div class="w-full max-w-md h-full sm:h-[90vh] sm:rounded-3xl bg-white/95 backdrop-blur-xl shadow-2xl relative flex flex-col overflow-hidden sm:border border-white">
         
-        <div class="bg-indigo-600 text-white p-4 pt-6 shadow-md z-10 flex-shrink-0">
+        <div class="bg-gradient-to-r from-indigo-600 to-violet-700 text-white p-4 pt-6 shadow-md z-10 flex-shrink-0">
             <div class="flex justify-between items-center">
                 <div>
-                    <h2 class="font-bold text-lg tracking-tight"><i class="fa-solid fa-shield-halved mr-2"></i>Wisefox Secure</h2>
-                    <p class="text-[10px] text-indigo-200 opacity-90" id="userRoleDisplay">Lead Management System</p>
+                    <h2 class="font-bold text-lg tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-fox text-xl"></i> Wisefox Pro
+                    </h2>
+                    <p class="text-[10px] text-indigo-200 opacity-90 tracking-wide mt-0.5" id="userRoleDisplay">Lead Management System</p>
                 </div>
                 
                 <div class="flex items-center gap-2">
@@ -60,33 +64,48 @@
 
         <div class="flex-1 overflow-y-auto hide-scrollbar p-4 relative">
 
-            <div id="authBox" class="h-full flex flex-col justify-center items-center fade-in">
-                <div class="text-center mb-4">
-                    <div class="w-14 h-14 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-2 text-indigo-600 text-xl shadow-sm">
-                        <i class="fa-solid fa-user-lock"></i>
+            <div id="authBox" class="h-full flex flex-col justify-center items-center fade-in px-2">
+                <div class="bg-white/70 backdrop-blur-md border border-white/80 p-7 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] w-full max-w-sm text-center relative overflow-hidden">
+                    <div class="w-16 h-16 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white text-3xl shadow-lg transform -rotate-3">
+                        <i class="fa-solid fa-shield-halved rotate-3"></i>
                     </div>
-                    <h3 id="authTitle" class="text-xl font-bold text-slate-800">Welcome Back</h3>
-                    <p id="authSubtitle" class="text-xs text-slate-500">Sign in securely</p>
+                    <h3 id="authTitle" class="text-2xl font-extrabold text-slate-800 tracking-tight">Welcome Back</h3>
+                    <p id="authSubtitle" class="text-xs text-slate-500 font-medium mt-1 mb-6">Sign in securely to your account</p>
+
+                    <div class="space-y-3 relative z-10">
+                        <div class="relative">
+                            <i class="fa-solid fa-envelope absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                            <input id="emailInput" type="email" placeholder="Email Address" class="input-field w-full border border-slate-200 bg-white/60 rounded-xl p-3 pl-10 text-sm focus:outline-none" />
+                        </div>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                            <input id="passwordInput" type="password" placeholder="Password (Min 6 chars)" class="input-field w-full border border-slate-200 bg-white/60 rounded-xl p-3 pl-10 text-sm focus:outline-none" />
+                        </div>
+                        <button id="mainAuthBtn" onclick="handleEmailAuth()" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold py-3 rounded-xl shadow-md transition-all mt-2 text-sm">
+                            Login
+                        </button>
+
+                        <div class="text-center text-[11px] text-slate-600 mt-3 font-medium">
+                            <span id="authToggleText">Don't have an account?</span>
+                            <button onclick="toggleAuthMode()" class="text-indigo-600 font-bold ml-1 hover:underline">Sign Up</button>
+                        </div>
+
+                        <div class="flex items-center my-4">
+                            <div class="flex-grow border-t border-slate-200"></div><span class="px-3 text-slate-400 text-[10px] font-bold uppercase tracking-wider">Or</span><div class="flex-grow border-t border-slate-200"></div>
+                        </div>
+
+                        <button onclick="googleLogin()" class="w-full bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl shadow-sm hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm">
+                            <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4" alt="G"> Continue with Google
+                        </button>
+                    </div>
                 </div>
 
-                <div class="w-full max-w-xs space-y-3 mt-2">
-                    <input id="emailInput" type="email" placeholder="Email Address" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 text-sm focus:outline-none" />
-                    <input id="passwordInput" type="password" placeholder="Password (Min 6 chars)" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 text-sm focus:outline-none" />
-                    <button id="mainAuthBtn" onclick="handleEmailAuth()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg shadow-md transition mt-2 text-sm">
-                        Login
+                <div class="w-full max-w-sm flex gap-3 mt-5">
+                    <button onclick="openCalculator()" class="flex-1 bg-slate-800 text-white font-semibold py-3 rounded-xl shadow-lg hover:bg-slate-900 transition flex items-center justify-center gap-2 text-xs">
+                        <i class="fa-solid fa-calculator"></i> Calculator
                     </button>
-                    <div class="text-center text-[11px] text-slate-600 mt-2">
-                        <span id="authToggleText">Don't have an account?</span>
-                        <button onclick="toggleAuthMode()" class="text-indigo-600 font-bold ml-1 hover:underline">Sign Up</button>
-                    </div>
-                    <div class="flex items-center my-3">
-                        <div class="flex-grow border-t border-slate-200"></div><span class="px-2 text-slate-400 text-[10px] font-medium">OR</span><div class="flex-grow border-t border-slate-200"></div>
-                    </div>
-                    <button onclick="googleLogin()" class="w-full bg-white border border-slate-300 text-slate-700 font-medium py-2.5 rounded-lg shadow-sm hover:bg-slate-50 hover:shadow-md transition flex items-center justify-center gap-2 text-sm">
-                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4" alt="G"> Continue with Google
-                    </button>
-                    <button onclick="openCalculator()" class="w-full bg-slate-800 text-white font-medium py-2.5 rounded-lg shadow-sm hover:bg-slate-900 transition flex items-center justify-center gap-2 mt-3 text-sm">
-                        <i class="fa-solid fa-calculator"></i> Financial Calculator
+                    <button onclick="shareAppWhatsApp()" class="flex-1 bg-green-500 text-white font-semibold py-3 rounded-xl shadow-lg hover:bg-green-600 transition flex items-center justify-center gap-2 text-xs">
+                        <i class="fa-brands fa-whatsapp text-lg"></i> Share App
                     </button>
                 </div>
             </div>
@@ -99,28 +118,45 @@
                 <div class="space-y-2.5">
                     <div>
                         <label class="text-[10px] font-bold text-slate-500 uppercase">What to calculate?</label>
-                        <select id="calcMode" onchange="updateCalcUI()" class="w-full border border-slate-300 rounded-lg p-2 mt-0.5 bg-white focus:outline-none font-medium text-indigo-700 text-sm">
-                            <option value="emi">Calculate EMI</option>
-                            <option value="amount">Calculate Loan Amount</option>
-                            <option value="roi">Calculate ROI (%)</option>
-                            <option value="term">Calculate Tenure (Term)</option>
+                        <select id="calcMode" onchange="updateCalcUI()" class="w-full border border-slate-300 rounded-lg p-2.5 mt-0.5 bg-white focus:outline-none font-medium text-indigo-700 text-sm shadow-sm">
+                            <option value="emi">Loan EMI</option>
+                            <option value="amount">Max Loan Eligibility</option>
+                            <option value="roi">Rate of Interest (%)</option>
+                            <option value="term">Loan Tenure (Months)</option>
+                            <option disabled>──────────</option>
+                            <option value="fd">Fixed Deposit (FD)</option>
+                            <option value="rd">Recurring Deposit (RD)</option>
                         </select>
                     </div>
-                    <div id="calcInputAmount" class="relative"><label class="text-[11px] font-semibold text-slate-600">Loan Amount (₹)</label><input id="cAmount" type="number" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2 mt-0.5 text-sm" /></div>
-                    <div id="calcInputEMI" class="relative hidden"><label class="text-[11px] font-semibold text-slate-600">Monthly EMI (₹)</label><input id="cEmi" type="number" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2 mt-0.5 text-sm" /></div>
-                    <div id="calcInputROI" class="relative"><label class="text-[11px] font-semibold text-slate-600">Rate of Interest (% p.a.)</label><input id="cRoi" type="number" step="0.1" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2 mt-0.5 text-sm" /></div>
-                    <div id="calcInputTerm" class="relative"><label class="text-[11px] font-semibold text-slate-600">Tenure (in Months)</label><input id="cTerm" type="number" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2 mt-0.5 text-sm" /></div>
-                    <button onclick="performCalculation()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg shadow-md mt-2 text-sm">Calculate</button>
+                    <div id="calcInputAmount" class="relative">
+                        <label id="lblCalcAmount" class="text-[11px] font-semibold text-slate-600">Loan Amount (₹)</label>
+                        <input id="cAmount" type="number" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2 mt-0.5 text-sm" />
+                    </div>
+                    <div id="calcInputEMI" class="relative hidden">
+                        <label class="text-[11px] font-semibold text-slate-600">Monthly EMI (₹)</label>
+                        <input id="cEmi" type="number" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2 mt-0.5 text-sm" />
+                    </div>
+                    <div id="calcInputROI" class="relative">
+                        <label class="text-[11px] font-semibold text-slate-600">Rate of Interest (% p.a.)</label>
+                        <input id="cRoi" type="number" step="0.1" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2 mt-0.5 text-sm" />
+                    </div>
+                    <div id="calcInputTerm" class="relative">
+                        <label class="text-[11px] font-semibold text-slate-600">Tenure (in Months)</label>
+                        <input id="cTerm" type="number" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2 mt-0.5 text-sm" />
+                    </div>
+                    <button onclick="performCalculation()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg mt-3 text-sm transition">
+                        Calculate Results
+                    </button>
 
-                    <div id="calcResultBox" class="hidden mt-3 bg-slate-800 text-white p-3 rounded-xl shadow-lg">
-                        <div class="text-center mb-2 border-b border-slate-600 pb-2">
-                            <p class="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider mb-0.5" id="resMainTitle">Your Result</p>
-                            <h2 class="text-xl font-bold" id="resMainValue">₹0</h2>
+                    <div id="calcResultBox" class="hidden mt-4 bg-slate-800 text-white p-4 rounded-xl shadow-lg">
+                        <div class="text-center mb-3 border-b border-slate-600 pb-3">
+                            <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider mb-0.5" id="resMainTitle">Your Result</p>
+                            <h2 class="text-2xl font-black" id="resMainValue">₹0</h2>
                         </div>
-                        <div class="space-y-1.5 text-[11px]">
-                            <div class="flex justify-between"><span class="text-slate-400">Principal Amount</span><span class="font-semibold" id="resPrincipal">₹0</span></div>
-                            <div class="flex justify-between"><span class="text-slate-400">Total Interest Paid</span><span class="font-semibold text-red-400" id="resInterest">₹0</span></div>
-                            <div class="flex justify-between border-t border-slate-600 pt-1.5"><span class="text-slate-300 font-bold">Total Payment</span><span class="font-bold text-emerald-400" id="resTotal">₹0</span></div>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between"><span class="text-slate-400" id="resLbl1">Principal Amount</span><span class="font-semibold" id="resPrincipal">₹0</span></div>
+                            <div class="flex justify-between"><span class="text-slate-400" id="resLbl2">Total Interest</span><span class="font-semibold text-amber-400" id="resInterest">₹0</span></div>
+                            <div class="flex justify-between border-t border-slate-600 pt-2"><span class="text-slate-300 font-bold" id="resLbl3">Total Payment</span><span class="font-bold text-emerald-400" id="resTotal">₹0</span></div>
                         </div>
                     </div>
                 </div>
@@ -133,7 +169,7 @@
                     <input id="profileName" placeholder="Full Name" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 text-sm focus:outline-none" />
                     <input id="mobile" type="number" placeholder="Mobile Number (10 digits)" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 text-sm focus:outline-none" />
                     <input id="location" placeholder="Location / City" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 text-sm focus:outline-none" />
-                    <button onclick="completeSignup()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg shadow-md mt-2 text-sm">Save & Continue</button>
+                    <button onclick="completeSignup()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl shadow-md mt-2 text-sm">Save & Continue</button>
                 </div>
             </div>
 
@@ -144,36 +180,36 @@
                         <h2 id="greetingMsg" class="font-bold text-slate-800 text-sm">Welcome!</h2>
                         <p id="liveClock" class="text-[10px] text-slate-500 font-medium mt-0.5"><i class="fa-regular fa-clock"></i> --:--</p>
                     </div>
-                    <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-xs shadow-sm border border-indigo-200" id="userInitial">U</div>
+                    <div class="w-9 h-9 bg-gradient-to-tr from-indigo-100 to-violet-200 rounded-full flex items-center justify-center text-indigo-700 font-black text-sm shadow-sm border border-indigo-200" id="userInitial">U</div>
                 </div>
 
-                <div class="bg-slate-200/50 p-1 rounded-lg flex mb-4 sticky top-0 backdrop-blur-md z-10 border border-slate-200">
-                    <button onclick="showPage('leads')" id="tab-leads" class="flex-1 py-1.5 rounded-md text-xs font-medium transition-all bg-white text-indigo-600 shadow-sm">Leads</button>
-                    <button onclick="showPage('users')" id="tab-users" class="flex-1 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-indigo-600 transition-all">Team</button>
+                <div class="bg-slate-200/60 p-1 rounded-xl flex mb-4 sticky top-0 backdrop-blur-md z-10 border border-slate-200">
+                    <button onclick="showPage('leads')" id="tab-leads" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-white text-indigo-600 shadow-sm">Leads</button>
+                    <button onclick="showPage('users')" id="tab-users" class="flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-indigo-600 transition-all">Team / Profile</button>
                 </div>
 
                 <div id="leadsPage">
                     <div class="grid grid-cols-3 gap-2 mb-4">
-                        <div class="bg-indigo-50 border border-indigo-100 p-2 rounded-lg text-center shadow-sm">
-                            <div class="text-[10px] text-indigo-500 font-bold uppercase">Total Leads</div>
-                            <div class="text-lg font-black text-indigo-700" id="dashCount">0</div>
+                        <div class="bg-indigo-50 border border-indigo-100 p-2.5 rounded-xl text-center shadow-sm">
+                            <div class="text-[10px] text-indigo-500 font-bold uppercase mb-0.5">Leads</div>
+                            <div class="text-xl font-black text-indigo-700" id="dashCount">0</div>
                         </div>
-                        <div class="bg-emerald-50 border border-emerald-100 p-2 rounded-lg text-center shadow-sm col-span-2">
-                            <div class="text-[10px] text-emerald-600 font-bold uppercase">Total Business</div>
-                            <div class="text-lg font-black text-emerald-700" id="dashAmount">₹0</div>
+                        <div class="bg-emerald-50 border border-emerald-100 p-2.5 rounded-xl text-center shadow-sm col-span-2">
+                            <div class="text-[10px] text-emerald-600 font-bold uppercase mb-0.5">Total Business</div>
+                            <div class="text-xl font-black text-emerald-700" id="dashAmount">₹0</div>
                         </div>
                     </div>
 
                     <div class="flex gap-2 mb-4">
-                        <button onclick="openModal()" class="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-2 rounded-lg shadow-md font-medium flex items-center justify-center hover:shadow-lg transition text-xs">
+                        <button onclick="openModal()" class="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-2 rounded-xl shadow-md font-semibold flex items-center justify-center hover:shadow-lg transition text-xs">
                             <i class="fa-solid fa-plus-circle mr-1.5"></i> Add Lead
                         </button>
-                        <select id="sortSelect" onchange="changeSort()" class="bg-white border border-slate-200 text-slate-600 text-[10px] rounded-lg px-2 py-2 focus:outline-none shadow-sm font-semibold w-24">
+                        <select id="sortSelect" onchange="changeSort()" class="bg-white border border-slate-200 text-slate-600 text-[11px] rounded-xl px-2 py-2 focus:outline-none shadow-sm font-semibold w-24">
                             <option value="new">Newest</option>
                             <option value="amtHigh">Amt: High</option>
                             <option value="amtLow">Amt: Low</option>
                         </select>
-                        <button onclick="exportCSV()" id="exportBtn" class="hidden bg-slate-800 text-white px-3 py-2 rounded-lg shadow-md hover:bg-slate-900 transition text-[10px] font-semibold">
+                        <button onclick="exportCSV()" id="exportBtn" class="hidden bg-slate-800 text-white px-3 py-2 rounded-xl shadow-md hover:bg-slate-900 transition text-[11px] font-semibold">
                             <i class="fa-solid fa-file-csv"></i>
                         </button>
                     </div>
@@ -183,16 +219,16 @@
 
                 <div id="usersPage" class="hidden space-y-4">
                     <div id="myProfilePanel" class="mb-4"></div>
-                    <div id="dsaPanel" class="hidden bg-white p-3 rounded-lg shadow-sm border border-slate-100">
-                        <h3 class="font-bold text-slate-700 mb-2 text-xs uppercase tracking-wide">Add Sub-DSA</h3>
-                        <div class="space-y-2">
-                            <input id="subEmail" placeholder="User Email" class="input-field w-full border border-slate-200 rounded-md p-2 text-xs" />
-                            <input id="subMobile" type="number" placeholder="User Mobile (10 digits)" class="input-field w-full border border-slate-200 rounded-md p-2 text-xs" />
-                            <button onclick="createSubDSA()" class="w-full bg-blue-600 text-white py-2 rounded-md text-xs font-medium">Link Sub-DSA</button>
+                    <div id="dsaPanel" class="hidden bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-slate-700 mb-3 text-xs uppercase tracking-wide">Add Sub-DSA</h3>
+                        <div class="space-y-2.5">
+                            <input id="subEmail" placeholder="User Email" class="input-field w-full border border-slate-200 rounded-lg p-2.5 text-xs" />
+                            <input id="subMobile" type="number" placeholder="User Mobile (10 digits)" class="input-field w-full border border-slate-200 rounded-lg p-2.5 text-xs" />
+                            <button onclick="createSubDSA()" class="w-full bg-blue-600 hover:bg-blue-700 transition text-white py-2.5 rounded-lg text-xs font-bold shadow">Link Sub-DSA</button>
                         </div>
                     </div>
-                    <div id="mySubList" class="hidden"><h3 class="font-bold text-slate-700 mb-2 text-sm">My Team</h3><div id="subList" class="space-y-2"></div></div>
-                    <div id="adminPanel" class="hidden"><h3 class="font-bold text-slate-700 mb-2 text-sm">All Users Directory</h3><div id="userList" class="space-y-2"></div></div>
+                    <div id="mySubList" class="hidden"><h3 class="font-bold text-slate-700 mb-2 text-sm ml-1">My Team</h3><div id="subList" class="space-y-2"></div></div>
+                    <div id="adminPanel" class="hidden"><h3 class="font-bold text-slate-700 mb-2 text-sm ml-1">All Users Directory</h3><div id="userList" class="space-y-2"></div></div>
                 </div>
             </div>
         </div>
@@ -209,57 +245,57 @@
     </div>
 
     <div id="queryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-2xl fade-in">
+        <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl fade-in">
             <h3 class="font-bold text-md mb-1 text-slate-800">Ask a Query</h3>
             <p class="text-[10px] text-slate-500 mb-3">Maximum 20 words allowed.</p>
-            <textarea id="queryText" rows="3" placeholder="Type your query regarding this lead..." class="w-full border border-slate-300 p-2 rounded-lg mb-3 bg-slate-50 text-sm focus:outline-none focus:border-indigo-500"></textarea>
+            <textarea id="queryText" rows="3" placeholder="Type your query regarding this lead..." class="w-full border border-slate-300 p-3 rounded-xl mb-4 bg-slate-50 text-sm focus:outline-none focus:border-indigo-500"></textarea>
             <div class="flex gap-2">
-                <button onclick="closeQueryModal()" class="flex-1 text-slate-500 text-sm font-medium hover:bg-slate-100 py-1.5 rounded-lg">Cancel</button>
-                <button onclick="submitQuery()" class="flex-1 bg-orange-500 text-white py-1.5 rounded-lg text-sm font-semibold hover:bg-orange-600 shadow">Submit Query</button>
+                <button onclick="closeQueryModal()" class="flex-1 text-slate-500 text-sm font-semibold hover:bg-slate-100 py-2 rounded-xl">Cancel</button>
+                <button onclick="submitQuery()" class="flex-1 bg-orange-500 text-white py-2 rounded-xl text-sm font-bold hover:bg-orange-600 shadow">Submit</button>
             </div>
         </div>
     </div>
     
     <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl">
-            <h3 class="font-bold text-lg mb-3 text-slate-800">New Lead Details</h3>
-            <div class="space-y-2.5">
-                <input id="leadName" placeholder="Client Name" class="w-full border border-slate-300 p-2 rounded-lg bg-slate-50 text-sm focus:outline-none focus:border-indigo-500" />
-                <input id="leadPhone" type="number" placeholder="Mobile No (10 Digits)" class="w-full border border-slate-300 p-2 rounded-lg bg-slate-50 text-sm focus:outline-none focus:border-indigo-500" />
-                <textarea id="leadAddress" placeholder="Full Address / City" rows="2" class="w-full border border-slate-300 p-2 rounded-lg bg-slate-50 text-sm focus:outline-none focus:border-indigo-500"></textarea>
-                <select id="type" class="w-full border border-slate-300 p-2 rounded-lg bg-slate-50 text-sm focus:outline-none focus:border-indigo-500">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+            <h3 class="font-bold text-lg mb-4 text-slate-800">New Lead Details</h3>
+            <div class="space-y-3">
+                <input id="leadName" placeholder="Client Name" class="w-full border border-slate-300 p-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:border-indigo-500" />
+                <input id="leadPhone" type="number" placeholder="Mobile No (10 Digits)" class="w-full border border-slate-300 p-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:border-indigo-500" />
+                <textarea id="leadAddress" placeholder="Full Address / City" rows="2" class="w-full border border-slate-300 p-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:border-indigo-500"></textarea>
+                <select id="type" class="w-full border border-slate-300 p-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:border-indigo-500">
                     <option>Personal Loan</option><option>Home Loan</option><option>Business Loan</option><option>Auto Loan</option>
                 </select>
-                <input id="leadAmount" placeholder="Amount Required" type="number" class="w-full border border-slate-300 p-2 rounded-lg bg-slate-50 text-sm focus:outline-none focus:border-indigo-500" />
-                <div class="flex gap-2 mt-3 pt-2 border-t border-slate-100">
-                    <button onclick="closeModal()" class="flex-1 py-2 text-slate-500 hover:bg-slate-100 rounded-lg text-sm font-semibold">Cancel</button>
-                    <button id="submitLeadBtn" onclick="saveLead()" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg shadow hover:bg-indigo-700 text-sm font-bold transition">Save Lead</button>
+                <input id="leadAmount" placeholder="Amount Required (₹)" type="number" class="w-full border border-slate-300 p-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:border-indigo-500" />
+                <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100">
+                    <button onclick="closeModal()" class="flex-1 py-2 text-slate-500 hover:bg-slate-100 rounded-xl text-sm font-bold">Cancel</button>
+                    <button id="submitLeadBtn" onclick="saveLead()" class="flex-1 bg-indigo-600 text-white py-2 rounded-xl shadow hover:bg-indigo-700 text-sm font-bold transition">Save Lead</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="statusModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-2xl">
+        <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl">
             <h3 class="font-bold text-md mb-3">Update Status</h3>
-            <select id="newStatus" class="w-full border p-2 rounded-lg mb-3 bg-slate-50 text-sm focus:outline-none">
+            <select id="newStatus" class="w-full border p-3 rounded-xl mb-4 bg-slate-50 text-sm focus:outline-none">
                 <option>Pending</option><option>Contacted</option><option>In Process</option><option>Sanctioned</option><option>Disbursed</option><option>Rejected</option>
             </select>
             <div class="flex gap-2">
-                <button onclick="closeStatusModal()" class="flex-1 text-slate-500 text-sm">Cancel</button>
-                <button onclick="saveStatus()" class="flex-1 bg-indigo-600 text-white py-1.5 rounded-lg text-sm font-semibold">Update</button>
+                <button onclick="closeStatusModal()" class="flex-1 text-slate-500 text-sm font-bold">Cancel</button>
+                <button onclick="saveStatus()" class="flex-1 bg-indigo-600 text-white py-2 rounded-xl text-sm font-bold">Update</button>
             </div>
         </div>
     </div>
 
     <div id="subDSAModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-2xl">
+        <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl">
             <h3 class="font-bold text-md mb-1 text-slate-800">Assign Parent DSA</h3>
             <label class="text-[10px] font-bold text-slate-600 uppercase">Select DSA</label>
-            <select id="modalDSASelect" class="w-full border border-slate-200 bg-slate-50 rounded-lg p-2 mt-1 mb-3 text-sm focus:outline-none"><option value="">-- Choose DSA --</option></select>
+            <select id="modalDSASelect" class="w-full border border-slate-200 bg-slate-50 rounded-xl p-2.5 mt-1 mb-4 text-sm focus:outline-none"><option value="">-- Choose DSA --</option></select>
             <div class="flex gap-2">
-                <button onclick="closeSubDSAModal()" class="flex-1 text-slate-500 py-1.5 rounded-lg text-sm">Cancel</button>
-                <button onclick="confirmSubDSALink()" class="flex-1 bg-blue-600 text-white py-1.5 rounded-lg shadow text-sm">Link Now</button>
+                <button onclick="closeSubDSAModal()" class="flex-1 text-slate-500 py-2 rounded-xl text-sm font-bold">Cancel</button>
+                <button onclick="confirmSubDSALink()" class="flex-1 bg-blue-600 text-white py-2 rounded-xl shadow text-sm font-bold">Link Now</button>
             </div>
         </div>
     </div>
@@ -284,12 +320,10 @@
         window.currentSort = 'new';
         window.currentQueryLeadId = null;
 
-        // --- SECURITY HELPER: XSS ESCAPING ---
+        // --- SECURITY & HELPERS ---
         window.escapeHTML = (str) => {
             if (!str) return '';
-            return str.toString().replace(/[&<>'"]/g, 
-                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])
-            );
+            return str.toString().replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
         };
 
         window.generate5DigitId = (str) => {
@@ -321,6 +355,13 @@
             toast.className = `toast-enter fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] px-5 py-2.5 rounded-full shadow-xl text-sm font-semibold text-white flex items-center gap-2 min-w-[200px] justify-center ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
             icon.className = type === 'success' ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-exclamation';
             toast.classList.remove('hidden'); setTimeout(() => { toast.classList.add('hidden'); }, 3500);
+        };
+
+        // --- WHATSAPP APP SHARE (FRONT PAGE) ---
+        window.shareAppWhatsApp = () => {
+            const appUrl = window.location.href.split('?')[0]; 
+            const text = `*Wisefox LeadApp Pro* 🚀%0A%0AThe Ultimate CRM for Loan Agents! Manage your leads, calculate EMI, FD, RD, and grow your team smartly.%0A%0A*Join now by clicking here:* %0A${appUrl}`;
+            window.open(`https://wa.me/?text=${text}`, '_blank');
         };
 
         // --- NOTIFICATIONS ---
@@ -378,17 +419,17 @@
                 showToast('Query sent to Admin/DSA!'); window.closeQueryModal();
             }
         };
-        window.resolveQuery = async (id) => { await updateDoc(doc(db, 'leads', id), { hasQuery: false, queryMessage: '' }); showToast('Query Marked as Resolved!'); };
+        window.resolveQuery = async (id) => { await updateDoc(doc(db, 'leads', id), { hasQuery: false, queryMessage: '' }); showToast('Query Resolved!'); };
 
         // --- AUTH ---
         let isLoginMode = true;
         window.toggleAuthMode = () => {
             isLoginMode = !isLoginMode;
-            document.getElementById('authTitle').innerText = isLoginMode ? 'Welcome Back' : 'Create Account';
-            document.getElementById('authSubtitle').innerText = isLoginMode ? 'Sign in to your account' : 'Sign up to get started';
-            document.getElementById('mainAuthBtn').innerText = isLoginMode ? 'Login' : 'Sign Up';
-            document.getElementById('authToggleText').innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
-            event.target.innerText = isLoginMode ? 'Sign Up' : 'Login';
+            document.getElementById('authTitle').innerText = isLoginMode ? 'Create Account' : 'Welcome Back';
+            document.getElementById('authSubtitle').innerText = isLoginMode ? 'Sign up to get started securely' : 'Sign in securely to your account';
+            document.getElementById('mainAuthBtn').innerText = isLoginMode ? 'Sign Up' : 'Login';
+            document.getElementById('authToggleText').innerText = isLoginMode ? "Already have an account?" : "Don't have an account?";
+            event.target.innerText = isLoginMode ? 'Login' : 'Sign Up';
         };
 
         window.handleEmailAuth = async () => {
@@ -435,10 +476,18 @@
         function renderMyProfile() {
             const uid = `USR-${window.generate5DigitId(currentUser.id)}`;
             document.getElementById('myProfilePanel').innerHTML = `
-                <div class="bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-4 rounded-xl shadow-md relative overflow-hidden">
-                    <div class="flex justify-between items-start"><div><h3 class="font-bold text-[10px] text-indigo-200 uppercase tracking-wider mb-1">My Profile</h3><div class="font-black text-lg">${window.escapeHTML(currentUser.name)}</div><div class="text-[10px] font-mono bg-black/20 px-2 py-0.5 rounded inline-block mt-1 mb-3">ID: #${uid}</div></div><span class="text-[10px] bg-white text-indigo-700 font-bold px-2 py-1 rounded shadow-sm uppercase">${currentUser.role}</span></div>
-                    <div class="text-xs space-y-1.5 opacity-90"><div><i class="fa-solid fa-phone w-4 text-center"></i> ${window.escapeHTML(currentUser.mobile)}</div><div><i class="fa-solid fa-envelope w-4 text-center"></i> ${window.escapeHTML(currentUser.email)}</div><div><i class="fa-solid fa-map-pin w-4 text-center"></i> ${window.escapeHTML(currentUser.location) || 'N/A'}</div></div>
-                    <button onclick="shareMyProfile()" class="absolute bottom-4 right-4 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-md transition flex items-center gap-1"><i class="fa-brands fa-whatsapp text-sm"></i> Share</button>
+                <div class="bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 opacity-20"><i class="fa-solid fa-address-card text-9xl"></i></div>
+                    <div class="flex justify-between items-start relative z-10">
+                        <div><h3 class="font-bold text-[10px] text-indigo-200 uppercase tracking-wider mb-1">My Profile</h3><div class="font-black text-xl">${window.escapeHTML(currentUser.name)}</div><div class="text-xs font-mono bg-black/20 px-2.5 py-1 rounded-md inline-block mt-1.5 mb-4">ID: #${uid}</div></div>
+                        <span class="text-[10px] bg-white text-indigo-700 font-extrabold px-3 py-1.5 rounded-lg shadow-sm uppercase">${currentUser.role}</span>
+                    </div>
+                    <div class="text-sm space-y-2 opacity-95 relative z-10 font-medium">
+                        <div><i class="fa-solid fa-phone w-5 text-center text-indigo-200"></i> ${window.escapeHTML(currentUser.mobile)}</div>
+                        <div><i class="fa-solid fa-envelope w-5 text-center text-indigo-200"></i> ${window.escapeHTML(currentUser.email)}</div>
+                        <div><i class="fa-solid fa-map-pin w-5 text-center text-indigo-200"></i> ${window.escapeHTML(currentUser.location) || 'N/A'}</div>
+                    </div>
+                    <button onclick="shareMyProfile()" class="absolute bottom-5 right-5 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5 z-10"><i class="fa-brands fa-whatsapp text-base"></i> Share</button>
                 </div>`;
         }
         window.shareMyProfile = () => {
@@ -448,7 +497,7 @@
         };
 
         function startApp(){
-            document.getElementById('authBox').classList.add('hidden'); document.getElementById('app').classList.remove('hidden');
+            document.getElementById('authBox').classList.add('hidden'); document.body.classList.remove('modern-bg'); document.getElementById('app').classList.remove('hidden');
             document.getElementById('logoutBtn').classList.remove('hidden'); document.getElementById('innerCalcBtn').classList.remove('hidden');
             document.getElementById('userRoleDisplay').innerText = `Role: ${currentUser.role.toUpperCase()}`;
             
@@ -490,18 +539,18 @@
                 const leadIdShort = `LD-${window.generate5DigitId(l.id)}`;
                 const statusClass = l.status === 'Disbursed' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : l.status === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' : l.status === 'Sanctioned' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200';
                 
-                let waBtn = `<button onclick="shareOnWhatsApp('${leadIdShort}', '${window.escapeHTML(l.name)}', '${l.amount}', '${l.type}', '${l.status}')" class="text-[12px] text-green-600 bg-green-50 px-2 py-1 rounded ml-1 hover:bg-green-100"><i class="fa-brands fa-whatsapp text-sm"></i></button>`;
-                let queryBtn = (currentUser.role === 'subdsa' || currentUser.role === 'new') ? `<button onclick="openQueryModal('${l.id}')" title="Ask a Query" class="text-[12px] text-orange-600 bg-orange-50 px-2 py-1 rounded ml-1 hover:bg-orange-100"><i class="fa-solid fa-comment-dots text-sm"></i></button>` : '';
-                let btn = (currentUser.role === 'dsa' || currentUser.role === 'admin') ? `<button onclick="openStatusModal('${l.id}','${l.status}')" class='text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded ml-1 hover:bg-indigo-100'>Edit</button>` : '';
-                let adminBtns = currentUser.role === 'admin' ? `<button onclick="deleteLead('${l.id}')" class='text-[10px] text-red-500 bg-red-50 px-2 py-1 rounded ml-1 hover:bg-red-100'><i class="fa-solid fa-trash"></i></button>` : '';
+                let waBtn = `<button onclick="shareOnWhatsApp('${leadIdShort}', '${window.escapeHTML(l.name)}', '${l.amount}', '${l.type}', '${l.status}')" class="text-[12px] text-green-600 bg-green-50 px-2.5 py-1.5 rounded-lg ml-1 hover:bg-green-100 shadow-sm"><i class="fa-brands fa-whatsapp text-sm"></i></button>`;
+                let queryBtn = (currentUser.role === 'subdsa' || currentUser.role === 'new') ? `<button onclick="openQueryModal('${l.id}')" title="Ask a Query" class="text-[12px] text-orange-600 bg-orange-50 px-2.5 py-1.5 rounded-lg ml-1 hover:bg-orange-100 shadow-sm"><i class="fa-solid fa-comment-dots text-sm"></i></button>` : '';
+                let btn = (currentUser.role === 'dsa' || currentUser.role === 'admin') ? `<button onclick="openStatusModal('${l.id}','${l.status}')" class='text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg ml-1 hover:bg-indigo-100 shadow-sm'>Edit</button>` : '';
+                let adminBtns = currentUser.role === 'admin' ? `<button onclick="deleteLead('${l.id}')" class='text-[10px] text-red-500 bg-red-50 px-2.5 py-1.5 rounded-lg ml-1 hover:bg-red-100 shadow-sm'><i class="fa-solid fa-trash"></i></button>` : '';
                 
                 let queryDisplay = '';
                 if (l.hasQuery) {
-                    let resolveBtn = (currentUser.role === 'admin' || currentUser.role === 'dsa') ? `<button onclick="resolveQuery('${l.id}')" class="ml-2 text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded hover:bg-indigo-200 font-bold text-[9px]">Resolve <i class="fa-solid fa-check"></i></button>` : '';
-                    queryDisplay = `<div class="mt-1.5 bg-red-50 border border-red-100 text-red-700 text-[10px] p-1.5 rounded flex justify-between items-center"><span class="italic font-medium"><i class="fa-solid fa-circle-question mr-1"></i> Q: ${window.escapeHTML(l.queryMessage)}</span> ${resolveBtn}</div>`;
+                    let resolveBtn = (currentUser.role === 'admin' || currentUser.role === 'dsa') ? `<button onclick="resolveQuery('${l.id}')" class="ml-2 text-indigo-700 bg-indigo-100 px-2 py-1 rounded shadow-sm hover:bg-indigo-200 font-bold text-[9px]">Resolve <i class="fa-solid fa-check"></i></button>` : '';
+                    queryDisplay = `<div class="mt-2 bg-red-50 border border-red-100 text-red-700 text-xs p-2 rounded-lg flex justify-between items-center"><span class="italic font-medium"><i class="fa-solid fa-circle-question mr-1"></i> Q: ${window.escapeHTML(l.queryMessage)}</span> ${resolveBtn}</div>`;
                 }
 
-                list.innerHTML += `<div class='bg-white p-3 rounded-xl shadow-sm border border-slate-200 relative mb-3'><div class="flex justify-between items-start mb-1.5"><div><h4 class="font-bold text-slate-800 text-sm">${window.escapeHTML(l.name)} <span class="text-[10px] font-mono text-slate-400 font-normal ml-1">#${leadIdShort}</span></h4><span class="text-[10px] font-semibold text-slate-500">${window.escapeHTML(l.type)}</span></div><span class="text-[10px] px-2 py-0.5 rounded-full font-bold border ${statusClass}">${l.status||'Pending'}</span></div><div class="mb-2 space-y-0.5 bg-slate-50 p-1.5 rounded-lg border border-slate-100"><div class="text-xs text-slate-600"><i class="fa-solid fa-phone text-slate-400 mr-1.5 w-3"></i> ${window.escapeHTML(l.phone)}</div><div class="text-xs text-slate-600 truncate"><i class="fa-solid fa-location-dot text-slate-400 mr-1.5 w-3"></i> ${window.escapeHTML(l.address) || 'NA'}</div></div>${queryDisplay}<div class="flex justify-between items-end mt-2 pt-1.5 border-t border-slate-100"><div><div class="text-sm font-bold text-slate-800">₹${Number(l.amount).toLocaleString('en-IN')}</div><div class="text-[9px] text-indigo-700 font-bold bg-indigo-100 px-1.5 py-0.5 rounded mt-0.5 inline-block"><i class="fa-regular fa-user mr-1"></i> By: ${window.escapeHTML(l.agentName)}</div></div><div class="flex items-center">${waBtn} ${queryBtn} ${btn} ${adminBtns}</div></div></div>`;
+                list.innerHTML += `<div class='bg-white p-4 rounded-2xl shadow-sm border border-slate-100 relative mb-4'><div class="flex justify-between items-start mb-2"><div><h4 class="font-bold text-slate-800 text-base">${window.escapeHTML(l.name)} <span class="text-[10px] font-mono text-slate-400 font-medium ml-1 bg-slate-100 px-1.5 py-0.5 rounded">#${leadIdShort}</span></h4><span class="text-xs font-semibold text-slate-500">${window.escapeHTML(l.type)}</span></div><span class="text-[10px] px-2.5 py-1 rounded-full font-bold border ${statusClass}">${l.status||'Pending'}</span></div><div class="mb-3 space-y-1 bg-slate-50 p-2 rounded-xl border border-slate-100"><div class="text-xs text-slate-600 font-medium"><i class="fa-solid fa-phone text-slate-400 mr-2 w-3"></i> ${window.escapeHTML(l.phone)}</div><div class="text-xs text-slate-600 truncate font-medium"><i class="fa-solid fa-location-dot text-slate-400 mr-2 w-3"></i> ${window.escapeHTML(l.address) || 'NA'}</div></div>${queryDisplay}<div class="flex justify-between items-end mt-2 pt-3 border-t border-slate-100"><div><div class="text-base font-black text-slate-800">₹${Number(l.amount).toLocaleString('en-IN')}</div><div class="text-[9px] text-indigo-700 font-bold bg-indigo-100 px-2 py-1 rounded mt-1 inline-block"><i class="fa-regular fa-user mr-1"></i> By: ${window.escapeHTML(l.agentName)}</div></div><div class="flex items-center">${waBtn} ${queryBtn} ${btn} ${adminBtns}</div></div></div>`;
             });
             document.getElementById('dashCount').innerText = totalCount;
             document.getElementById('dashAmount').innerText = "₹" + (totalAmount >= 100000 ? (totalAmount/100000).toFixed(2) + "L" : totalAmount.toLocaleString('en-IN'));
@@ -522,7 +571,6 @@
 
         window.saveLead = async () => {
             if(currentUser && currentUser.role === 'new') return showToast('Access Denied! Wait for Admin to assign role.', 'error');
-
             const btn = document.getElementById('submitLeadBtn');
             const name = document.getElementById('leadName').value.trim(); const phone = document.getElementById('leadPhone').value.trim();
             const address = document.getElementById('leadAddress').value.trim(); const amount = document.getElementById('leadAmount').value.trim(); const type = document.getElementById('type').value;
@@ -541,12 +589,8 @@
             finally { btn.disabled = false; btn.innerHTML = 'Save Lead'; btn.classList.remove('opacity-70', 'cursor-not-allowed'); }
         };
 
-        window.openModal = () => {
-            if(currentUser && currentUser.role === 'new') return showToast('Access Denied! Wait for Admin to assign role.', 'error');
-            document.getElementById('modal').classList.remove('hidden');
-        };
+        window.openModal = () => { if(currentUser && currentUser.role === 'new') return showToast('Access Denied! Wait for Admin to assign role.', 'error'); document.getElementById('modal').classList.remove('hidden'); };
         window.closeModal = () => document.getElementById('modal').classList.add('hidden');
-
         let currentLeadId = null;
         window.openStatusModal = (id, status) => { currentLeadId = id; document.getElementById('newStatus').value = status || 'Pending'; document.getElementById('statusModal').classList.remove('hidden'); };
         window.closeStatusModal = () => document.getElementById('statusModal').classList.add('hidden');
@@ -555,8 +599,7 @@
         let targetSubDSAId = null; 
         function loadNewUsers(){
             onSnapshot(query(collection(db,'users'), where('role','==','dsa')), snap => {
-                const sel = document.getElementById('modalDSASelect'); if(!sel) return;
-                sel.innerHTML = '<option value="">-- Choose DSA --</option>';
+                const sel = document.getElementById('modalDSASelect'); if(!sel) return; sel.innerHTML = '<option value="">-- Choose DSA --</option>';
                 snap.forEach(d => { const u = d.data(); sel.innerHTML += `<option value="${u.email}">${u.name||u.email}</option>`; });
             });
 
@@ -568,14 +611,14 @@
                     let rc = u.role === 'admin' ? 'bg-red-100 text-red-700' : u.role === 'dsa' ? 'bg-purple-100 text-purple-700' : u.role === 'subdsa' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600';
                     let act = '';
                     if(u.role !== 'admin') {
-                        let md = u.role !== 'dsa' ? `<button onclick="setRole('${d.id}','dsa')" class='text-[9px] bg-green-50 text-green-700 px-1.5 py-1 rounded border border-green-200'>Make DSA</button>` : '';
-                        let ms = `<button onclick="openSubDSAModal('${d.id}')" class='text-[9px] bg-blue-50 text-blue-700 px-1.5 py-1 rounded border border-blue-200 ml-1'>Make SubDSA</button>`;
-                        let bl = currentUser.role === 'admin' ? `<button onclick="toggleBlock('${d.id}','${u.blocked?'yes':'no'}')" class='text-[9px] ${u.blocked ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700'} px-1.5 py-1 rounded ml-1 border border-amber-200'>${u.blocked ? 'Unblock' : 'Block'}</button>` : '';
-                        let dl = currentUser.role === 'admin' ? `<button onclick="deleteUser('${d.id}')" class='text-[9px] bg-red-50 text-red-700 px-1.5 py-1 rounded ml-1 border border-red-200'><i class="fa-solid fa-trash"></i></button>` : '';
-                        act = `<div class="flex flex-wrap gap-1 mt-1 pt-1.5 border-t border-slate-50">${md} ${ms} ${bl} ${dl}</div>`;
-                    } else act = `<div class="text-[9px] text-slate-400 mt-1 pt-1.5 border-t border-slate-50 italic">Admin Access (Protected)</div>`;
+                        let md = u.role !== 'dsa' ? `<button onclick="setRole('${d.id}','dsa')" class='text-[9px] bg-green-50 text-green-700 px-2 py-1.5 rounded-lg border border-green-200 font-bold'>Make DSA</button>` : '';
+                        let ms = `<button onclick="openSubDSAModal('${d.id}')" class='text-[9px] bg-blue-50 text-blue-700 px-2 py-1.5 rounded-lg border border-blue-200 ml-1 font-bold'>Make SubDSA</button>`;
+                        let bl = currentUser.role === 'admin' ? `<button onclick="toggleBlock('${d.id}','${u.blocked?'yes':'no'}')" class='text-[9px] ${u.blocked ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700'} px-2 py-1.5 rounded-lg ml-1 border border-amber-200 font-bold'>${u.blocked ? 'Unblock' : 'Block'}</button>` : '';
+                        let dl = currentUser.role === 'admin' ? `<button onclick="deleteUser('${d.id}')" class='text-[9px] bg-red-50 text-red-700 px-2 py-1.5 rounded-lg ml-1 border border-red-200'><i class="fa-solid fa-trash"></i></button>` : '';
+                        act = `<div class="flex flex-wrap gap-1 mt-2 pt-2 border-t border-slate-100">${md} ${ms} ${bl} ${dl}</div>`;
+                    } else act = `<div class="text-[9px] text-slate-400 mt-2 pt-2 border-t border-slate-100 italic">Admin Access (Protected)</div>`;
                     
-                    userList.innerHTML += `<div class='bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-1.5'><div class="flex justify-between items-start"><div class="w-full"><div class="font-bold text-xs text-slate-800">${window.escapeHTML(u.name)||'Unknown'} <span class="text-[9px] font-mono text-slate-400 font-normal ml-1">#${userIdShort}</span></div><div class="text-[10px] text-slate-500 mb-1">${window.escapeHTML(u.email)}</div></div><span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${rc}">${u.role||'new'}</span></div>${act}</div>`;
+                    userList.innerHTML += `<div class='bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-1.5 mb-2'><div class="flex justify-between items-start"><div class="w-full"><div class="font-bold text-sm text-slate-800">${window.escapeHTML(u.name)||'Unknown'} <span class="text-[9px] font-mono text-slate-400 font-medium ml-1 bg-slate-100 px-1 rounded">#${userIdShort}</span></div><div class="text-[10px] text-slate-500 font-medium mb-1">${window.escapeHTML(u.email)}</div></div><span class="text-[9px] uppercase font-black px-2 py-1 rounded-md ${rc}">${u.role||'new'}</span></div>${act}</div>`;
                 });
                 window.updateNotifications(); 
             });
@@ -603,17 +646,96 @@
                 const subList = document.getElementById('subList'); subList.innerHTML = ''; window.mySubDSAEmails = []; 
                 snap.forEach(d => {
                     const u = d.data(); window.mySubDSAEmails.push(u.email); const shortId = `USR-${window.generate5DigitId(d.id)}`;
-                    subList.innerHTML += `<div class='bg-blue-50/50 p-2 rounded-lg border border-blue-100 flex items-center gap-2'><div class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-[10px]"><i class="fa-solid fa-user"></i></div><div><div class="font-bold text-xs text-slate-700">${window.escapeHTML(u.name)} <span class="text-[9px] text-slate-400 font-normal">#${shortId}</span></div><div class="text-[10px] text-slate-500">${window.escapeHTML(u.mobile)}</div></div></div>`;
+                    subList.innerHTML += `<div class='bg-blue-50/50 p-2.5 rounded-xl border border-blue-100 flex items-center gap-3 mb-2'><div class="bg-gradient-to-tr from-blue-500 to-indigo-600 text-white w-8 h-8 rounded-lg flex items-center justify-center text-xs shadow-sm"><i class="fa-solid fa-user"></i></div><div><div class="font-bold text-sm text-slate-800">${window.escapeHTML(u.name)} <span class="text-[9px] text-slate-500 font-mono bg-white px-1 rounded ml-1">#${shortId}</span></div><div class="text-xs text-slate-500 font-medium">${window.escapeHTML(u.mobile)}</div></div></div>`;
                 });
                 renderLeadsUI(); 
             });
         }
 
-        window.showPage = (p) => { document.getElementById('leadsPage').classList.toggle('hidden', p !== 'leads'); document.getElementById('usersPage').classList.toggle('hidden', p !== 'users'); const tLead = document.getElementById('tab-leads'); const tUser = document.getElementById('tab-users'); if(p === 'leads'){ tLead.className = "flex-1 py-1.5 rounded-md text-xs font-medium bg-white text-indigo-600 shadow-sm"; tUser.className = "flex-1 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-indigo-600"; } else { tUser.className = "flex-1 py-1.5 rounded-md text-xs font-medium bg-white text-indigo-600 shadow-sm"; tLead.className = "flex-1 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-indigo-600"; } };
-        window.openCalculator = () => { document.getElementById('authBox').classList.add('hidden'); document.getElementById('app').classList.add('hidden'); document.getElementById('calculatorPage').classList.remove('hidden'); document.getElementById('calculatorPage').classList.add('flex'); document.getElementById('calcResultBox').classList.add('hidden'); };
-        window.closeCalculator = () => { document.getElementById('calculatorPage').classList.add('hidden'); document.getElementById('calculatorPage').classList.remove('flex'); if (currentUser) { document.getElementById('app').classList.remove('hidden'); } else { document.getElementById('authBox').classList.remove('hidden'); } };
-        window.updateCalcUI = () => { const mode = document.getElementById('calcMode').value; document.getElementById('calcInputAmount').classList.remove('hidden'); document.getElementById('calcInputEMI').classList.remove('hidden'); document.getElementById('calcInputROI').classList.remove('hidden'); document.getElementById('calcInputTerm').classList.remove('hidden'); document.getElementById('calcResultBox').classList.add('hidden'); if (mode === 'emi') document.getElementById('calcInputEMI').classList.add('hidden'); if (mode === 'amount') document.getElementById('calcInputAmount').classList.add('hidden'); if (mode === 'roi') document.getElementById('calcInputROI').classList.add('hidden'); if (mode === 'term') document.getElementById('calcInputTerm').classList.add('hidden'); document.getElementById('cAmount').value = ''; document.getElementById('cEmi').value = ''; document.getElementById('cRoi').value = ''; document.getElementById('cTerm').value = ''; };
-        window.performCalculation = () => { const mode = document.getElementById('calcMode').value; const pInput = parseFloat(document.getElementById('cAmount').value); const eInput = parseFloat(document.getElementById('cEmi').value); const rInput = parseFloat(document.getElementById('cRoi').value); const nInput = parseFloat(document.getElementById('cTerm').value); let p = pInput || 0, e = eInput || 0, r = rInput || 0, n = nInput || 0; let resultMain = 0, totalPayment = 0, totalInterest = 0, finalP = 0; try { if (mode === 'emi') { if(!p || !r || !n) return showToast("Enter Loan Amount, ROI and Tenure.", "error"); let monthlyRate = r / 12 / 100; e = (p * monthlyRate * Math.pow(1 + monthlyRate, n)) / (Math.pow(1 + monthlyRate, n) - 1); resultMain = e; finalP = p; document.getElementById('resMainTitle').innerText = "Monthly EMI"; document.getElementById('resMainValue').innerText = "₹" + Math.round(resultMain).toLocaleString('en-IN'); } else if (mode === 'amount') { if(!e || !r || !n) return showToast("Enter EMI, ROI and Tenure.", "error"); let monthlyRate = r / 12 / 100; p = (e * (Math.pow(1 + monthlyRate, n) - 1)) / (monthlyRate * Math.pow(1 + monthlyRate, n)); resultMain = p; finalP = p; document.getElementById('resMainTitle').innerText = "Max Eligibility"; document.getElementById('resMainValue').innerText = "₹" + Math.round(resultMain).toLocaleString('en-IN'); } else if (mode === 'term') { if(!p || !e || !r) return showToast("Enter Amount, EMI and ROI.", "error"); let monthlyRate = r / 12 / 100; if (e <= p * monthlyRate) return showToast("EMI too low!", "error"); n = Math.log(e / (e - p * monthlyRate)) / Math.log(1 + monthlyRate); resultMain = Math.ceil(n); finalP = p; e = eInput; document.getElementById('resMainTitle').innerText = "Total Tenure"; document.getElementById('resMainValue').innerText = resultMain + " Months"; n = resultMain; } else if (mode === 'roi') { if(!p || !e || !n) return showToast("Enter Amount, EMI and Tenure.", "error"); if(e * n <= p) return showToast("Invalid inputs.", "error"); let low = 0.000001, high = 100.0, mid = 0; while (high - low > 0.00001) { mid = (low + high) / 2; let mRate = mid / 12 / 100; let calcE = (p * mRate * Math.pow(1 + mRate, n)) / (Math.pow(1 + mRate, n) - 1); if (calcE > e) high = mid; else low = mid; } resultMain = mid; finalP = p; document.getElementById('resMainTitle').innerText = "Rate of Interest"; document.getElementById('resMainValue').innerText = resultMain.toFixed(2) + "% p.a."; } totalPayment = e * n; totalInterest = totalPayment - finalP; document.getElementById('resPrincipal').innerText = "₹" + Math.round(finalP).toLocaleString('en-IN'); document.getElementById('resInterest').innerText = "₹" + Math.round(totalInterest > 0 ? totalInterest : 0).toLocaleString('en-IN'); document.getElementById('resTotal').innerText = "₹" + Math.round(totalPayment > 0 ? totalPayment : 0).toLocaleString('en-IN'); document.getElementById('calcResultBox').classList.remove('hidden'); } catch (err) { showToast("Calculation Error", "error"); } };
+        window.showPage = (p) => { document.getElementById('leadsPage').classList.toggle('hidden', p !== 'leads'); document.getElementById('usersPage').classList.toggle('hidden', p !== 'users'); const tLead = document.getElementById('tab-leads'); const tUser = document.getElementById('tab-users'); if(p === 'leads'){ tLead.className = "flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-white text-indigo-600 shadow-sm"; tUser.className = "flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-indigo-600"; } else { tUser.className = "flex-1 py-2 rounded-lg text-xs font-bold bg-white text-indigo-600 shadow-sm"; tLead.className = "flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-indigo-600"; } };
+        window.openCalculator = () => { document.getElementById('authBox').classList.add('hidden'); document.getElementById('app').classList.add('hidden'); document.body.classList.remove('modern-bg'); document.getElementById('calculatorPage').classList.remove('hidden'); document.getElementById('calculatorPage').classList.add('flex'); document.getElementById('calcResultBox').classList.add('hidden'); };
+        window.closeCalculator = () => { document.getElementById('calculatorPage').classList.add('hidden'); document.getElementById('calculatorPage').classList.remove('flex'); if (currentUser) { document.getElementById('app').classList.remove('hidden'); } else { document.getElementById('authBox').classList.remove('hidden'); document.body.classList.add('modern-bg'); } };
+        
+        // --- CALCULATOR LOGIC WITH FD/RD ---
+        window.updateCalcUI = () => { 
+            const mode = document.getElementById('calcMode').value; 
+            const amtLbl = document.getElementById('lblCalcAmount');
+            document.getElementById('calcInputAmount').classList.remove('hidden'); 
+            document.getElementById('calcInputEMI').classList.remove('hidden'); 
+            document.getElementById('calcInputROI').classList.remove('hidden'); 
+            document.getElementById('calcInputTerm').classList.remove('hidden'); 
+            document.getElementById('calcResultBox').classList.add('hidden'); 
+
+            if (mode === 'emi') { document.getElementById('calcInputEMI').classList.add('hidden'); amtLbl.innerText = "Loan Amount (₹)"; }
+            else if (mode === 'amount') { document.getElementById('calcInputAmount').classList.add('hidden'); }
+            else if (mode === 'roi') { document.getElementById('calcInputROI').classList.add('hidden'); amtLbl.innerText = "Loan Amount (₹)"; }
+            else if (mode === 'term') { document.getElementById('calcInputTerm').classList.add('hidden'); amtLbl.innerText = "Loan Amount (₹)"; }
+            else if (mode === 'fd') { document.getElementById('calcInputEMI').classList.add('hidden'); amtLbl.innerText = "Fixed Deposit Amount (₹)"; }
+            else if (mode === 'rd') { document.getElementById('calcInputEMI').classList.add('hidden'); amtLbl.innerText = "Monthly Deposit Amount (₹)"; }
+            
+            document.getElementById('cAmount').value = ''; document.getElementById('cEmi').value = ''; document.getElementById('cRoi').value = ''; document.getElementById('cTerm').value = ''; 
+        };
+        
+        window.performCalculation = () => { 
+            const mode = document.getElementById('calcMode').value; 
+            const pInput = parseFloat(document.getElementById('cAmount').value); const eInput = parseFloat(document.getElementById('cEmi').value); const rInput = parseFloat(document.getElementById('cRoi').value); const nInput = parseFloat(document.getElementById('cTerm').value); 
+            let p = pInput || 0, e = eInput || 0, r = rInput || 0, n = nInput || 0; 
+            let resultMain = 0, totalPayment = 0, totalInterest = 0, finalP = 0; 
+            
+            try { 
+                if (mode === 'emi') { 
+                    if(!p || !r || !n) return showToast("Enter Loan Amount, ROI and Tenure.", "error"); 
+                    let monthlyRate = r / 12 / 100; e = (p * monthlyRate * Math.pow(1 + monthlyRate, n)) / (Math.pow(1 + monthlyRate, n) - 1); 
+                    resultMain = e; finalP = p; totalPayment = e * n; totalInterest = totalPayment - finalP;
+                    document.getElementById('resMainTitle').innerText = "Monthly EMI"; document.getElementById('resLbl1').innerText="Principal Amount"; document.getElementById('resLbl2').innerText="Total Interest"; document.getElementById('resLbl3').innerText="Total Payment"; 
+                } else if (mode === 'amount') { 
+                    if(!e || !r || !n) return showToast("Enter EMI, ROI and Tenure.", "error"); 
+                    let monthlyRate = r / 12 / 100; p = (e * (Math.pow(1 + monthlyRate, n) - 1)) / (monthlyRate * Math.pow(1 + monthlyRate, n)); 
+                    resultMain = p; finalP = p; totalPayment = e * n; totalInterest = totalPayment - finalP;
+                    document.getElementById('resMainTitle').innerText = "Max Eligibility"; document.getElementById('resLbl1').innerText="Principal Amount"; document.getElementById('resLbl2').innerText="Total Interest"; document.getElementById('resLbl3').innerText="Total Payment"; 
+                } else if (mode === 'term') { 
+                    if(!p || !e || !r) return showToast("Enter Amount, EMI and ROI.", "error"); 
+                    let monthlyRate = r / 12 / 100; if (e <= p * monthlyRate) return showToast("EMI too low!", "error"); 
+                    n = Math.log(e / (e - p * monthlyRate)) / Math.log(1 + monthlyRate); 
+                    resultMain = Math.ceil(n); finalP = p; e = eInput; totalPayment = e * resultMain; totalInterest = totalPayment - finalP;
+                    document.getElementById('resMainTitle').innerText = "Total Tenure"; document.getElementById('resMainValue').innerText = resultMain + " Months";
+                    document.getElementById('resLbl1').innerText="Principal Amount"; document.getElementById('resLbl2').innerText="Total Interest"; document.getElementById('resLbl3').innerText="Total Payment"; 
+                } else if (mode === 'roi') { 
+                    if(!p || !e || !n) return showToast("Enter Amount, EMI and Tenure.", "error"); 
+                    if(e * n <= p) return showToast("Invalid inputs.", "error"); 
+                    let low = 0.000001, high = 100.0, mid = 0; 
+                    while (high - low > 0.00001) { mid = (low + high) / 2; let mRate = mid / 12 / 100; let calcE = (p * mRate * Math.pow(1 + mRate, n)) / (Math.pow(1 + mRate, n) - 1); if (calcE > e) high = mid; else low = mid; } 
+                    resultMain = mid; finalP = p; totalPayment = e * n; totalInterest = totalPayment - finalP;
+                    document.getElementById('resMainTitle').innerText = "Rate of Interest"; document.getElementById('resMainValue').innerText = resultMain.toFixed(2) + "% p.a.";
+                    document.getElementById('resLbl1').innerText="Principal Amount"; document.getElementById('resLbl2').innerText="Total Interest"; document.getElementById('resLbl3').innerText="Total Payment"; 
+                } else if (mode === 'fd') {
+                    if(!p || !r || !n) return showToast("Enter Deposit, ROI and Tenure.", "error");
+                    let timeInYears = n / 12; let rate = r / 100;
+                    let maturityAmount = p * Math.pow((1 + rate/4), 4 * timeInYears);
+                    resultMain = maturityAmount; finalP = p; totalInterest = maturityAmount - p; totalPayment = p;
+                    document.getElementById('resMainTitle').innerText = "Maturity Value (FD)"; document.getElementById('resLbl1').innerText="Total Invested"; document.getElementById('resLbl2').innerText="Interest Earned"; document.getElementById('resLbl3').innerText="Maturity Value"; 
+                } else if (mode === 'rd') {
+                    if(!p || !r || !n) return showToast("Enter Monthly Deposit, ROI and Tenure.", "error");
+                    let rate = r / 100; let totalInvested = p * n;
+                    let totalInterestRd = p * (n * (n + 1)) / 2 * (rate / 12);
+                    resultMain = totalInvested + totalInterestRd; finalP = totalInvested; totalInterest = totalInterestRd; totalPayment = totalInvested;
+                    document.getElementById('resMainTitle').innerText = "Maturity Value (RD)"; document.getElementById('resLbl1').innerText="Total Invested"; document.getElementById('resLbl2').innerText="Interest Earned"; document.getElementById('resLbl3').innerText="Maturity Value"; 
+                }
+
+                if(mode !== 'term' && mode !== 'roi') { document.getElementById('resMainValue').innerText = "₹" + Math.round(resultMain).toLocaleString('en-IN'); }
+                if(mode === 'fd' || mode === 'rd') {
+                    document.getElementById('resPrincipal').innerText = "₹" + Math.round(finalP).toLocaleString('en-IN'); 
+                    document.getElementById('resInterest').innerText = "₹" + Math.round(totalInterest > 0 ? totalInterest : 0).toLocaleString('en-IN'); 
+                    document.getElementById('resTotal').innerText = "₹" + Math.round(resultMain > 0 ? resultMain : 0).toLocaleString('en-IN'); 
+                } else {
+                    document.getElementById('resPrincipal').innerText = "₹" + Math.round(finalP).toLocaleString('en-IN'); 
+                    document.getElementById('resInterest').innerText = "₹" + Math.round(totalInterest > 0 ? totalInterest : 0).toLocaleString('en-IN'); 
+                    document.getElementById('resTotal').innerText = "₹" + Math.round(totalPayment > 0 ? totalPayment : 0).toLocaleString('en-IN'); 
+                }
+                
+                document.getElementById('calcResultBox').classList.remove('hidden'); 
+            } catch (err) { showToast("Calculation Error", "error"); } 
+        };
     </script>
 </body>
 </html>
