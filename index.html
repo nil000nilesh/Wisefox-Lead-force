@@ -415,7 +415,9 @@
             const email = document.getElementById('emailInput').value.trim(); const password = document.getElementById('passwordInput').value.trim();
             if(!email || !password) return showToast("Enter Email and Password!", 'error');
             if(password.length < 6) return showToast("Password min 6 chars!", 'error');
-            try { let result = isLoginMode ? await signInWithEmailAndPassword(auth, email, password) : await createUserWithEmailAndPassword(auth, email, password); await handleLogin(result.user);
+            try {
+                let result = isLoginMode ? await signInWithEmailAndPassword(auth, email, password) : await createUserWithEmailAndPassword(auth, email, password);
+                await handleLogin(result.user);
             } catch (error) { showToast(error.message.split('/')[1] || "Auth Failed", 'error'); }
         };
 
@@ -476,6 +478,7 @@
                 </div>
             `;
         }
+
         window.shareMyProfile = () => {
             const uid = `USR-${window.generate5DigitId(currentUser.id)}`;
             const text = `*Wisefox Profile Details*%0A%0A*Name:* ${currentUser.name}%0A*User ID:* ${uid}%0A*Role:* ${currentUser.role.toUpperCase()}%0A*Mobile:* ${currentUser.mobile}%0A*Location:* ${currentUser.location}%0A%0A_Sent via Wisefox LeadApp_`;
@@ -492,7 +495,7 @@
                 document.getElementById('exportBtn').classList.remove('hidden');
             }
             
-            window.startLiveClock(); // START CLOCK
+            window.startLiveClock(); 
             renderMyProfile(); 
             loadLeads();
             if(currentUser.role === 'admin'){ document.getElementById('adminPanel').classList.remove('hidden'); loadNewUsers(); }
@@ -509,9 +512,14 @@
         window.exportCSV = () => {
             if(window.processedLeads.length === 0) return showToast("No leads to export!", "error");
             let csv = "Lead ID,Name,Phone,Address,Type,Amount,Status,Agent\n";
-            window.processedLeads.forEach(l => { const leadIdShort = `LD-${window.generate5DigitId(l.id)}`; csv += `"${leadIdShort}","${l.name}","${l.phone}","${l.address}","${l.type}","${l.amount}","${l.status}","${l.agentName}"\n`; });
-            const blob = new Blob([csv], { type: 'text/csv' }); const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = 'Wisefox_Leads.csv'; a.click(); showToast("Report Exported Successfully!");
+            window.processedLeads.forEach(l => {
+                const leadIdShort = `LD-${window.generate5DigitId(l.id)}`;
+                csv += `"${leadIdShort}","${l.name}","${l.phone}","${l.address}","${l.type}","${l.amount}","${l.status}","${l.agentName}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'Wisefox_Leads.csv'; a.click();
+            showToast("Report Exported Successfully!");
         };
 
         function renderLeadsUI() {
@@ -531,10 +539,14 @@
                                   l.status === 'Sanctioned' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200';
                 
                 let waBtn = `<button onclick="shareOnWhatsApp('${leadIdShort}', '${l.name}', '${l.amount}', '${l.type}', '${l.status}')" class="text-[12px] text-green-600 bg-green-50 px-2 py-1 rounded ml-1 hover:bg-green-100"><i class="fa-brands fa-whatsapp text-sm"></i></button>`;
+                
+                // ONLY SUBDSA/NEW USER CAN ASK QUERY
                 let queryBtn = (currentUser.role === 'subdsa' || currentUser.role === 'new') ? `<button onclick="openQueryModal('${l.id}')" title="Ask a Query" class="text-[12px] text-orange-600 bg-orange-50 px-2 py-1 rounded ml-1 hover:bg-orange-100"><i class="fa-solid fa-comment-dots text-sm"></i></button>` : '';
+                
                 let btn = (currentUser.role === 'dsa' || currentUser.role === 'admin') ? `<button onclick="openStatusModal('${l.id}','${l.status}')" class='text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded ml-1 hover:bg-indigo-100'>Edit</button>` : '';
                 let adminBtns = currentUser.role === 'admin' ? `<button onclick="deleteLead('${l.id}')" class='text-[10px] text-red-500 bg-red-50 px-2 py-1 rounded ml-1 hover:bg-red-100'><i class="fa-solid fa-trash"></i></button>` : '';
                 
+                // QUERY DISPLAY BANNER (Only Admin/DSA can see the resolve button)
                 let queryDisplay = '';
                 if (l.hasQuery) {
                     let resolveBtn = (currentUser.role === 'admin' || currentUser.role === 'dsa') ? `<button onclick="resolveQuery('${l.id}')" class="ml-2 text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded hover:bg-indigo-200 font-bold text-[9px]">Resolve <i class="fa-solid fa-check"></i></button>` : '';
@@ -562,20 +574,21 @@
             document.getElementById('dashAmount').innerText = "₹" + (totalAmount >= 100000 ? (totalAmount/100000).toFixed(2) + "L" : totalAmount.toLocaleString('en-IN'));
         }
 
-        function loadLeads(){
-            onSnapshot(collection(db,'leads'), snap => {
-                window.processedLeads = [];
-                snap.forEach(d => {
-                    const l = d.data(); l.id = d.id;
-                    if(currentUser.role === 'admin' || l.agentEmail === currentUser.email || (currentUser.role === 'dsa' && window.mySubDSAEmails.includes(l.agentEmail))){
-                        window.processedLeads.push(l);
-                    }
-                });
-                renderLeadsUI(); window.updateNotifications(); 
-            });
-        }
+        // --- SECURITY ROLE CHECK ON LEAD ADDITION ---
+        window.openModal = () => {
+            if(currentUser && currentUser.role === 'new') {
+                return showToast('Access Denied! Please wait for Admin to assign you a role.', 'error');
+            }
+            document.getElementById('modal').classList.remove('hidden');
+        };
+
+        window.closeModal = () => document.getElementById('modal').classList.add('hidden');
 
         window.saveLead = async () => {
+            if(currentUser && currentUser.role === 'new') {
+                return showToast('Access Denied! Please wait for Admin to assign you a role.', 'error');
+            }
+
             const btn = document.getElementById('submitLeadBtn');
             const name = document.getElementById('leadName').value.trim(); const phone = document.getElementById('leadPhone').value.trim();
             const address = document.getElementById('leadAddress').value.trim(); const amount = document.getElementById('leadAmount').value.trim(); const type = document.getElementById('type').value;
@@ -594,8 +607,19 @@
             finally { btn.disabled = false; btn.innerHTML = 'Save Lead'; btn.classList.remove('opacity-70', 'cursor-not-allowed'); }
         };
 
-        window.openModal = () => document.getElementById('modal').classList.remove('hidden');
-        window.closeModal = () => document.getElementById('modal').classList.add('hidden');
+        function loadLeads(){
+            onSnapshot(collection(db,'leads'), snap => {
+                window.processedLeads = [];
+                snap.forEach(d => {
+                    const l = d.data(); l.id = d.id;
+                    if(currentUser.role === 'admin' || l.agentEmail === currentUser.email || (currentUser.role === 'dsa' && window.mySubDSAEmails.includes(l.agentEmail))){
+                        window.processedLeads.push(l);
+                    }
+                });
+                renderLeadsUI(); window.updateNotifications(); 
+            });
+        }
+
         let currentLeadId = null;
         window.openStatusModal = (id, status) => { currentLeadId = id; document.getElementById('newStatus').value = status || 'Pending'; document.getElementById('statusModal').classList.remove('hidden'); };
         window.closeStatusModal = () => document.getElementById('statusModal').classList.add('hidden');
