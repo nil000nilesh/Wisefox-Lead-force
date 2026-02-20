@@ -116,9 +116,9 @@
                 <h3 class="text-lg font-bold mb-1 text-slate-800">Complete Profile</h3>
                 <p class="text-xs text-slate-500 mb-4">Please provide your details to continue.</p>
                 <div class="space-y-3">
-                    <input id="profileName" placeholder="Full Name" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 text-sm" />
-                    <input id="mobile" type="number" placeholder="Mobile Number (10 digits)" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 text-sm" />
-                    <input id="location" placeholder="Location / City" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 text-sm" />
+                    <input id="profileName" placeholder="Full Name" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 text-sm focus:outline-none" />
+                    <input id="mobile" type="number" placeholder="Mobile Number (10 digits)" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 text-sm focus:outline-none" />
+                    <input id="location" placeholder="Location / City" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2.5 text-sm focus:outline-none" />
                     <button onclick="completeSignup()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg shadow-md mt-2 text-sm">Save & Continue</button>
                 </div>
             </div>
@@ -161,6 +161,9 @@
                 </div>
 
                 <div id="usersPage" class="hidden space-y-4">
+                    
+                    <div id="myProfilePanel" class="mb-4"></div>
+
                     <div id="dsaPanel" class="hidden bg-white p-3 rounded-lg shadow-sm border border-slate-100">
                         <h3 class="font-bold text-slate-700 mb-2 text-xs uppercase tracking-wide">Add Sub-DSA</h3>
                         <div class="space-y-2">
@@ -169,6 +172,7 @@
                             <button onclick="createSubDSA()" class="w-full bg-blue-600 text-white py-2 rounded-md text-xs font-medium">Link Sub-DSA</button>
                         </div>
                     </div>
+                    
                     <div id="mySubList" class="hidden"><h3 class="font-bold text-slate-700 mb-2 text-sm">My Team</h3><div id="subList" class="space-y-2"></div></div>
                     <div id="adminPanel" class="hidden"><h3 class="font-bold text-slate-700 mb-2 text-sm">All Users Directory</h3><div id="userList" class="space-y-2"></div></div>
                 </div>
@@ -235,8 +239,8 @@
         let currentUser = null;
         window.mySubDSAEmails = [];
         window.latestLeadsSnap = null;
-        window.processedLeads = []; // For sorting and exporting
-        window.currentSort = 'new'; // default sort
+        window.processedLeads = []; 
+        window.currentSort = 'new';
 
         // --- CUSTOM TOAST NOTIFICATIONS ---
         window.showToast = (msg, type = 'success') => {
@@ -307,10 +311,43 @@
             } else {
                 await setDoc(doc(db,'users',user.uid), { name: nameVal, email: user.email, mobile: mobileVal, location: locationVal, role, parentEmail: null });
                 currentUser = {name: nameVal, email: user.email, role, mobile: mobileVal, location: locationVal};
+                currentUser.id = user.uid; // Ensuring ID is set for fresh users
             }
             document.getElementById('signupBox').classList.add('hidden');
             showToast('Account Created Successfully!');
             startApp();
+        };
+
+        // --- RENDER MY PROFILE ---
+        function renderMyProfile() {
+            // Generating User Short ID from Firebase ID
+            const uid = `USR-${(currentUser.id || 'N/A').substring(0,5).toUpperCase()}`;
+            document.getElementById('myProfilePanel').innerHTML = `
+                <div class="bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-4 rounded-xl shadow-md relative overflow-hidden">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-[10px] text-indigo-200 uppercase tracking-wider mb-1">My Profile</h3>
+                            <div class="font-black text-lg">${currentUser.name}</div>
+                            <div class="text-[10px] font-mono bg-black/20 px-2 py-0.5 rounded inline-block mt-1 mb-3">ID: #${uid}</div>
+                        </div>
+                        <span class="text-[10px] bg-white text-indigo-700 font-bold px-2 py-1 rounded shadow-sm uppercase">${currentUser.role}</span>
+                    </div>
+                    <div class="text-xs space-y-1.5 opacity-90">
+                        <div><i class="fa-solid fa-phone w-4 text-center"></i> ${currentUser.mobile}</div>
+                        <div><i class="fa-solid fa-envelope w-4 text-center"></i> ${currentUser.email}</div>
+                        <div><i class="fa-solid fa-map-pin w-4 text-center"></i> ${currentUser.location || 'N/A'}</div>
+                    </div>
+                    <button onclick="shareMyProfile()" class="absolute bottom-4 right-4 bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-md transition flex items-center gap-1">
+                        <i class="fa-brands fa-whatsapp text-sm"></i> Share
+                    </button>
+                </div>
+            `;
+        }
+
+        window.shareMyProfile = () => {
+            const uid = `USR-${(currentUser.id || 'N/A').substring(0,5).toUpperCase()}`;
+            const text = `*Wisefox Profile Details*%0A%0A*Name:* ${currentUser.name}%0A*User ID:* ${uid}%0A*Role:* ${currentUser.role.toUpperCase()}%0A*Mobile:* ${currentUser.mobile}%0A*Location:* ${currentUser.location}%0A%0A_Sent via Wisefox LeadApp_`;
+            window.open(`https://wa.me/?text=${text}`, '_blank');
         };
 
         function startApp(){
@@ -320,6 +357,7 @@
             
             if(currentUser.role === 'admin' || currentUser.role === 'dsa') document.getElementById('exportBtn').classList.remove('hidden');
             
+            renderMyProfile(); // Render own details
             loadLeads();
             if(currentUser.role === 'admin'){ document.getElementById('adminPanel').classList.remove('hidden'); loadNewUsers(); }
             if(currentUser.role === 'dsa'){ document.getElementById('dsaPanel').classList.remove('hidden'); document.getElementById('mySubList').classList.remove('hidden'); loadMySubDSA(); }
@@ -330,16 +368,17 @@
         // --- SORTING & WHATSAPP ---
         window.changeSort = () => { window.currentSort = document.getElementById('sortSelect').value; renderLeadsUI(); };
 
-        window.shareOnWhatsApp = (name, amount, type, status) => {
-            const text = `*New Lead Details*%0A%0A*Name:* ${name}%0A*Loan Type:* ${type}%0A*Amount:* ₹${Number(amount).toLocaleString('en-IN')}%0A*Status:* ${status}%0A%0A_Sent from Wisefox App_`;
+        window.shareOnWhatsApp = (leadId, name, amount, type, status) => {
+            const text = `*New Lead Generated*%0A%0A*Lead No:* #${leadId}%0A*Name:* ${name}%0A*Loan Type:* ${type}%0A*Amount:* ₹${Number(amount).toLocaleString('en-IN')}%0A*Status:* ${status}%0A%0A_Sent via Wisefox LeadApp_`;
             window.open(`https://wa.me/?text=${text}`, '_blank');
         };
 
         window.exportCSV = () => {
             if(window.processedLeads.length === 0) return showToast("No leads to export!", "error");
-            let csv = "Name,Phone,Address,Type,Amount,Status,Agent\n";
+            let csv = "Lead ID,Name,Phone,Address,Type,Amount,Status,Agent\n";
             window.processedLeads.forEach(l => {
-                csv += `"${l.name}","${l.phone}","${l.address}","${l.type}","${l.amount}","${l.status}","${l.agentName}"\n`;
+                const leadIdShort = `LD-${l.id.substring(0,5).toUpperCase()}`;
+                csv += `"${leadIdShort}","${l.name}","${l.phone}","${l.address}","${l.type}","${l.amount}","${l.status}","${l.agentName}"\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
@@ -350,17 +389,18 @@
         function renderLeadsUI() {
             const list = document.getElementById('list'); list.innerHTML = '';
             
-            // Dashboard Variables
             let totalAmount = 0; let totalCount = window.processedLeads.length;
 
-            // Sorting
             let sortedArr = [...window.processedLeads];
             if(window.currentSort === 'amtHigh') sortedArr.sort((a,b) => b.amount - a.amount);
             else if(window.currentSort === 'amtLow') sortedArr.sort((a,b) => a.amount - b.amount);
-            else sortedArr.sort((a,b) => b.created - a.created); // Newest default
+            else sortedArr.sort((a,b) => b.created - a.created); 
 
             sortedArr.forEach(l => {
                 totalAmount += Number(l.amount);
+
+                // LEAD NO GENERATION
+                const leadIdShort = `LD-${l.id.substring(0,5).toUpperCase()}`;
 
                 const statusClass = l.status === 'Disbursed' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 
                                   l.status === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' : 
@@ -368,13 +408,15 @@
                 
                 let btn = (currentUser.role === 'dsa' || currentUser.role === 'admin') ? `<button onclick="openStatusModal('${l.id}','${l.status}')" class='text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded'>Edit</button>` : '';
                 let adminBtns = currentUser.role === 'admin' ? `<button onclick="deleteLead('${l.id}')" class='text-[10px] text-red-500 bg-red-50 px-2 py-1 rounded ml-1'><i class="fa-solid fa-trash"></i></button>` : '';
-                let waBtn = `<button onclick="shareOnWhatsApp('${l.name}', '${l.amount}', '${l.type}', '${l.status}')" class="text-[12px] text-green-600 bg-green-50 px-2 py-1 rounded ml-1"><i class="fa-brands fa-whatsapp text-sm"></i></button>`;
+                
+                // LEAD SHARE BUTTON
+                let waBtn = `<button onclick="shareOnWhatsApp('${leadIdShort}', '${l.name}', '${l.amount}', '${l.type}', '${l.status}')" class="text-[12px] text-green-600 bg-green-50 px-2 py-1 rounded ml-1"><i class="fa-brands fa-whatsapp text-sm"></i></button>`;
 
                 list.innerHTML += `
                 <div class='bg-white p-3 rounded-xl shadow-sm border border-slate-200 relative mb-3'>
                     <div class="flex justify-between items-start mb-1.5">
                         <div>
-                            <h4 class="font-bold text-slate-800 text-sm">${l.name}</h4>
+                            <h4 class="font-bold text-slate-800 text-sm">${l.name} <span class="text-[10px] font-mono text-slate-400 font-normal ml-1">#${leadIdShort}</span></h4>
                             <span class="text-[10px] font-semibold text-slate-500">${l.type}</span>
                         </div>
                         <span class="text-[10px] px-2 py-0.5 rounded-full font-bold border ${statusClass}">${l.status||'Pending'}</span>
@@ -393,7 +435,6 @@
                 </div>`;
             });
 
-            // Update Dashboard UI
             document.getElementById('dashCount').innerText = totalCount;
             document.getElementById('dashAmount').innerText = "₹" + (totalAmount >= 100000 ? (totalAmount/100000).toFixed(2) + "L" : totalAmount.toLocaleString('en-IN'));
         }
@@ -423,7 +464,6 @@
             if(!name || !phone || !amount || !address) return showToast('Fill all fields!', 'error');
             if(phone.length !== 10) return showToast('Mobile must be 10 digits!', 'error');
             
-            // DISABLE BUTTON TO PREVENT DUPLICATES
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Saving...';
             btn.classList.add('opacity-70', 'cursor-not-allowed');
@@ -444,7 +484,6 @@
             } catch(e) {
                 showToast(e.message || 'Error saving lead', 'error');
             } finally {
-                // RE-ENABLE BUTTON
                 btn.disabled = false;
                 btn.innerHTML = 'Save Lead';
                 btn.classList.remove('opacity-70', 'cursor-not-allowed');
@@ -462,7 +501,7 @@
             showToast('Status Updated!'); closeStatusModal(); 
         };
 
-        // --- ADMIN & USERS LOGIC (Unchanged functionally, added Toasts) ---
+        // --- ADMIN & USERS LOGIC ---
         let targetSubDSAId = null; 
         function loadNewUsers(){
             onSnapshot(query(collection(db,'users'), where('role','==','dsa')), snap => {
@@ -475,6 +514,10 @@
                 const userList = document.getElementById('userList'); userList.innerHTML = '';
                 snap.forEach(d => {
                     const u = d.data();
+                    
+                    // USER NO GENERATION
+                    const userIdShort = `USR-${d.id.substring(0,5).toUpperCase()}`;
+
                     let rc = u.role === 'admin' ? 'bg-red-100 text-red-700' : u.role === 'dsa' ? 'bg-purple-100 text-purple-700' : u.role === 'subdsa' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600';
                     let act = '';
                     if(u.role !== 'admin') {
@@ -489,7 +532,7 @@
                     <div class='bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-1.5'>
                         <div class="flex justify-between items-start">
                             <div class="w-full">
-                                <div class="font-bold text-xs text-slate-800">${u.name||'Unknown'}</div>
+                                <div class="font-bold text-xs text-slate-800">${u.name||'Unknown'} <span class="text-[9px] font-mono text-slate-400 font-normal ml-1">#${userIdShort}</span></div>
                                 <div class="text-[10px] text-slate-500 mb-1">${u.email}</div>
                             </div>
                             <span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${rc}">${u.role||'new'}</span>
@@ -528,13 +571,14 @@
                 const subList = document.getElementById('subList'); subList.innerHTML = ''; window.mySubDSAEmails = []; 
                 snap.forEach(d => {
                     const u = d.data(); window.mySubDSAEmails.push(u.email); 
-                    subList.innerHTML += `<div class='bg-blue-50/50 p-2 rounded-lg border border-blue-100 flex items-center gap-2'><div class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-[10px]"><i class="fa-solid fa-user"></i></div><div><div class="font-bold text-xs text-slate-700">${u.name}</div><div class="text-[10px] text-slate-500">${u.mobile}</div></div></div>`;
+                    const shortId = `USR-${d.id.substring(0,5).toUpperCase()}`;
+                    subList.innerHTML += `<div class='bg-blue-50/50 p-2 rounded-lg border border-blue-100 flex items-center gap-2'><div class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-[10px]"><i class="fa-solid fa-user"></i></div><div><div class="font-bold text-xs text-slate-700">${u.name} <span class="text-[9px] text-slate-400 font-normal">#${shortId}</span></div><div class="text-[10px] text-slate-500">${u.mobile}</div></div></div>`;
                 });
                 renderLeadsUI(); 
             });
         }
 
-        // TAB LOGIC + CALCULATOR LOGIC (Kept identical to previous turn)
+        // TABS & CALCULATOR UI LOGIC
         window.showPage = (p) => { document.getElementById('leadsPage').classList.toggle('hidden', p !== 'leads'); document.getElementById('usersPage').classList.toggle('hidden', p !== 'users'); const tLead = document.getElementById('tab-leads'); const tUser = document.getElementById('tab-users'); if(p === 'leads'){ tLead.className = "flex-1 py-1.5 rounded-md text-xs font-medium bg-white text-indigo-600 shadow-sm"; tUser.className = "flex-1 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-indigo-600"; } else { tUser.className = "flex-1 py-1.5 rounded-md text-xs font-medium bg-white text-indigo-600 shadow-sm"; tLead.className = "flex-1 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-indigo-600"; } };
         window.openCalculator = () => { document.getElementById('authBox').classList.add('hidden'); document.getElementById('app').classList.add('hidden'); document.getElementById('calculatorPage').classList.remove('hidden'); document.getElementById('calculatorPage').classList.add('flex'); document.getElementById('calcResultBox').classList.add('hidden'); };
         window.closeCalculator = () => { document.getElementById('calculatorPage').classList.add('hidden'); document.getElementById('calculatorPage').classList.remove('flex'); if (currentUser) { document.getElementById('app').classList.remove('hidden'); } else { document.getElementById('authBox').classList.remove('hidden'); } };
