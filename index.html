@@ -33,7 +33,14 @@
                     <h2 class="font-bold text-lg tracking-tight"><i class="fa-solid fa-fox mr-2"></i>Wisefox Pro</h2>
                     <p class="text-[10px] text-indigo-200 opacity-90" id="userRoleDisplay">Lead Management System</p>
                 </div>
+                
                 <div class="flex items-center gap-2">
+                    
+                    <button onclick="openNotifModal()" id="notifBtn" class="hidden relative bg-white/20 hover:bg-white/30 w-8 h-8 flex items-center justify-center rounded-full transition shadow-sm text-sm">
+                        <i class="fa-solid fa-bell text-white"></i>
+                        <span id="notifBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full hidden shadow-sm border border-indigo-600">0</span>
+                    </button>
+
                     <button onclick="openCalculator()" id="innerCalcBtn" class="hidden bg-white/20 hover:bg-white/30 w-8 h-8 flex items-center justify-center rounded-full transition shadow-sm text-sm">
                         <i class="fa-solid fa-calculator text-white"></i>
                     </button>
@@ -131,7 +138,6 @@
                 </div>
 
                 <div id="leadsPage">
-                    
                     <div class="grid grid-cols-3 gap-2 mb-4">
                         <div class="bg-indigo-50 border border-indigo-100 p-2 rounded-lg text-center shadow-sm">
                             <div class="text-[10px] text-indigo-500 font-bold uppercase">Total Leads</div>
@@ -161,7 +167,6 @@
                 </div>
 
                 <div id="usersPage" class="hidden space-y-4">
-                    
                     <div id="myProfilePanel" class="mb-4"></div>
 
                     <div id="dsaPanel" class="hidden bg-white p-3 rounded-lg shadow-sm border border-slate-100">
@@ -180,6 +185,17 @@
         </div>
     </div>
 
+    <div id="notifModal" class="hidden fixed inset-0 z-50 flex items-start justify-center bg-black/60 backdrop-blur-sm p-4 pt-20">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl fade-in">
+            <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-md text-slate-800"><i class="fa-solid fa-bell text-indigo-500 mr-2"></i> Pending Actions</h3>
+                <button onclick="closeNotifModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="notifList" class="space-y-2 max-h-[60vh] overflow-y-auto hide-scrollbar">
+                </div>
+        </div>
+    </div>
+    
     <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl">
             <h3 class="font-bold text-lg mb-3 text-slate-800">New Lead Details</h3>
@@ -240,16 +256,15 @@
         window.mySubDSAEmails = [];
         window.latestLeadsSnap = null;
         window.processedLeads = []; 
+        window.allUsers = []; // New array to track all users for notifications
         window.currentSort = 'new';
 
         // --- HELPER FUNCTION: Convert string ID to 5-Digit Number ---
         window.generate5DigitId = (str) => {
             if(!str) return '00000';
             let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                hash = str.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            return 10000 + (Math.abs(hash) % 90000); // Ensures it's always a 5-digit number
+            for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); }
+            return 10000 + (Math.abs(hash) % 90000); 
         };
 
         // --- CUSTOM TOAST NOTIFICATIONS ---
@@ -257,13 +272,67 @@
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toastIcon');
             document.getElementById('toastMsg').innerText = msg;
-            
             toast.className = `toast-enter fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] px-5 py-2.5 rounded-full shadow-xl text-sm font-semibold text-white flex items-center gap-2 min-w-[200px] justify-center ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
             icon.className = type === 'success' ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-exclamation';
-            
             toast.classList.remove('hidden');
             setTimeout(() => { toast.classList.add('hidden'); }, 3500);
         };
+
+        // --- ADMIN NOTIFICATION LOGIC ---
+        window.openNotifModal = () => document.getElementById('notifModal').classList.remove('hidden');
+        window.closeNotifModal = () => document.getElementById('notifModal').classList.add('hidden');
+        window.goToUser = () => { window.closeNotifModal(); window.showPage('users'); };
+        window.goToLead = () => { window.closeNotifModal(); window.showPage('leads'); };
+
+        window.updateNotifications = () => {
+            if (!currentUser || currentUser.role !== 'admin') return;
+            const notifList = document.getElementById('notifList');
+            const badge = document.getElementById('notifBadge');
+            notifList.innerHTML = '';
+            let count = 0;
+
+            // Check New Users
+            window.allUsers.forEach(u => {
+                if (u.role === 'new') {
+                    count++;
+                    const uid = `USR-${window.generate5DigitId(u.id)}`;
+                    notifList.innerHTML += `
+                        <div onclick="goToUser()" class="bg-blue-50 border border-blue-100 p-3 rounded-xl cursor-pointer hover:bg-blue-100 transition flex items-center justify-between mb-2 shadow-sm">
+                            <div>
+                                <div class="text-[9px] text-blue-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-user-plus mr-1"></i> New Registration</div>
+                                <div class="font-semibold text-sm text-slate-800">${u.name} <span class="text-[9px] text-slate-500 font-mono ml-1">#${uid}</span></div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-blue-400"></i>
+                        </div>`;
+                }
+            });
+
+            // Check Pending Leads
+            window.processedLeads.forEach(l => {
+                if (l.status === 'Pending') {
+                    count++;
+                    const lid = `LD-${window.generate5DigitId(l.id)}`;
+                    notifList.innerHTML += `
+                        <div onclick="goToLead()" class="bg-amber-50 border border-amber-100 p-3 rounded-xl cursor-pointer hover:bg-amber-100 transition flex items-center justify-between mb-2 shadow-sm">
+                            <div>
+                                <div class="text-[9px] text-amber-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-file-invoice-dollar mr-1"></i> Lead Pending</div>
+                                <div class="font-semibold text-sm text-slate-800">${l.name} <span class="text-[9px] text-slate-500 font-mono ml-1">#${lid}</span></div>
+                                <div class="text-[10px] text-slate-600 mt-0.5 font-medium">₹${Number(l.amount).toLocaleString('en-IN')}</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-amber-400"></i>
+                        </div>`;
+                }
+            });
+
+            if (count > 0) {
+                badge.innerText = count > 9 ? '9+' : count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+                notifList.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 italic">No pending actions</div>';
+            }
+        };
+
 
         // --- AUTH LOGIC ---
         let isLoginMode = true;
@@ -321,7 +390,7 @@
             } else {
                 await setDoc(doc(db,'users',user.uid), { name: nameVal, email: user.email, mobile: mobileVal, location: locationVal, role, parentEmail: null });
                 currentUser = {name: nameVal, email: user.email, role, mobile: mobileVal, location: locationVal};
-                currentUser.id = user.uid; // Ensuring ID is set for fresh users
+                currentUser.id = user.uid; 
             }
             document.getElementById('signupBox').classList.add('hidden');
             showToast('Account Created Successfully!');
@@ -330,7 +399,6 @@
 
         // --- RENDER MY PROFILE ---
         function renderMyProfile() {
-            // Generating 5-Digit User ID
             const uid = `USR-${window.generate5DigitId(currentUser.id)}`;
             document.getElementById('myProfilePanel').innerHTML = `
                 <div class="bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-4 rounded-xl shadow-md relative overflow-hidden">
@@ -365,9 +433,10 @@
             document.getElementById('logoutBtn').classList.remove('hidden'); document.getElementById('innerCalcBtn').classList.remove('hidden');
             document.getElementById('userRoleDisplay').innerText = `Role: ${currentUser.role.toUpperCase()}`;
             
+            if(currentUser.role === 'admin') document.getElementById('notifBtn').classList.remove('hidden'); // SHOW NOTIF BELL TO ADMIN
             if(currentUser.role === 'admin' || currentUser.role === 'dsa') document.getElementById('exportBtn').classList.remove('hidden');
             
-            renderMyProfile(); // Render own details
+            renderMyProfile(); 
             loadLeads();
             if(currentUser.role === 'admin'){ document.getElementById('adminPanel').classList.remove('hidden'); loadNewUsers(); }
             if(currentUser.role === 'dsa'){ document.getElementById('dsaPanel').classList.remove('hidden'); document.getElementById('mySubList').classList.remove('hidden'); loadMySubDSA(); }
@@ -398,7 +467,6 @@
 
         function renderLeadsUI() {
             const list = document.getElementById('list'); list.innerHTML = '';
-            
             let totalAmount = 0; let totalCount = window.processedLeads.length;
 
             let sortedArr = [...window.processedLeads];
@@ -408,18 +476,13 @@
 
             sortedArr.forEach(l => {
                 totalAmount += Number(l.amount);
-
-                // 5-DIGIT LEAD NO GENERATION
                 const leadIdShort = `LD-${window.generate5DigitId(l.id)}`;
-
                 const statusClass = l.status === 'Disbursed' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 
                                   l.status === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' : 
                                   l.status === 'Sanctioned' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200';
                 
                 let btn = (currentUser.role === 'dsa' || currentUser.role === 'admin') ? `<button onclick="openStatusModal('${l.id}','${l.status}')" class='text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded'>Edit</button>` : '';
                 let adminBtns = currentUser.role === 'admin' ? `<button onclick="deleteLead('${l.id}')" class='text-[10px] text-red-500 bg-red-50 px-2 py-1 rounded ml-1'><i class="fa-solid fa-trash"></i></button>` : '';
-                
-                // LEAD SHARE BUTTON
                 let waBtn = `<button onclick="shareOnWhatsApp('${leadIdShort}', '${l.name}', '${l.amount}', '${l.type}', '${l.status}')" class="text-[12px] text-green-600 bg-green-50 px-2 py-1 rounded ml-1"><i class="fa-brands fa-whatsapp text-sm"></i></button>`;
 
                 list.innerHTML += `
@@ -459,10 +522,10 @@
                     }
                 });
                 renderLeadsUI();
+                window.updateNotifications(); // UPDATE NOTIFICATIONS
             });
         }
 
-        // --- FIXED LEAD SAVING (PREVENT DOUBLE CLICK) ---
         window.saveLead = async () => {
             const btn = document.getElementById('submitLeadBtn');
             const name = document.getElementById('leadName').value.trim();
@@ -522,12 +585,13 @@
 
             onSnapshot(collection(db,'users'), snap => {
                 const userList = document.getElementById('userList'); userList.innerHTML = '';
+                window.allUsers = [];
                 snap.forEach(d => {
                     const u = d.data();
+                    u.id = d.id;
+                    window.allUsers.push(u); // Tracker for Notification
                     
-                    // 5-DIGIT USER NO GENERATION
                     const userIdShort = `USR-${window.generate5DigitId(d.id)}`;
-
                     let rc = u.role === 'admin' ? 'bg-red-100 text-red-700' : u.role === 'dsa' ? 'bg-purple-100 text-purple-700' : u.role === 'subdsa' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600';
                     let act = '';
                     if(u.role !== 'admin') {
@@ -550,6 +614,7 @@
                         ${act}
                     </div>`;
                 });
+                window.updateNotifications(); // UPDATE NOTIFICATIONS
             });
         }
 
