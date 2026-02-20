@@ -138,6 +138,7 @@
                 </div>
 
                 <div id="leadsPage">
+                    
                     <div class="grid grid-cols-3 gap-2 mb-4">
                         <div class="bg-indigo-50 border border-indigo-100 p-2 rounded-lg text-center shadow-sm">
                             <div class="text-[10px] text-indigo-500 font-bold uppercase">Total Leads</div>
@@ -167,6 +168,7 @@
                 </div>
 
                 <div id="usersPage" class="hidden space-y-4">
+                    
                     <div id="myProfilePanel" class="mb-4"></div>
 
                     <div id="dsaPanel" class="hidden bg-white p-3 rounded-lg shadow-sm border border-slate-100">
@@ -193,6 +195,18 @@
             </div>
             <div id="notifList" class="space-y-2 max-h-[60vh] overflow-y-auto hide-scrollbar">
                 </div>
+        </div>
+    </div>
+
+    <div id="queryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-2xl fade-in">
+            <h3 class="font-bold text-md mb-1 text-slate-800">Ask a Query</h3>
+            <p class="text-[10px] text-slate-500 mb-3">Maximum 20 words allowed.</p>
+            <textarea id="queryText" rows="3" placeholder="Type your query regarding this lead..." class="w-full border border-slate-300 p-2 rounded-lg mb-3 bg-slate-50 text-sm focus:outline-none focus:border-indigo-500"></textarea>
+            <div class="flex gap-2">
+                <button onclick="closeQueryModal()" class="flex-1 text-slate-500 text-sm font-medium hover:bg-slate-100 py-1.5 rounded-lg">Cancel</button>
+                <button onclick="submitQuery()" class="flex-1 bg-orange-500 text-white py-1.5 rounded-lg text-sm font-semibold hover:bg-orange-600 shadow">Submit Query</button>
+            </div>
         </div>
     </div>
     
@@ -256,8 +270,9 @@
         window.mySubDSAEmails = [];
         window.latestLeadsSnap = null;
         window.processedLeads = []; 
-        window.allUsers = []; // New array to track all users for notifications
+        window.allUsers = []; 
         window.currentSort = 'new';
+        window.currentQueryLeadId = null;
 
         // --- HELPER FUNCTION: Convert string ID to 5-Digit Number ---
         window.generate5DigitId = (str) => {
@@ -278,59 +293,92 @@
             setTimeout(() => { toast.classList.add('hidden'); }, 3500);
         };
 
-        // --- ADMIN NOTIFICATION LOGIC ---
+        // --- NOTIFICATION BELL LOGIC (ADMIN & DSA) ---
         window.openNotifModal = () => document.getElementById('notifModal').classList.remove('hidden');
         window.closeNotifModal = () => document.getElementById('notifModal').classList.add('hidden');
         window.goToUser = () => { window.closeNotifModal(); window.showPage('users'); };
         window.goToLead = () => { window.closeNotifModal(); window.showPage('leads'); };
 
         window.updateNotifications = () => {
-            if (!currentUser || currentUser.role !== 'admin') return;
+            if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'dsa')) return;
             const notifList = document.getElementById('notifList');
             const badge = document.getElementById('notifBadge');
             notifList.innerHTML = '';
             let count = 0;
 
-            // Check New Users
-            window.allUsers.forEach(u => {
-                if (u.role === 'new') {
-                    count++;
-                    const uid = `USR-${window.generate5DigitId(u.id)}`;
-                    notifList.innerHTML += `
-                        <div onclick="goToUser()" class="bg-blue-50 border border-blue-100 p-3 rounded-xl cursor-pointer hover:bg-blue-100 transition flex items-center justify-between mb-2 shadow-sm">
-                            <div>
-                                <div class="text-[9px] text-blue-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-user-plus mr-1"></i> New Registration</div>
-                                <div class="font-semibold text-sm text-slate-800">${u.name} <span class="text-[9px] text-slate-500 font-mono ml-1">#${uid}</span></div>
-                            </div>
-                            <i class="fa-solid fa-chevron-right text-blue-400"></i>
-                        </div>`;
-                }
-            });
-
-            // Check Pending Leads
-            window.processedLeads.forEach(l => {
-                if (l.status === 'Pending') {
-                    count++;
-                    const lid = `LD-${window.generate5DigitId(l.id)}`;
-                    notifList.innerHTML += `
-                        <div onclick="goToLead()" class="bg-amber-50 border border-amber-100 p-3 rounded-xl cursor-pointer hover:bg-amber-100 transition flex items-center justify-between mb-2 shadow-sm">
-                            <div>
-                                <div class="text-[9px] text-amber-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-file-invoice-dollar mr-1"></i> Lead Pending</div>
-                                <div class="font-semibold text-sm text-slate-800">${l.name} <span class="text-[9px] text-slate-500 font-mono ml-1">#${lid}</span></div>
-                                <div class="text-[10px] text-slate-600 mt-0.5 font-medium">₹${Number(l.amount).toLocaleString('en-IN')}</div>
-                            </div>
-                            <i class="fa-solid fa-chevron-right text-amber-400"></i>
-                        </div>`;
-                }
-            });
-
-            if (count > 0) {
-                badge.innerText = count > 9 ? '9+' : count;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-                notifList.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 italic">No pending actions</div>';
+            // Admin Only: New Users Notification
+            if (currentUser.role === 'admin') {
+                window.allUsers.forEach(u => {
+                    if (u.role === 'new') {
+                        count++;
+                        const uid = `USR-${window.generate5DigitId(u.id)}`;
+                        notifList.innerHTML += `
+                            <div onclick="goToUser()" class="bg-blue-50 border border-blue-100 p-3 rounded-xl cursor-pointer hover:bg-blue-100 transition flex items-center justify-between mb-2 shadow-sm">
+                                <div><div class="text-[9px] text-blue-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-user-plus mr-1"></i> New Registration</div><div class="font-semibold text-sm text-slate-800">${u.name} <span class="text-[9px] text-slate-500 font-mono ml-1">#${uid}</span></div></div>
+                                <i class="fa-solid fa-chevron-right text-blue-400"></i>
+                            </div>`;
+                    }
+                });
             }
+
+            // Admin & DSA: Pending Leads and Active Queries
+            window.processedLeads.forEach(l => {
+                const lid = `LD-${window.generate5DigitId(l.id)}`;
+                let isTargetLead = false;
+                
+                if (currentUser.role === 'admin') isTargetLead = true;
+                if (currentUser.role === 'dsa' && window.mySubDSAEmails.includes(l.agentEmail)) isTargetLead = true;
+
+                if (isTargetLead) {
+                    if (l.status === 'Pending') {
+                        count++;
+                        notifList.innerHTML += `
+                            <div onclick="goToLead()" class="bg-amber-50 border border-amber-100 p-3 rounded-xl cursor-pointer hover:bg-amber-100 transition flex items-center justify-between mb-2 shadow-sm">
+                                <div><div class="text-[9px] text-amber-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-file-invoice-dollar mr-1"></i> Lead Pending</div><div class="font-semibold text-sm text-slate-800">${l.name} <span class="text-[9px] text-slate-500 font-mono ml-1">#${lid}</span></div><div class="text-[10px] text-slate-600 mt-0.5 font-medium">₹${Number(l.amount).toLocaleString('en-IN')}</div></div>
+                                <i class="fa-solid fa-chevron-right text-amber-400"></i>
+                            </div>`;
+                    }
+                    if (l.hasQuery) {
+                        count++;
+                        notifList.innerHTML += `
+                            <div onclick="goToLead()" class="bg-red-50 border border-red-200 p-3 rounded-xl cursor-pointer hover:bg-red-100 transition flex items-center justify-between mb-2 shadow-sm">
+                                <div><div class="text-[9px] text-red-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-circle-question mr-1"></i> New Query</div><div class="font-semibold text-sm text-slate-800">${l.name} <span class="text-[9px] text-slate-500 font-mono ml-1">#${lid}</span></div><div class="text-[10px] text-slate-600 mt-0.5 italic truncate w-48">"${l.queryMessage}"</div></div>
+                                <i class="fa-solid fa-chevron-right text-red-400"></i>
+                            </div>`;
+                    }
+                }
+            });
+
+            if (count > 0) { badge.innerText = count > 9 ? '9+' : count; badge.classList.remove('hidden'); } 
+            else { badge.classList.add('hidden'); notifList.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 italic">No pending actions</div>'; }
+        };
+
+        // --- QUERY LOGIC ---
+        window.openQueryModal = (id) => {
+            window.currentQueryLeadId = id;
+            document.getElementById('queryText').value = '';
+            document.getElementById('queryModal').classList.remove('hidden');
+        };
+        window.closeQueryModal = () => {
+            window.currentQueryLeadId = null;
+            document.getElementById('queryModal').classList.add('hidden');
+        };
+        window.submitQuery = async () => {
+            const text = document.getElementById('queryText').value.trim();
+            if(!text) return showToast('Please type a query first!', 'error');
+            
+            const words = text.split(/\s+/);
+            if(words.length > 20) return showToast(`Max 20 words! You typed ${words.length} words.`, 'error');
+
+            if(window.currentQueryLeadId) {
+                await updateDoc(doc(db, 'leads', window.currentQueryLeadId), { hasQuery: true, queryMessage: text, queryDate: Date.now() });
+                showToast('Query sent to Admin/DSA!');
+                window.closeQueryModal();
+            }
+        };
+        window.resolveQuery = async (id) => {
+            await updateDoc(doc(db, 'leads', id), { hasQuery: false, queryMessage: '' });
+            showToast('Query Marked as Resolved!');
         };
 
 
@@ -433,8 +481,10 @@
             document.getElementById('logoutBtn').classList.remove('hidden'); document.getElementById('innerCalcBtn').classList.remove('hidden');
             document.getElementById('userRoleDisplay').innerText = `Role: ${currentUser.role.toUpperCase()}`;
             
-            if(currentUser.role === 'admin') document.getElementById('notifBtn').classList.remove('hidden'); // SHOW NOTIF BELL TO ADMIN
-            if(currentUser.role === 'admin' || currentUser.role === 'dsa') document.getElementById('exportBtn').classList.remove('hidden');
+            if(currentUser.role === 'admin' || currentUser.role === 'dsa') {
+                document.getElementById('notifBtn').classList.remove('hidden'); // SHOW NOTIF BELL
+                document.getElementById('exportBtn').classList.remove('hidden');
+            }
             
             renderMyProfile(); 
             loadLeads();
@@ -443,10 +493,7 @@
         }
 
         window.logout = () => signOut(auth).then(() => location.reload());
-
-        // --- SORTING & WHATSAPP ---
         window.changeSort = () => { window.currentSort = document.getElementById('sortSelect').value; renderLeadsUI(); };
-
         window.shareOnWhatsApp = (leadId, name, amount, type, status) => {
             const text = `*New Lead Generated*%0A%0A*Lead No:* #${leadId}%0A*Name:* ${name}%0A*Loan Type:* ${type}%0A*Amount:* ₹${Number(amount).toLocaleString('en-IN')}%0A*Status:* ${status}%0A%0A_Sent via Wisefox LeadApp_`;
             window.open(`https://wa.me/?text=${text}`, '_blank');
@@ -481,9 +528,18 @@
                                   l.status === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' : 
                                   l.status === 'Sanctioned' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200';
                 
-                let btn = (currentUser.role === 'dsa' || currentUser.role === 'admin') ? `<button onclick="openStatusModal('${l.id}','${l.status}')" class='text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded'>Edit</button>` : '';
-                let adminBtns = currentUser.role === 'admin' ? `<button onclick="deleteLead('${l.id}')" class='text-[10px] text-red-500 bg-red-50 px-2 py-1 rounded ml-1'><i class="fa-solid fa-trash"></i></button>` : '';
-                let waBtn = `<button onclick="shareOnWhatsApp('${leadIdShort}', '${l.name}', '${l.amount}', '${l.type}', '${l.status}')" class="text-[12px] text-green-600 bg-green-50 px-2 py-1 rounded ml-1"><i class="fa-brands fa-whatsapp text-sm"></i></button>`;
+                // ACTION BUTTONS
+                let waBtn = `<button onclick="shareOnWhatsApp('${leadIdShort}', '${l.name}', '${l.amount}', '${l.type}', '${l.status}')" class="text-[12px] text-green-600 bg-green-50 px-2 py-1 rounded ml-1 hover:bg-green-100"><i class="fa-brands fa-whatsapp text-sm"></i></button>`;
+                let queryBtn = `<button onclick="openQueryModal('${l.id}')" title="Ask a Query" class="text-[12px] text-orange-600 bg-orange-50 px-2 py-1 rounded ml-1 hover:bg-orange-100"><i class="fa-solid fa-comment-dots text-sm"></i></button>`;
+                let btn = (currentUser.role === 'dsa' || currentUser.role === 'admin') ? `<button onclick="openStatusModal('${l.id}','${l.status}')" class='text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded ml-1 hover:bg-indigo-100'>Edit</button>` : '';
+                let adminBtns = currentUser.role === 'admin' ? `<button onclick="deleteLead('${l.id}')" class='text-[10px] text-red-500 bg-red-50 px-2 py-1 rounded ml-1 hover:bg-red-100'><i class="fa-solid fa-trash"></i></button>` : '';
+                
+                // QUERY DISPLAY BANNER
+                let queryDisplay = '';
+                if (l.hasQuery) {
+                    let resolveBtn = (currentUser.role === 'admin' || currentUser.role === 'dsa') ? `<button onclick="resolveQuery('${l.id}')" class="ml-2 text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded hover:bg-indigo-200 font-bold text-[9px]">Resolve <i class="fa-solid fa-check"></i></button>` : '';
+                    queryDisplay = `<div class="mt-1.5 bg-red-50 border border-red-100 text-red-700 text-[10px] p-1.5 rounded flex justify-between items-center"><span class="italic font-medium"><i class="fa-solid fa-circle-question mr-1"></i> Q: ${l.queryMessage}</span> ${resolveBtn}</div>`;
+                }
 
                 list.innerHTML += `
                 <div class='bg-white p-3 rounded-xl shadow-sm border border-slate-200 relative mb-3'>
@@ -498,12 +554,13 @@
                          <div class="text-xs text-slate-600"><i class="fa-solid fa-phone text-slate-400 mr-1.5 w-3"></i> ${l.phone}</div>
                          <div class="text-xs text-slate-600 truncate"><i class="fa-solid fa-location-dot text-slate-400 mr-1.5 w-3"></i> ${l.address || 'NA'}</div>
                     </div>
-                    <div class="flex justify-between items-end mt-1.5 pt-1.5 border-t border-slate-100">
+                    ${queryDisplay}
+                    <div class="flex justify-between items-end mt-2 pt-1.5 border-t border-slate-100">
                         <div>
                             <div class="text-sm font-bold text-slate-800">₹${Number(l.amount).toLocaleString('en-IN')}</div>
                             <div class="text-[9px] text-indigo-700 font-bold bg-indigo-100 px-1.5 py-0.5 rounded mt-0.5 inline-block"><i class="fa-regular fa-user mr-1"></i> By: ${l.agentName}</div>
                         </div>
-                        <div class="flex items-center">${waBtn} ${btn} ${adminBtns}</div>
+                        <div class="flex items-center">${waBtn} ${queryBtn} ${btn} ${adminBtns}</div>
                     </div>
                 </div>`;
             });
@@ -522,7 +579,7 @@
                     }
                 });
                 renderLeadsUI();
-                window.updateNotifications(); // UPDATE NOTIFICATIONS
+                window.updateNotifications(); 
             });
         }
 
@@ -537,9 +594,7 @@
             if(!name || !phone || !amount || !address) return showToast('Fill all fields!', 'error');
             if(phone.length !== 10) return showToast('Mobile must be 10 digits!', 'error');
             
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Saving...';
-            btn.classList.add('opacity-70', 'cursor-not-allowed');
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Saving...'; btn.classList.add('opacity-70', 'cursor-not-allowed');
 
             try {
                 const userSnap = await getDocs(query(collection(db,'users'), where('email','==',currentUser.email)));
@@ -547,20 +602,15 @@
 
                 await addDoc(collection(db,'leads'), {
                     name, phone, address, type, amount: Number(amount)||0, status: 'Pending', 
-                    agentEmail: currentUser.email, agentName: currentUser.name || 'Unknown', created: Date.now()
+                    agentEmail: currentUser.email, agentName: currentUser.name || 'Unknown', created: Date.now(),
+                    hasQuery: false, queryMessage: ''
                 });
                 
                 showToast('Lead Generated Successfully!');
                 closeModal();
-                document.getElementById('leadName').value=''; document.getElementById('leadPhone').value='';
-                document.getElementById('leadAddress').value=''; document.getElementById('leadAmount').value='';
-            } catch(e) {
-                showToast(e.message || 'Error saving lead', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'Save Lead';
-                btn.classList.remove('opacity-70', 'cursor-not-allowed');
-            }
+                document.getElementById('leadName').value=''; document.getElementById('leadPhone').value=''; document.getElementById('leadAddress').value=''; document.getElementById('leadAmount').value='';
+            } catch(e) { showToast(e.message || 'Error saving lead', 'error'); } 
+            finally { btn.disabled = false; btn.innerHTML = 'Save Lead'; btn.classList.remove('opacity-70', 'cursor-not-allowed'); }
         };
 
         window.openModal = () => document.getElementById('modal').classList.remove('hidden');
@@ -569,12 +619,8 @@
         let currentLeadId = null;
         window.openStatusModal = (id, status) => { currentLeadId = id; document.getElementById('newStatus').value = status || 'Pending'; document.getElementById('statusModal').classList.remove('hidden'); };
         window.closeStatusModal = () => document.getElementById('statusModal').classList.add('hidden');
-        window.saveStatus = async () => { 
-            await updateDoc(doc(db,'leads',currentLeadId), {status: document.getElementById('newStatus').value}); 
-            showToast('Status Updated!'); closeStatusModal(); 
-        };
+        window.saveStatus = async () => { await updateDoc(doc(db,'leads',currentLeadId), {status: document.getElementById('newStatus').value}); showToast('Status Updated!'); closeStatusModal(); };
 
-        // --- ADMIN & USERS LOGIC ---
         let targetSubDSAId = null; 
         function loadNewUsers(){
             onSnapshot(query(collection(db,'users'), where('role','==','dsa')), snap => {
@@ -584,13 +630,9 @@
             });
 
             onSnapshot(collection(db,'users'), snap => {
-                const userList = document.getElementById('userList'); userList.innerHTML = '';
-                window.allUsers = [];
+                const userList = document.getElementById('userList'); userList.innerHTML = ''; window.allUsers = [];
                 snap.forEach(d => {
-                    const u = d.data();
-                    u.id = d.id;
-                    window.allUsers.push(u); // Tracker for Notification
-                    
+                    const u = d.data(); u.id = d.id; window.allUsers.push(u); 
                     const userIdShort = `USR-${window.generate5DigitId(d.id)}`;
                     let rc = u.role === 'admin' ? 'bg-red-100 text-red-700' : u.role === 'dsa' ? 'bg-purple-100 text-purple-700' : u.role === 'subdsa' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600';
                     let act = '';
@@ -605,27 +647,18 @@
                     userList.innerHTML += `
                     <div class='bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-1.5'>
                         <div class="flex justify-between items-start">
-                            <div class="w-full">
-                                <div class="font-bold text-xs text-slate-800">${u.name||'Unknown'} <span class="text-[9px] font-mono text-slate-400 font-normal ml-1">#${userIdShort}</span></div>
-                                <div class="text-[10px] text-slate-500 mb-1">${u.email}</div>
-                            </div>
+                            <div class="w-full"><div class="font-bold text-xs text-slate-800">${u.name||'Unknown'} <span class="text-[9px] font-mono text-slate-400 font-normal ml-1">#${userIdShort}</span></div><div class="text-[10px] text-slate-500 mb-1">${u.email}</div></div>
                             <span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${rc}">${u.role||'new'}</span>
-                        </div>
-                        ${act}
+                        </div>${act}
                     </div>`;
                 });
-                window.updateNotifications(); // UPDATE NOTIFICATIONS
+                window.updateNotifications(); 
             });
         }
 
         window.openSubDSAModal = (id) => { targetSubDSAId = id; document.getElementById('subDSAModal').classList.remove('hidden'); }
         window.closeSubDSAModal = () => { targetSubDSAId = null; document.getElementById('subDSAModal').classList.add('hidden'); }
-        window.confirmSubDSALink = async () => {
-            const p = document.getElementById('modalDSASelect').value;
-            if(!p) return showToast('Select DSA first', 'error');
-            if(targetSubDSAId) { await updateDoc(doc(db,'users',targetSubDSAId), {role:'subdsa', parentEmail:p}); showToast('Linked to DSA!'); closeSubDSAModal(); }
-        }
-
+        window.confirmSubDSALink = async () => { const p = document.getElementById('modalDSASelect').value; if(!p) return showToast('Select DSA first', 'error'); if(targetSubDSAId) { await updateDoc(doc(db,'users',targetSubDSAId), {role:'subdsa', parentEmail:p}); showToast('Linked to DSA!'); closeSubDSAModal(); } }
         window.deleteUser = async(id) => { if(currentUser.role === 'admin' && confirm('Delete?')) { await deleteDoc(doc(db,'users',id)); showToast('Deleted'); } };
         window.toggleBlock = async(id, state) => { if(currentUser.role === 'admin') { await updateDoc(doc(db,'users',id), {blocked: (state !== 'yes')}); showToast('Block status updated'); } };
         window.setRole = async(id, role) => { await updateDoc(doc(db,'users',id), {role}); showToast('Role Updated'); };
@@ -635,8 +668,7 @@
             const e = document.getElementById('subEmail').value.trim(); const m = document.getElementById('subMobile').value.trim();
             if(m.length !== 10) return showToast('10 digit mobile needed', 'error');
             const snap = await getDocs(query(collection(db,'users'), where('email','==',e)));
-            if(snap.empty) return showToast('User not found', 'error');
-            const d = snap.docs[0];
+            if(snap.empty) return showToast('User not found', 'error'); const d = snap.docs[0];
             if(d.data().role !== 'new') return showToast('User already assigned', 'error');
             await updateDoc(doc(db,'users',d.id), {role:'subdsa', parentEmail:currentUser.email}); showToast('SubDSA Added!');
         };
@@ -645,15 +677,13 @@
             onSnapshot(query(collection(db,'users'), where('parentEmail','==',currentUser.email)), snap => {
                 const subList = document.getElementById('subList'); subList.innerHTML = ''; window.mySubDSAEmails = []; 
                 snap.forEach(d => {
-                    const u = d.data(); window.mySubDSAEmails.push(u.email); 
-                    const shortId = `USR-${window.generate5DigitId(d.id)}`;
+                    const u = d.data(); window.mySubDSAEmails.push(u.email); const shortId = `USR-${window.generate5DigitId(d.id)}`;
                     subList.innerHTML += `<div class='bg-blue-50/50 p-2 rounded-lg border border-blue-100 flex items-center gap-2'><div class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-[10px]"><i class="fa-solid fa-user"></i></div><div><div class="font-bold text-xs text-slate-700">${u.name} <span class="text-[9px] text-slate-400 font-normal">#${shortId}</span></div><div class="text-[10px] text-slate-500">${u.mobile}</div></div></div>`;
                 });
                 renderLeadsUI(); 
             });
         }
 
-        // TABS & CALCULATOR UI LOGIC
         window.showPage = (p) => { document.getElementById('leadsPage').classList.toggle('hidden', p !== 'leads'); document.getElementById('usersPage').classList.toggle('hidden', p !== 'users'); const tLead = document.getElementById('tab-leads'); const tUser = document.getElementById('tab-users'); if(p === 'leads'){ tLead.className = "flex-1 py-1.5 rounded-md text-xs font-medium bg-white text-indigo-600 shadow-sm"; tUser.className = "flex-1 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-indigo-600"; } else { tUser.className = "flex-1 py-1.5 rounded-md text-xs font-medium bg-white text-indigo-600 shadow-sm"; tLead.className = "flex-1 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-indigo-600"; } };
         window.openCalculator = () => { document.getElementById('authBox').classList.add('hidden'); document.getElementById('app').classList.add('hidden'); document.getElementById('calculatorPage').classList.remove('hidden'); document.getElementById('calculatorPage').classList.add('flex'); document.getElementById('calcResultBox').classList.add('hidden'); };
         window.closeCalculator = () => { document.getElementById('calculatorPage').classList.add('hidden'); document.getElementById('calculatorPage').classList.remove('flex'); if (currentUser) { document.getElementById('app').classList.remove('hidden'); } else { document.getElementById('authBox').classList.remove('hidden'); } };
