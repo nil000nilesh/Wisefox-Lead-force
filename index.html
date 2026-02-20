@@ -242,6 +242,16 @@
         window.processedLeads = []; 
         window.currentSort = 'new';
 
+        // --- HELPER FUNCTION: Convert string ID to 5-Digit Number ---
+        window.generate5DigitId = (str) => {
+            if(!str) return '00000';
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return 10000 + (Math.abs(hash) % 90000); // Ensures it's always a 5-digit number
+        };
+
         // --- CUSTOM TOAST NOTIFICATIONS ---
         window.showToast = (msg, type = 'success') => {
             const toast = document.getElementById('toast');
@@ -320,8 +330,8 @@
 
         // --- RENDER MY PROFILE ---
         function renderMyProfile() {
-            // Generating User Short ID from Firebase ID
-            const uid = `USR-${(currentUser.id || 'N/A').substring(0,5).toUpperCase()}`;
+            // Generating 5-Digit User ID
+            const uid = `USR-${window.generate5DigitId(currentUser.id)}`;
             document.getElementById('myProfilePanel').innerHTML = `
                 <div class="bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-4 rounded-xl shadow-md relative overflow-hidden">
                     <div class="flex justify-between items-start">
@@ -345,7 +355,7 @@
         }
 
         window.shareMyProfile = () => {
-            const uid = `USR-${(currentUser.id || 'N/A').substring(0,5).toUpperCase()}`;
+            const uid = `USR-${window.generate5DigitId(currentUser.id)}`;
             const text = `*Wisefox Profile Details*%0A%0A*Name:* ${currentUser.name}%0A*User ID:* ${uid}%0A*Role:* ${currentUser.role.toUpperCase()}%0A*Mobile:* ${currentUser.mobile}%0A*Location:* ${currentUser.location}%0A%0A_Sent via Wisefox LeadApp_`;
             window.open(`https://wa.me/?text=${text}`, '_blank');
         };
@@ -377,7 +387,7 @@
             if(window.processedLeads.length === 0) return showToast("No leads to export!", "error");
             let csv = "Lead ID,Name,Phone,Address,Type,Amount,Status,Agent\n";
             window.processedLeads.forEach(l => {
-                const leadIdShort = `LD-${l.id.substring(0,5).toUpperCase()}`;
+                const leadIdShort = `LD-${window.generate5DigitId(l.id)}`;
                 csv += `"${leadIdShort}","${l.name}","${l.phone}","${l.address}","${l.type}","${l.amount}","${l.status}","${l.agentName}"\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv' });
@@ -399,8 +409,8 @@
             sortedArr.forEach(l => {
                 totalAmount += Number(l.amount);
 
-                // LEAD NO GENERATION
-                const leadIdShort = `LD-${l.id.substring(0,5).toUpperCase()}`;
+                // 5-DIGIT LEAD NO GENERATION
+                const leadIdShort = `LD-${window.generate5DigitId(l.id)}`;
 
                 const statusClass = l.status === 'Disbursed' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 
                                   l.status === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' : 
@@ -515,8 +525,8 @@
                 snap.forEach(d => {
                     const u = d.data();
                     
-                    // USER NO GENERATION
-                    const userIdShort = `USR-${d.id.substring(0,5).toUpperCase()}`;
+                    // 5-DIGIT USER NO GENERATION
+                    const userIdShort = `USR-${window.generate5DigitId(d.id)}`;
 
                     let rc = u.role === 'admin' ? 'bg-red-100 text-red-700' : u.role === 'dsa' ? 'bg-purple-100 text-purple-700' : u.role === 'subdsa' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600';
                     let act = '';
@@ -571,7 +581,7 @@
                 const subList = document.getElementById('subList'); subList.innerHTML = ''; window.mySubDSAEmails = []; 
                 snap.forEach(d => {
                     const u = d.data(); window.mySubDSAEmails.push(u.email); 
-                    const shortId = `USR-${d.id.substring(0,5).toUpperCase()}`;
+                    const shortId = `USR-${window.generate5DigitId(d.id)}`;
                     subList.innerHTML += `<div class='bg-blue-50/50 p-2 rounded-lg border border-blue-100 flex items-center gap-2'><div class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-[10px]"><i class="fa-solid fa-user"></i></div><div><div class="font-bold text-xs text-slate-700">${u.name} <span class="text-[9px] text-slate-400 font-normal">#${shortId}</span></div><div class="text-[10px] text-slate-500">${u.mobile}</div></div></div>`;
                 });
                 renderLeadsUI(); 
