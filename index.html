@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
@@ -282,7 +283,10 @@
         <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl fade-in">
             <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-3">
                 <h3 class="font-bold text-md text-slate-800"><i class="fa-solid fa-bell text-indigo-500 mr-2"></i> Pending Actions</h3>
-                <button onclick="closeNotifModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <div class="flex items-center gap-2.5">
+                    <button onclick="clearNotifications()" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded shadow-sm font-bold transition border border-slate-200">Clear All</button>
+                    <button onclick="closeNotifModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
             </div>
             <div id="notifList" class="space-y-2 max-h-[60vh] overflow-y-auto hide-scrollbar"></div>
         </div>
@@ -364,7 +368,6 @@
         window.currentSort = 'new';
         window.currentQueryLeadId = null;
 
-        // --- SECURITY & HELPERS ---
         window.escapeHTML = (str) => {
             if (!str) return '';
             return str.toString().replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
@@ -376,19 +379,17 @@
             return 10000 + (Math.abs(hash) % 90000); 
         };
 
-        // --- HINDI VOICE ASSISTANT ---
         window.speakText = (message) => {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel(); 
                 const speech = new SpeechSynthesisUtterance(message);
-                speech.lang = 'hi-IN'; // Indian Hindi Accent
+                speech.lang = 'hi-IN';
                 speech.rate = 1;
                 speech.pitch = 1;
                 window.speechSynthesis.speak(speech);
             }
         };
 
-        // --- CONFETTI CELEBRATION ---
         window.triggerCelebration = () => {
             if(typeof confetti !== 'undefined'){
                 confetti({
@@ -425,25 +426,87 @@
             toast.classList.remove('hidden'); setTimeout(() => { toast.classList.add('hidden'); }, 3500);
         };
 
+        // --- NEW IMAGE SHARE FEATURE ---
+        window.shareAsImage = async (elementId, fallbackText) => {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            
+            showToast('Generating Image...', 'success');
+            
+            // Hide action buttons during screenshot
+            const hideElements = el.querySelectorAll('.share-hide-btn');
+            hideElements.forEach(e => e.style.display = 'none');
+            
+            try {
+                const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+                hideElements.forEach(e => e.style.display = ''); // Restore buttons immediately
+                
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], 'Wisefox_Share.png', { type: 'image/png' });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({ files: [file], title: 'Wisefox Details' });
+                        } catch (err) {
+                            console.log('Share canceled', err);
+                        }
+                    } else {
+                        // Fallback logic for Desktop/unsupported browsers: Download image and open text link
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'Wisefox_Share.png';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        window.open(`https://wa.me/?text=${fallbackText}`, '_blank');
+                    }
+                }, 'image/png');
+            } catch (err) {
+                hideElements.forEach(e => e.style.display = '');
+                showToast('Failed to generate image', 'error');
+                window.open(`https://wa.me/?text=${fallbackText}`, '_blank');
+            }
+        };
+
         window.shareAppWhatsApp = () => {
             const appUrl = window.location.href.split('?')[0]; 
             const text = `*Wisefox LeadApp Pro* 🚀%0A%0AThe Ultimate CRM for Loan Agents! Manage your leads, calculate EMI, FD, RD, and grow your team smartly.%0A%0A*Join now by clicking here:* %0A${appUrl}`;
             window.open(`https://wa.me/?text=${text}`, '_blank');
         };
 
+        // --- NOTIFICATIONS CLEARED FEATURE ---
         window.openNotifModal = () => document.getElementById('notifModal').classList.remove('hidden');
         window.closeNotifModal = () => document.getElementById('notifModal').classList.add('hidden');
         window.goToUser = () => { window.closeNotifModal(); window.showPage('users'); };
         window.goToLead = () => { window.closeNotifModal(); window.showPage('leads'); };
 
+        window.clearNotifications = () => {
+            let activeIds = [];
+            window.allUsers.forEach(u => { if (u.role === 'new') activeIds.push('usr_' + u.id); });
+            window.processedLeads.forEach(l => {
+                let isTargetLead = false;
+                if (currentUser.role === 'admin') isTargetLead = true;
+                if (currentUser.role === 'dsa' && window.mySubDSAEmails.includes(l.agentEmail)) isTargetLead = true;
+                if(isTargetLead) {
+                    if (l.status === 'Pending') activeIds.push('ld_pend_' + l.id);
+                    if (l.hasQuery) activeIds.push('ld_query_' + l.id);
+                }
+            });
+            let dismissed = JSON.parse(localStorage.getItem('dismissedNotifs') || '[]');
+            dismissed = [...new Set([...dismissed, ...activeIds])]; // Merge distinct
+            localStorage.setItem('dismissedNotifs', JSON.stringify(dismissed));
+            window.updateNotifications();
+            showToast('Notifications Cleared!');
+        };
+
         window.updateNotifications = () => {
             if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'dsa')) return;
             const notifList = document.getElementById('notifList'); const badge = document.getElementById('notifBadge');
+            let dismissedNotifs = JSON.parse(localStorage.getItem('dismissedNotifs') || '[]');
             notifList.innerHTML = ''; let count = 0;
 
             if (currentUser.role === 'admin') {
                 window.allUsers.forEach(u => {
-                    if (u.role === 'new') {
+                    if (u.role === 'new' && !dismissedNotifs.includes('usr_' + u.id)) {
                         count++; const uid = `USR-${window.generate5DigitId(u.id)}`;
                         notifList.innerHTML += `<div onclick="goToUser()" class="bg-blue-50 border border-blue-100 p-3 rounded-xl cursor-pointer hover:bg-blue-100 transition flex items-center justify-between mb-2 shadow-sm"><div><div class="text-[9px] text-blue-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-user-plus mr-1"></i> New Registration</div><div class="font-semibold text-sm text-slate-800">${window.escapeHTML(u.name)} <span class="text-[9px] text-slate-500 font-mono ml-1">#${uid}</span></div></div><i class="fa-solid fa-chevron-right text-blue-400"></i></div>`;
                     }
@@ -457,11 +520,11 @@
                 if (currentUser.role === 'dsa' && window.mySubDSAEmails.includes(l.agentEmail)) isTargetLead = true;
 
                 if (isTargetLead) {
-                    if (l.status === 'Pending') {
+                    if (l.status === 'Pending' && !dismissedNotifs.includes('ld_pend_' + l.id)) {
                         count++;
                         notifList.innerHTML += `<div onclick="goToLead()" class="bg-amber-50 border border-amber-100 p-3 rounded-xl cursor-pointer hover:bg-amber-100 transition flex items-center justify-between mb-2 shadow-sm"><div><div class="text-[9px] text-amber-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-file-invoice-dollar mr-1"></i> Lead Pending</div><div class="font-semibold text-sm text-slate-800">${window.escapeHTML(l.name)} <span class="text-[9px] text-slate-500 font-mono ml-1">#${lid}</span></div><div class="text-[10px] text-slate-600 mt-0.5 font-medium">₹${Number(l.amount).toLocaleString('en-IN')}</div></div><i class="fa-solid fa-chevron-right text-amber-400"></i></div>`;
                     }
-                    if (l.hasQuery) {
+                    if (l.hasQuery && !dismissedNotifs.includes('ld_query_' + l.id)) {
                         count++;
                         notifList.innerHTML += `<div onclick="goToLead()" class="bg-red-50 border border-red-200 p-3 rounded-xl cursor-pointer hover:bg-red-100 transition flex items-center justify-between mb-2 shadow-sm"><div><div class="text-[9px] text-red-600 font-bold uppercase mb-0.5"><i class="fa-solid fa-circle-question mr-1"></i> New Query</div><div class="font-semibold text-sm text-slate-800">${window.escapeHTML(l.name)} <span class="text-[9px] text-slate-500 font-mono ml-1">#${lid}</span></div><div class="text-[10px] text-slate-600 mt-0.5 italic truncate w-48">"${window.escapeHTML(l.queryMessage)}"</div></div><i class="fa-solid fa-chevron-right text-red-400"></i></div>`;
                     }
@@ -517,7 +580,6 @@
             currentUser = snap.docs[0].data(); currentUser.id = snap.docs[0].id; 
             showToast(`Welcome back, ${currentUser.name}!`); 
             
-            // VOICE ASSISTANT ON LOGIN
             const firstName = currentUser.name ? currentUser.name.split(' ')[0] : 'User';
             window.speakText(`${firstName}, Wisefox app mein aapka swagat hai. Aasha karte hain aapka din achha ja raha hoga.`);
 
@@ -543,7 +605,6 @@
             }
             document.getElementById('signupBox').classList.add('hidden'); showToast('Account Created Successfully!'); 
             
-            // VOICE ASSISTANT ON SIGNUP
             const firstName = nameVal.split(' ')[0];
             window.speakText(`${firstName}, Wisefox app mein aapka swagat hai. Aasha karte hain aapka din achha ja raha hoga.`);
 
@@ -552,8 +613,9 @@
 
         function renderMyProfile() {
             const uid = `USR-${window.generate5DigitId(currentUser.id)}`;
+            // Added specific ID and share-hide-btn for image capturing
             document.getElementById('myProfilePanel').innerHTML = `
-                <div class="bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden">
+                <div id="my-profile-card" class="bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden">
                     <div class="absolute -right-10 -top-10 opacity-20"><i class="fa-solid fa-address-card text-9xl"></i></div>
                     <div class="flex justify-between items-start relative z-10">
                         <div><h3 class="font-bold text-[10px] text-indigo-200 uppercase tracking-wider mb-1">My Profile</h3><div class="font-black text-xl">${window.escapeHTML(currentUser.name)}</div><div class="text-xs font-mono bg-black/20 px-2.5 py-1 rounded-md inline-block mt-1.5 mb-4">ID: #${uid}</div></div>
@@ -564,13 +626,15 @@
                         <div><i class="fa-solid fa-envelope w-5 text-center text-indigo-200"></i> ${window.escapeHTML(currentUser.email)}</div>
                         <div><i class="fa-solid fa-map-pin w-5 text-center text-indigo-200"></i> ${window.escapeHTML(currentUser.location) || 'N/A'}</div>
                     </div>
-                    <button onclick="shareMyProfile()" class="absolute bottom-5 right-5 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5 z-10"><i class="fa-brands fa-whatsapp text-base"></i> Share</button>
+                    <button onclick="shareMyProfile()" class="share-hide-btn absolute bottom-5 right-5 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5 z-10"><i class="fa-brands fa-whatsapp text-base"></i> Share</button>
                 </div>`;
         }
+        
+        // Updated Profile Sharing to use Image
         window.shareMyProfile = () => {
             const uid = `USR-${window.generate5DigitId(currentUser.id)}`;
             const text = `*Wisefox Profile Details*%0A%0A*Name:* ${currentUser.name}%0A*User ID:* ${uid}%0A*Role:* ${currentUser.role.toUpperCase()}%0A*Mobile:* ${currentUser.mobile}%0A*Location:* ${currentUser.location}%0A%0A_Sent via Wisefox LeadApp_`;
-            window.open(`https://wa.me/?text=${text}`, '_blank');
+            window.shareAsImage('my-profile-card', text);
         };
 
         function startApp(){
@@ -589,9 +653,11 @@
 
         window.logout = () => signOut(auth).then(() => location.reload());
         window.changeSort = () => { window.currentSort = document.getElementById('sortSelect').value; renderLeadsUI(); };
-        window.shareOnWhatsApp = (leadId, name, amount, type, status) => {
+        
+        // Updated Lead Sharing to use Image
+        window.shareOnWhatsApp = (docId, leadId, name, amount, type, status) => {
             const text = `*New Lead Generated*%0A%0A*Lead No:* #${leadId}%0A*Name:* ${name}%0A*Loan Type:* ${type}%0A*Amount:* ₹${Number(amount).toLocaleString('en-IN')}%0A*Status:* ${status}%0A%0A_Sent via Wisefox LeadApp_`;
-            window.open(`https://wa.me/?text=${text}`, '_blank');
+            window.shareAsImage(`lead-card-${docId}`, text);
         };
 
         window.exportCSV = () => {
@@ -616,7 +682,8 @@
                 const leadIdShort = `LD-${window.generate5DigitId(l.id)}`;
                 const statusClass = l.status === 'Disbursed' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : l.status === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' : l.status === 'Sanctioned' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200';
                 
-                let waBtn = `<button onclick="shareOnWhatsApp('${leadIdShort}', '${window.escapeHTML(l.name)}', '${l.amount}', '${l.type}', '${l.status}')" class="text-[12px] text-green-600 bg-green-50 px-2.5 py-1.5 rounded-lg ml-1 hover:bg-green-100 shadow-sm"><i class="fa-brands fa-whatsapp text-sm"></i></button>`;
+                // Added share-hide-btn class so buttons won't appear in the captured image
+                let waBtn = `<button onclick="shareOnWhatsApp('${l.id}', '${leadIdShort}', '${window.escapeHTML(l.name)}', '${l.amount}', '${l.type}', '${l.status}')" class="text-[12px] text-green-600 bg-green-50 px-2.5 py-1.5 rounded-lg ml-1 hover:bg-green-100 shadow-sm"><i class="fa-brands fa-whatsapp text-sm"></i></button>`;
                 let queryBtn = (currentUser.role === 'subdsa' || currentUser.role === 'new') ? `<button onclick="openQueryModal('${l.id}')" title="Ask a Query" class="text-[12px] text-orange-600 bg-orange-50 px-2.5 py-1.5 rounded-lg ml-1 hover:bg-orange-100 shadow-sm"><i class="fa-solid fa-comment-dots text-sm"></i></button>` : '';
                 let btn = (currentUser.role === 'dsa' || currentUser.role === 'admin') ? `<button onclick="openStatusModal('${l.id}','${l.status}')" class='text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg ml-1 hover:bg-indigo-100 shadow-sm'>Edit</button>` : '';
                 let adminBtns = currentUser.role === 'admin' ? `<button onclick="deleteLead('${l.id}')" class='text-[10px] text-red-500 bg-red-50 px-2.5 py-1.5 rounded-lg ml-1 hover:bg-red-100 shadow-sm'><i class="fa-solid fa-trash"></i></button>` : '';
@@ -627,7 +694,7 @@
                     queryDisplay = `<div class="mt-2 bg-red-50 border border-red-100 text-red-700 text-xs p-2 rounded-lg flex justify-between items-center"><span class="italic font-medium"><i class="fa-solid fa-circle-question mr-1"></i> Q: ${window.escapeHTML(l.queryMessage)}</span> ${resolveBtn}</div>`;
                 }
 
-                list.innerHTML += `<div class='bg-white p-4 rounded-2xl shadow-sm border border-slate-100 relative mb-4'><div class="flex justify-between items-start mb-2"><div><h4 class="font-bold text-slate-800 text-base">${window.escapeHTML(l.name)} <span class="text-[10px] font-mono text-slate-400 font-medium ml-1 bg-slate-100 px-1.5 py-0.5 rounded">#${leadIdShort}</span></h4><span class="text-xs font-semibold text-slate-500">${window.escapeHTML(l.type)}</span></div><span class="text-[10px] px-2.5 py-1 rounded-full font-bold border ${statusClass}">${l.status||'Pending'}</span></div><div class="mb-3 space-y-1 bg-slate-50 p-2 rounded-xl border border-slate-100"><div class="text-xs text-slate-600 font-medium"><i class="fa-solid fa-phone text-slate-400 mr-2 w-3"></i> ${window.escapeHTML(l.phone)}</div><div class="text-xs text-slate-600 truncate font-medium"><i class="fa-solid fa-location-dot text-slate-400 mr-2 w-3"></i> ${window.escapeHTML(l.address) || 'NA'}</div></div>${queryDisplay}<div class="flex justify-between items-end mt-2 pt-3 border-t border-slate-100"><div><div class="text-base font-black text-slate-800">₹${Number(l.amount).toLocaleString('en-IN')}</div><div class="text-[9px] text-indigo-700 font-bold bg-indigo-100 px-2 py-1 rounded mt-1 inline-block"><i class="fa-regular fa-user mr-1"></i> By: ${window.escapeHTML(l.agentName)}</div></div><div class="flex items-center">${waBtn} ${queryBtn} ${btn} ${adminBtns}</div></div></div>`;
+                list.innerHTML += `<div id="lead-card-${l.id}" class='bg-white p-4 rounded-2xl shadow-sm border border-slate-100 relative mb-4'><div class="flex justify-between items-start mb-2"><div><h4 class="font-bold text-slate-800 text-base">${window.escapeHTML(l.name)} <span class="text-[10px] font-mono text-slate-400 font-medium ml-1 bg-slate-100 px-1.5 py-0.5 rounded">#${leadIdShort}</span></h4><span class="text-xs font-semibold text-slate-500">${window.escapeHTML(l.type)}</span></div><span class="text-[10px] px-2.5 py-1 rounded-full font-bold border ${statusClass}">${l.status||'Pending'}</span></div><div class="mb-3 space-y-1 bg-slate-50 p-2 rounded-xl border border-slate-100"><div class="text-xs text-slate-600 font-medium"><i class="fa-solid fa-phone text-slate-400 mr-2 w-3"></i> ${window.escapeHTML(l.phone)}</div><div class="text-xs text-slate-600 truncate font-medium"><i class="fa-solid fa-location-dot text-slate-400 mr-2 w-3"></i> ${window.escapeHTML(l.address) || 'NA'}</div></div>${queryDisplay}<div class="flex justify-between items-end mt-2 pt-3 border-t border-slate-100"><div><div class="text-base font-black text-slate-800">₹${Number(l.amount).toLocaleString('en-IN')}</div><div class="text-[9px] text-indigo-700 font-bold bg-indigo-100 px-2 py-1 rounded mt-1 inline-block"><i class="fa-regular fa-user mr-1"></i> By: ${window.escapeHTML(l.agentName)}</div></div><div class="share-hide-btn flex items-center">${waBtn} ${queryBtn} ${btn} ${adminBtns}</div></div></div>`;
             });
             document.getElementById('dashCount').innerText = totalCount;
             document.getElementById('dashAmount').innerText = "₹" + (totalAmount >= 100000 ? (totalAmount/100000).toFixed(2) + "L" : totalAmount.toLocaleString('en-IN'));
@@ -665,7 +732,6 @@
                 closeModal();
                 document.getElementById('leadName').value=''; document.getElementById('leadPhone').value=''; document.getElementById('leadAddress').value=''; document.getElementById('leadAmount').value='';
                 
-                // ANIMATION & VOICE
                 window.triggerCelebration();
                 const cleanName = window.escapeHTML(name);
                 window.speakText(`${cleanName} ki lead daalne ke liye aapka dhanyawad. Aapka din achha jaye.`);
@@ -717,7 +783,6 @@
         window.setRole = async(id, role) => { await updateDoc(doc(db,'users',id), {role}); showToast('Role Updated'); };
         window.deleteLead = async(id) => { if(currentUser.role === 'admin' && confirm('Delete lead?')) { await deleteDoc(doc(db,'leads',id)); showToast('Lead Deleted'); } };
 
-        // --- SUB-DSA CREATION FROM DSA PANEL ---
         window.createSubDSA = async () => {
             const m = document.getElementById('subMobile').value.trim();
             if(m.length !== 10) return showToast('10 digit mobile needed', 'error');
