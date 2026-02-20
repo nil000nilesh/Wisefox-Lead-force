@@ -16,7 +16,6 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
         .toast-enter { animation: slideDown 0.3s ease-out forwards; }
-        /* Modern UI Background Pattern */
         .modern-bg { background-image: radial-gradient(circle at top right, #e0e7ff, transparent 40%), radial-gradient(circle at bottom left, #ede9fe, transparent 40%); }
     </style>
 </head>
@@ -52,7 +51,7 @@
                         <i class="fa-solid fa-bell text-white"></i>
                         <span id="notifBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full hidden shadow-sm border border-indigo-600">0</span>
                     </button>
-                    <button onclick="openCalculator()" id="innerCalcBtn" class="hidden bg-white/20 hover:bg-white/30 w-8 h-8 flex items-center justify-center rounded-full transition shadow-sm text-sm">
+                    <button onclick="openCalcMenu()" id="innerCalcBtn" class="hidden bg-white/20 hover:bg-white/30 w-8 h-8 flex items-center justify-center rounded-full transition shadow-sm text-sm">
                         <i class="fa-solid fa-calculator text-white"></i>
                     </button>
                     <button onclick="logout()" id="logoutBtn" class="hidden bg-red-500/80 hover:bg-red-500 w-8 h-8 flex items-center justify-center rounded-full transition shadow-sm text-sm">
@@ -101,7 +100,7 @@
                 </div>
 
                 <div class="w-full max-w-sm flex gap-3 mt-5">
-                    <button onclick="openCalculator()" class="flex-1 bg-slate-800 text-white font-semibold py-3 rounded-xl shadow-lg hover:bg-slate-900 transition flex items-center justify-center gap-2 text-xs">
+                    <button onclick="openCalcMenu()" class="flex-1 bg-slate-800 text-white font-semibold py-3 rounded-xl shadow-lg hover:bg-slate-900 transition flex items-center justify-center gap-2 text-xs">
                         <i class="fa-solid fa-calculator"></i> Calculator
                     </button>
                     <button onclick="shareAppWhatsApp()" class="flex-1 bg-green-500 text-white font-semibold py-3 rounded-xl shadow-lg hover:bg-green-600 transition flex items-center justify-center gap-2 text-xs">
@@ -110,30 +109,67 @@
                 </div>
             </div>
 
+            <div id="calcMenuPage" class="hidden h-full flex-col fade-in pb-2">
+                <div class="flex items-center mb-6 border-b border-slate-200 pb-3">
+                    <button onclick="closeCalcMenu()" class="text-slate-500 hover:text-indigo-600 transition mr-3">
+                        <i class="fa-solid fa-arrow-left text-xl"></i>
+                    </button>
+                    <h3 class="text-xl font-bold text-slate-800">Financial Tools</h3>
+                </div>
+                
+                <div class="space-y-4">
+                    <button onclick="showCalcCategory('loan')" class="w-full bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-indigo-200 transition text-left flex items-center gap-4 group">
+                        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-building-columns"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-base">Loan Calculator</h4>
+                            <p class="text-xs text-slate-500 mt-0.5">EMI, Eligibility, ROI, Tenure</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right ml-auto text-slate-300"></i>
+                    </button>
+
+                    <button onclick="showCalcCategory('fd')" class="w-full bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-emerald-200 transition text-left flex items-center gap-4 group">
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-piggy-bank"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-base">FD Calculator</h4>
+                            <p class="text-xs text-slate-500 mt-0.5">Maturity Value & Target Principal</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right ml-auto text-slate-300"></i>
+                    </button>
+
+                    <button onclick="showCalcCategory('rd')" class="w-full bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-orange-200 transition text-left flex items-center gap-4 group">
+                        <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-coins"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-base">RD Calculator</h4>
+                            <p class="text-xs text-slate-500 mt-0.5">Recurring Deposit & Target Monthly</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right ml-auto text-slate-300"></i>
+                    </button>
+                </div>
+            </div>
+
             <div id="calculatorPage" class="hidden h-full flex-col fade-in pb-2">
                 <div class="flex items-center mb-3 border-b border-slate-200 pb-2">
-                    <button onclick="closeCalculator()" class="text-slate-500 hover:text-indigo-600 transition mr-2"><i class="fa-solid fa-arrow-left text-lg"></i></button>
-                    <h3 class="text-lg font-bold text-slate-800">Smart Calculator</h3>
+                    <button onclick="goBackToCalcMenu()" class="text-slate-500 hover:text-indigo-600 transition mr-2"><i class="fa-solid fa-arrow-left text-lg"></i></button>
+                    <h3 id="activeCalcTitle" class="text-lg font-bold text-slate-800">Smart Calculator</h3>
                 </div>
                 <div class="space-y-2.5">
                     <div>
                         <label class="text-[10px] font-bold text-slate-500 uppercase">What to calculate?</label>
-                        <select id="calcMode" onchange="updateCalcUI()" class="w-full border border-slate-300 rounded-lg p-2.5 mt-0.5 bg-white focus:outline-none font-medium text-indigo-700 text-sm shadow-sm">
-                            <option value="emi">Loan EMI</option>
-                            <option value="amount">Max Loan Eligibility</option>
-                            <option value="roi">Rate of Interest (%)</option>
-                            <option value="term">Loan Tenure (Months)</option>
-                            <option disabled>──────────</option>
-                            <option value="fd">Fixed Deposit (FD)</option>
-                            <option value="rd">Recurring Deposit (RD)</option>
-                        </select>
+                        <select id="calcMode" onchange="updateCalcUI()" class="w-full border border-slate-300 rounded-lg p-2 mt-0.5 bg-white focus:outline-none font-medium text-indigo-700 text-sm shadow-sm">
+                            </select>
                     </div>
                     <div id="calcInputAmount" class="relative">
-                        <label id="lblCalcAmount" class="text-[11px] font-semibold text-slate-600">Loan Amount (₹)</label>
+                        <label id="lblCalcAmount" class="text-[11px] font-semibold text-slate-600">Amount (₹)</label>
                         <input id="cAmount" type="number" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2 mt-0.5 text-sm" />
                     </div>
                     <div id="calcInputEMI" class="relative hidden">
-                        <label class="text-[11px] font-semibold text-slate-600">Monthly EMI (₹)</label>
+                        <label id="lblCalcEMI" class="text-[11px] font-semibold text-slate-600">Monthly EMI (₹)</label>
                         <input id="cEmi" type="number" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2 mt-0.5 text-sm" />
                     </div>
                     <div id="calcInputROI" class="relative">
@@ -141,10 +177,16 @@
                         <input id="cRoi" type="number" step="0.1" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2 mt-0.5 text-sm" />
                     </div>
                     <div id="calcInputTerm" class="relative">
-                        <label class="text-[11px] font-semibold text-slate-600">Tenure (in Months)</label>
-                        <input id="cTerm" type="number" class="input-field w-full border border-slate-200 bg-slate-50 rounded-lg p-2 mt-0.5 text-sm" />
+                        <label class="text-[11px] font-semibold text-slate-600">Tenure / Time</label>
+                        <div class="flex mt-0.5 gap-2">
+                            <input id="cTerm" type="number" class="input-field flex-1 border border-slate-200 bg-slate-50 rounded-lg p-2 text-sm" placeholder="e.g. 5" />
+                            <select id="cTermType" class="border border-slate-200 bg-white rounded-lg p-2 text-sm font-medium text-slate-700 w-24 outline-none shadow-sm">
+                                <option value="years">Years</option>
+                                <option value="months">Months</option>
+                            </select>
+                        </div>
                     </div>
-                    <button onclick="performCalculation()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg mt-3 text-sm transition">
+                    <button onclick="performCalculation()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow-lg mt-3 text-sm transition">
                         Calculate Results
                     </button>
 
@@ -235,7 +277,7 @@
     </div>
 
     <div id="notifModal" class="hidden fixed inset-0 z-50 flex items-start justify-center bg-black/60 backdrop-blur-sm p-4 pt-20">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl fade-in">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl fade-in">
             <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-3">
                 <h3 class="font-bold text-md text-slate-800"><i class="fa-solid fa-bell text-indigo-500 mr-2"></i> Pending Actions</h3>
                 <button onclick="closeNotifModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -425,11 +467,11 @@
         let isLoginMode = true;
         window.toggleAuthMode = () => {
             isLoginMode = !isLoginMode;
-            document.getElementById('authTitle').innerText = isLoginMode ? 'Create Account' : 'Welcome Back';
-            document.getElementById('authSubtitle').innerText = isLoginMode ? 'Sign up to get started securely' : 'Sign in securely to your account';
-            document.getElementById('mainAuthBtn').innerText = isLoginMode ? 'Sign Up' : 'Login';
-            document.getElementById('authToggleText').innerText = isLoginMode ? "Already have an account?" : "Don't have an account?";
-            event.target.innerText = isLoginMode ? 'Login' : 'Sign Up';
+            document.getElementById('authTitle').innerText = isLoginMode ? 'Welcome Back' : 'Create Account';
+            document.getElementById('authSubtitle').innerText = isLoginMode ? 'Sign in securely to your account' : 'Sign up to get started securely';
+            document.getElementById('mainAuthBtn').innerText = isLoginMode ? 'Login' : 'Sign Up';
+            document.getElementById('authToggleText').innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
+            event.target.innerText = isLoginMode ? 'Sign Up' : 'Login';
         };
 
         window.handleEmailAuth = async () => {
@@ -611,10 +653,10 @@
                     let rc = u.role === 'admin' ? 'bg-red-100 text-red-700' : u.role === 'dsa' ? 'bg-purple-100 text-purple-700' : u.role === 'subdsa' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600';
                     let act = '';
                     if(u.role !== 'admin') {
-                        let md = u.role !== 'dsa' ? `<button onclick="setRole('${d.id}','dsa')" class='text-[9px] bg-green-50 text-green-700 px-2 py-1.5 rounded-lg border border-green-200 font-bold'>Make DSA</button>` : '';
-                        let ms = `<button onclick="openSubDSAModal('${d.id}')" class='text-[9px] bg-blue-50 text-blue-700 px-2 py-1.5 rounded-lg border border-blue-200 ml-1 font-bold'>Make SubDSA</button>`;
-                        let bl = currentUser.role === 'admin' ? `<button onclick="toggleBlock('${d.id}','${u.blocked?'yes':'no'}')" class='text-[9px] ${u.blocked ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700'} px-2 py-1.5 rounded-lg ml-1 border border-amber-200 font-bold'>${u.blocked ? 'Unblock' : 'Block'}</button>` : '';
-                        let dl = currentUser.role === 'admin' ? `<button onclick="deleteUser('${d.id}')" class='text-[9px] bg-red-50 text-red-700 px-2 py-1.5 rounded-lg ml-1 border border-red-200'><i class="fa-solid fa-trash"></i></button>` : '';
+                        let md = u.role !== 'dsa' ? `<button onclick="setRole('${d.id}','dsa')" class='text-[9px] bg-green-50 text-green-700 px-2 py-1.5 rounded-lg border border-green-200 font-bold shadow-sm'>Make DSA</button>` : '';
+                        let ms = `<button onclick="openSubDSAModal('${d.id}')" class='text-[9px] bg-blue-50 text-blue-700 px-2 py-1.5 rounded-lg border border-blue-200 ml-1 font-bold shadow-sm'>Make SubDSA</button>`;
+                        let bl = currentUser.role === 'admin' ? `<button onclick="toggleBlock('${d.id}','${u.blocked?'yes':'no'}')" class='text-[9px] ${u.blocked ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700'} px-2 py-1.5 rounded-lg ml-1 border border-amber-200 font-bold shadow-sm'>${u.blocked ? 'Unblock' : 'Block'}</button>` : '';
+                        let dl = currentUser.role === 'admin' ? `<button onclick="deleteUser('${d.id}')" class='text-[9px] bg-red-50 text-red-700 px-2 py-1.5 rounded-lg ml-1 border border-red-200 shadow-sm'><i class="fa-solid fa-trash"></i></button>` : '';
                         act = `<div class="flex flex-wrap gap-1 mt-2 pt-2 border-t border-slate-100">${md} ${ms} ${bl} ${dl}</div>`;
                     } else act = `<div class="text-[9px] text-slate-400 mt-2 pt-2 border-t border-slate-100 italic">Admin Access (Protected)</div>`;
                     
@@ -652,33 +694,44 @@
             });
         }
 
+        // --- CALCULATOR MENUS & LOGIC ---
         window.showPage = (p) => { document.getElementById('leadsPage').classList.toggle('hidden', p !== 'leads'); document.getElementById('usersPage').classList.toggle('hidden', p !== 'users'); const tLead = document.getElementById('tab-leads'); const tUser = document.getElementById('tab-users'); if(p === 'leads'){ tLead.className = "flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-white text-indigo-600 shadow-sm"; tUser.className = "flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-indigo-600"; } else { tUser.className = "flex-1 py-2 rounded-lg text-xs font-bold bg-white text-indigo-600 shadow-sm"; tLead.className = "flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-indigo-600"; } };
-        window.openCalculator = () => { document.getElementById('authBox').classList.add('hidden'); document.getElementById('app').classList.add('hidden'); document.body.classList.remove('modern-bg'); document.getElementById('calculatorPage').classList.remove('hidden'); document.getElementById('calculatorPage').classList.add('flex'); document.getElementById('calcResultBox').classList.add('hidden'); };
-        window.closeCalculator = () => { document.getElementById('calculatorPage').classList.add('hidden'); document.getElementById('calculatorPage').classList.remove('flex'); if (currentUser) { document.getElementById('app').classList.remove('hidden'); } else { document.getElementById('authBox').classList.remove('hidden'); document.body.classList.add('modern-bg'); } };
         
-        // --- CALCULATOR LOGIC WITH FD/RD ---
+        window.openCalcMenu = () => { document.getElementById('authBox').classList.add('hidden'); document.getElementById('app').classList.add('hidden'); document.body.classList.remove('modern-bg'); document.getElementById('calculatorPage').classList.add('hidden'); document.getElementById('calcMenuPage').classList.remove('hidden'); document.getElementById('calcMenuPage').classList.add('flex'); };
+        window.closeCalcMenu = () => { document.getElementById('calcMenuPage').classList.add('hidden'); document.getElementById('calcMenuPage').classList.remove('flex'); if (currentUser) { document.getElementById('app').classList.remove('hidden'); } else { document.getElementById('authBox').classList.remove('hidden'); document.body.classList.add('modern-bg'); } };
+        window.openCalculator = window.openCalcMenu; 
+
+        window.showCalcCategory = (cat) => {
+            document.getElementById('calcMenuPage').classList.add('hidden'); document.getElementById('calculatorPage').classList.remove('hidden'); document.getElementById('calculatorPage').classList.add('flex'); document.getElementById('calcResultBox').classList.add('hidden');
+            const selectMode = document.getElementById('calcMode'); selectMode.innerHTML = ''; 
+            if (cat === 'loan') { document.getElementById('activeCalcTitle').innerText = 'Loan Calculator'; selectMode.innerHTML = `<option value="emi">Calculate EMI</option><option value="amount">Calculate Max Eligibility (Loan Amount)</option><option value="roi">Calculate ROI (%)</option><option value="term">Calculate Tenure (Term)</option>`; } 
+            else if (cat === 'fd') { document.getElementById('activeCalcTitle').innerText = 'FD Calculator'; selectMode.innerHTML = `<option value="fd_mat">Calculate Maturity Value</option><option value="fd_prin">Calculate Principal (Reverse FD)</option>`; } 
+            else if (cat === 'rd') { document.getElementById('activeCalcTitle').innerText = 'RD Calculator'; selectMode.innerHTML = `<option value="rd_mat">Calculate Maturity Value</option><option value="rd_dep">Calculate Monthly Deposit (Reverse RD)</option>`; }
+            window.updateCalcUI();
+        };
+
+        window.goBackToCalcMenu = () => { document.getElementById('calculatorPage').classList.add('hidden'); document.getElementById('calculatorPage').classList.remove('flex'); document.getElementById('calcMenuPage').classList.remove('hidden'); document.getElementById('calcMenuPage').classList.add('flex'); };
+
         window.updateCalcUI = () => { 
-            const mode = document.getElementById('calcMode').value; 
-            const amtLbl = document.getElementById('lblCalcAmount');
-            document.getElementById('calcInputAmount').classList.remove('hidden'); 
-            document.getElementById('calcInputEMI').classList.remove('hidden'); 
-            document.getElementById('calcInputROI').classList.remove('hidden'); 
-            document.getElementById('calcInputTerm').classList.remove('hidden'); 
-            document.getElementById('calcResultBox').classList.add('hidden'); 
+            const mode = document.getElementById('calcMode').value; const amtLbl = document.getElementById('lblCalcAmount'); const emiLbl = document.getElementById('lblCalcEMI');
+            document.getElementById('calcInputAmount').classList.remove('hidden'); document.getElementById('calcInputEMI').classList.remove('hidden'); document.getElementById('calcInputROI').classList.remove('hidden'); document.getElementById('calcInputTerm').classList.remove('hidden'); document.getElementById('calcResultBox').classList.add('hidden'); 
 
             if (mode === 'emi') { document.getElementById('calcInputEMI').classList.add('hidden'); amtLbl.innerText = "Loan Amount (₹)"; }
-            else if (mode === 'amount') { document.getElementById('calcInputAmount').classList.add('hidden'); }
-            else if (mode === 'roi') { document.getElementById('calcInputROI').classList.add('hidden'); amtLbl.innerText = "Loan Amount (₹)"; }
-            else if (mode === 'term') { document.getElementById('calcInputTerm').classList.add('hidden'); amtLbl.innerText = "Loan Amount (₹)"; }
-            else if (mode === 'fd') { document.getElementById('calcInputEMI').classList.add('hidden'); amtLbl.innerText = "Fixed Deposit Amount (₹)"; }
-            else if (mode === 'rd') { document.getElementById('calcInputEMI').classList.add('hidden'); amtLbl.innerText = "Monthly Deposit Amount (₹)"; }
+            else if (mode === 'amount') { document.getElementById('calcInputAmount').classList.add('hidden'); emiLbl.innerText = "Monthly EMI (₹)"; }
+            else if (mode === 'roi' || mode === 'term') { amtLbl.innerText = "Loan Amount (₹)"; emiLbl.innerText = "Monthly EMI (₹)"; }
+            else if (mode === 'fd_mat') { document.getElementById('calcInputEMI').classList.add('hidden'); amtLbl.innerText = "FD Investment Amount (₹)"; }
+            else if (mode === 'fd_prin') { document.getElementById('calcInputEMI').classList.add('hidden'); amtLbl.innerText = "Target Maturity Value (₹)"; }
+            else if (mode === 'rd_mat') { document.getElementById('calcInputAmount').classList.add('hidden'); emiLbl.innerText = "Monthly RD Deposit (₹)"; }
+            else if (mode === 'rd_dep') { document.getElementById('calcInputEMI').classList.add('hidden'); amtLbl.innerText = "Target Maturity Value (₹)"; }
             
             document.getElementById('cAmount').value = ''; document.getElementById('cEmi').value = ''; document.getElementById('cRoi').value = ''; document.getElementById('cTerm').value = ''; 
         };
         
         window.performCalculation = () => { 
             const mode = document.getElementById('calcMode').value; 
-            const pInput = parseFloat(document.getElementById('cAmount').value); const eInput = parseFloat(document.getElementById('cEmi').value); const rInput = parseFloat(document.getElementById('cRoi').value); const nInput = parseFloat(document.getElementById('cTerm').value); 
+            const pInput = parseFloat(document.getElementById('cAmount').value); const eInput = parseFloat(document.getElementById('cEmi').value); const rInput = parseFloat(document.getElementById('cRoi').value); const nRaw = parseFloat(document.getElementById('cTerm').value); 
+            let nInput = nRaw; if(document.getElementById('cTermType').value === 'years') nInput = nRaw * 12;
+
             let p = pInput || 0, e = eInput || 0, r = rInput || 0, n = nInput || 0; 
             let resultMain = 0, totalPayment = 0, totalInterest = 0, finalP = 0; 
             
@@ -708,25 +761,46 @@
                     resultMain = mid; finalP = p; totalPayment = e * n; totalInterest = totalPayment - finalP;
                     document.getElementById('resMainTitle').innerText = "Rate of Interest"; document.getElementById('resMainValue').innerText = resultMain.toFixed(2) + "% p.a.";
                     document.getElementById('resLbl1').innerText="Principal Amount"; document.getElementById('resLbl2').innerText="Total Interest"; document.getElementById('resLbl3').innerText="Total Payment"; 
-                } else if (mode === 'fd') {
-                    if(!p || !r || !n) return showToast("Enter Deposit, ROI and Tenure.", "error");
-                    let timeInYears = n / 12; let rate = r / 100;
-                    let maturityAmount = p * Math.pow((1 + rate/4), 4 * timeInYears);
+                } else if (mode === 'fd_mat') {
+                    if(!p || !r || !n) return showToast("Enter Investment, ROI and Tenure.", "error");
+                    let t = n / 12; let rate = r / 100;
+                    let maturityAmount = p * Math.pow((1 + rate/4), 4 * t);
                     resultMain = maturityAmount; finalP = p; totalInterest = maturityAmount - p; totalPayment = p;
                     document.getElementById('resMainTitle').innerText = "Maturity Value (FD)"; document.getElementById('resLbl1').innerText="Total Invested"; document.getElementById('resLbl2').innerText="Interest Earned"; document.getElementById('resLbl3').innerText="Maturity Value"; 
-                } else if (mode === 'rd') {
-                    if(!p || !r || !n) return showToast("Enter Monthly Deposit, ROI and Tenure.", "error");
-                    let rate = r / 100; let totalInvested = p * n;
-                    let totalInterestRd = p * (n * (n + 1)) / 2 * (rate / 12);
-                    resultMain = totalInvested + totalInterestRd; finalP = totalInvested; totalInterest = totalInterestRd; totalPayment = totalInvested;
+                } else if (mode === 'fd_prin') {
+                    if(!p || !r || !n) return showToast("Enter Target Maturity, ROI and Tenure.", "error");
+                    let t = n / 12; let rate = r / 100;
+                    let reqPrincipal = p / Math.pow((1 + rate/4), 4 * t);
+                    resultMain = reqPrincipal; finalP = reqPrincipal; totalInterest = p - reqPrincipal; totalPayment = reqPrincipal;
+                    document.getElementById('resMainTitle').innerText = "Deposit Needed"; document.getElementById('resLbl1').innerText="Target Maturity"; document.getElementById('resLbl2').innerText="Interest Component"; document.getElementById('resLbl3').innerText="Deposit Required"; 
+                } else if (mode === 'rd_mat') {
+                    if(!e || !r || !n) return showToast("Enter Monthly Deposit, ROI and Tenure.", "error");
+                    let rate = r / 100; let totalInvested = e * n;
+                    let totalInterestRd = e * (n * (n + 1)) / 2 * (rate / 12);
+                    let maturityAmount = totalInvested + totalInterestRd;
+                    resultMain = maturityAmount; finalP = totalInvested; totalInterest = totalInterestRd; totalPayment = totalInvested;
                     document.getElementById('resMainTitle').innerText = "Maturity Value (RD)"; document.getElementById('resLbl1').innerText="Total Invested"; document.getElementById('resLbl2').innerText="Interest Earned"; document.getElementById('resLbl3').innerText="Maturity Value"; 
+                } else if (mode === 'rd_dep') {
+                    if(!p || !r || !n) return showToast("Enter Target Maturity, ROI and Tenure.", "error");
+                    let rate = r / 100; let multiplier = n + (n * (n + 1) / 2) * (rate / 12);
+                    let reqMonthly = p / multiplier;
+                    resultMain = reqMonthly; finalP = reqMonthly * n; totalInterest = p - finalP; totalPayment = finalP;
+                    document.getElementById('resMainTitle').innerText = "Monthly Deposit Needed"; document.getElementById('resLbl1').innerText="Target Maturity"; document.getElementById('resLbl2').innerText="Interest Component"; document.getElementById('resLbl3').innerText="Total Deposited"; 
                 }
 
                 if(mode !== 'term' && mode !== 'roi') { document.getElementById('resMainValue').innerText = "₹" + Math.round(resultMain).toLocaleString('en-IN'); }
-                if(mode === 'fd' || mode === 'rd') {
+                if(mode === 'fd_mat' || mode === 'rd_mat') {
                     document.getElementById('resPrincipal').innerText = "₹" + Math.round(finalP).toLocaleString('en-IN'); 
                     document.getElementById('resInterest').innerText = "₹" + Math.round(totalInterest > 0 ? totalInterest : 0).toLocaleString('en-IN'); 
                     document.getElementById('resTotal').innerText = "₹" + Math.round(resultMain > 0 ? resultMain : 0).toLocaleString('en-IN'); 
+                } else if(mode === 'fd_prin') {
+                    document.getElementById('resPrincipal').innerText = "₹" + Math.round(p).toLocaleString('en-IN'); 
+                    document.getElementById('resInterest').innerText = "₹" + Math.round(totalInterest > 0 ? totalInterest : 0).toLocaleString('en-IN'); 
+                    document.getElementById('resTotal').innerText = "₹" + Math.round(resultMain > 0 ? resultMain : 0).toLocaleString('en-IN'); 
+                } else if(mode === 'rd_dep') {
+                    document.getElementById('resPrincipal').innerText = "₹" + Math.round(p).toLocaleString('en-IN'); 
+                    document.getElementById('resInterest').innerText = "₹" + Math.round(totalInterest > 0 ? totalInterest : 0).toLocaleString('en-IN'); 
+                    document.getElementById('resTotal').innerText = "₹" + Math.round(finalP > 0 ? finalP : 0).toLocaleString('en-IN'); 
                 } else {
                     document.getElementById('resPrincipal').innerText = "₹" + Math.round(finalP).toLocaleString('en-IN'); 
                     document.getElementById('resInterest').innerText = "₹" + Math.round(totalInterest > 0 ? totalInterest : 0).toLocaleString('en-IN'); 
