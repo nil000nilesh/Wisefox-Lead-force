@@ -426,64 +426,58 @@
             toast.classList.remove('hidden'); setTimeout(() => { toast.classList.add('hidden'); }, 3500);
         };
 
-        // --- NEW IMAGE SHARE FEATURE (BUG FIXED & HD) ---
+        // --- PERFECTED IMAGE SHARE (SPECIFIC CARD ONLY, NO BLACK SCREEN) ---
         window.shareAsImage = async (elementId, fallbackText) => {
+            // 1. Sirf specific card ko dhundho
             const originalEl = document.getElementById(elementId);
-            if (!originalEl) return;
+            if (!originalEl) {
+                showToast("Card not found!", "error");
+                return;
+            }
             
-            showToast('Generating HD Image...', 'success');
-            
-            // 1. Buttons ko hide karein taaki photo mein na aayein
-            const originalButtons = originalEl.querySelectorAll('.share-hide-btn');
-            originalButtons.forEach(e => e.style.display = 'none');
+            showToast('Generating Card Image...', 'success');
 
-            // 2. Off-screen container banayein jo browser properly render kar sake
-            const exportContainer = document.createElement('div');
-            // Fix: -9999px ki jagah fixed aur opacity 0 use kiya hai taaki crash na ho
-            exportContainer.style.position = 'fixed'; 
-            exportContainer.style.top = '0';
-            exportContainer.style.left = '0';
-            exportContainer.style.width = '400px'; 
-            exportContainer.style.padding = '20px';
-            exportContainer.style.backgroundColor = '#f8fafc'; 
-            exportContainer.style.opacity = '0'; 
-            exportContainer.style.pointerEvents = 'none'; 
-            exportContainer.style.zIndex = '-100';
-
-            // 3. Clone the card and enforce CSS rules
+            // 2. Card ka exact clone (duplicate) banao
             const clone = originalEl.cloneNode(true);
-            clone.style.margin = '0';
-            clone.style.width = '100%';
-            clone.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)';
-            clone.style.borderRadius = '16px';
-            clone.style.backgroundColor = '#ffffff';
-            clone.style.border = '1px solid #e2e8f0';
+            
+            // 3. Duplicate card me se buttons hide kar do taaki photo me na aayein
+            const buttons = clone.querySelectorAll('.share-hide-btn');
+            buttons.forEach(b => b.style.display = 'none');
 
-            exportContainer.appendChild(clone);
-            document.body.appendChild(exportContainer);
-
-            // 4. Browser ko clone UI paint karne ke liye thoda waqt dein (150ms)
-            await new Promise(resolve => setTimeout(resolve, 150));
+            // 4. Ek invisible frame banao jo screen ke peeche rahega (Isse Black screen issue solve hoga)
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'fixed';
+            wrapper.style.top = '0';
+            wrapper.style.left = '0';
+            // Card ki width set karo taaki design na bigde
+            wrapper.style.width = originalEl.offsetWidth + 'px'; 
+            wrapper.style.padding = '15px';
+            wrapper.style.backgroundColor = '#ffffff'; // Safed background zaroori hai black hone se rokne ke liye
+            wrapper.style.zIndex = '-9999'; // Main app ke bilkul peeche chupane ke liye
+            
+            wrapper.appendChild(clone);
+            document.body.appendChild(wrapper);
 
             try {
-                // 5. HD Capture
-                const canvas = await html2canvas(exportContainer, { 
-                    scale: 3, 
-                    backgroundColor: null, 
+                // 5. Browser ko thoda time do UI ko memory me load karne ke liye
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                // 6. Sirf us wrapper (card) ka canvas banao
+                const canvas = await html2canvas(wrapper, { 
+                    scale: 2, 
+                    backgroundColor: '#ffffff',
                     useCORS: true,
-                    allowTaint: true,
                     logging: false
                 });
                 
-                // 6. Safe Cleanup
-                if (document.body.contains(exportContainer)) {
-                    document.body.removeChild(exportContainer);
-                }
-                originalButtons.forEach(e => e.style.display = ''); 
+                // 7. Photo banne ke turant baad background kachra (wrapper) hata do
+                if (document.body.contains(wrapper)) document.body.removeChild(wrapper); 
                 
-                // 7. Convert to Image and Share
+                // 8. Image ko WhatsApp pe share karo
                 canvas.toBlob(async (blob) => {
-                    const file = new File([blob], 'Wisefox_Card.png', { type: 'image/png' });
+                    if (!blob) throw new Error("Image creation failed");
+
+                    const file = new File([blob], 'Wisefox_Share.png', { type: 'image/png' });
                     
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
@@ -492,16 +486,15 @@
                                 title: 'Wisefox Details'
                             });
                         } catch (err) {
-                            console.log('User cancelled share or timeout error');
-                            // Fix: Agar share fail hua toh direct text fallback chala dein
+                            console.log('Share canceled by user');
                             window.open(`https://wa.me/?text=${encodeURIComponent(fallbackText)}`, '_blank');
                         }
                     } else {
-                        // Agar browser support nahi karta (Desktop fallback)
+                        // Desktop ya unsupported phones ke liye Fallback
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
-                        a.download = 'Wisefox_Card.png';
+                        a.download = 'Wisefox_Share.png';
                         a.click();
                         URL.revokeObjectURL(url);
                         window.open(`https://wa.me/?text=${encodeURIComponent(fallbackText)}`, '_blank');
@@ -510,12 +503,8 @@
                 
             } catch (err) {
                 console.error("Canvas Error:", err);
-                // Safe Error Recovery
-                if (document.body.contains(exportContainer)) {
-                    document.body.removeChild(exportContainer);
-                }
-                originalButtons.forEach(e => e.style.display = '');
-                showToast('Sharing Text Instead.', 'success');
+                if (document.body.contains(wrapper)) document.body.removeChild(wrapper);
+                showToast('Sharing Text Instead.', 'error');
                 window.open(`https://wa.me/?text=${encodeURIComponent(fallbackText)}`, '_blank');
             }
         };
@@ -526,7 +515,6 @@
             window.open(`https://wa.me/?text=${text}`, '_blank');
         };
 
-        // --- NOTIFICATIONS CLEARED FEATURE ---
         window.openNotifModal = () => document.getElementById('notifModal').classList.remove('hidden');
         window.closeNotifModal = () => document.getElementById('notifModal').classList.add('hidden');
         window.goToUser = () => { window.closeNotifModal(); window.showPage('users'); };
@@ -683,7 +671,6 @@
                 </div>`;
         }
         
-        // Updated Profile Sharing to use Image
         window.shareMyProfile = () => {
             const uid = `USR-${window.generate5DigitId(currentUser.id)}`;
             const text = `*Wisefox Profile Details*%0A%0A*Name:* ${currentUser.name}%0A*User ID:* ${uid}%0A*Role:* ${currentUser.role.toUpperCase()}%0A*Mobile:* ${currentUser.mobile}%0A*Location:* ${currentUser.location}%0A%0A_Sent via Wisefox LeadApp_`;
@@ -707,7 +694,7 @@
         window.logout = () => signOut(auth).then(() => location.reload());
         window.changeSort = () => { window.currentSort = document.getElementById('sortSelect').value; renderLeadsUI(); };
         
-        // Updated Lead Sharing to use Image
+        // Updated Lead Sharing to pass the correct ID
         window.shareOnWhatsApp = (docId, leadId, name, amount, type, status) => {
             const text = `*New Lead Generated*%0A%0A*Lead No:* #${leadId}%0A*Name:* ${name}%0A*Loan Type:* ${type}%0A*Amount:* ₹${Number(amount).toLocaleString('en-IN')}%0A*Status:* ${status}%0A%0A_Sent via Wisefox LeadApp_`;
             window.shareAsImage(`lead-card-${docId}`, text);
