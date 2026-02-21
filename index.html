@@ -426,44 +426,97 @@
             toast.classList.remove('hidden'); setTimeout(() => { toast.classList.add('hidden'); }, 3500);
         };
 
-        // --- NEW IMAGE SHARE FEATURE ---
+        // --- NEW IMAGE SHARE FEATURE (BUG FIXED & HD) ---
         window.shareAsImage = async (elementId, fallbackText) => {
-            const el = document.getElementById(elementId);
-            if (!el) return;
+            const originalEl = document.getElementById(elementId);
+            if (!originalEl) return;
             
-            showToast('Generating Image...', 'success');
+            showToast('Generating HD Image...', 'success');
             
-            // Hide action buttons during screenshot
-            const hideElements = el.querySelectorAll('.share-hide-btn');
-            hideElements.forEach(e => e.style.display = 'none');
-            
+            // 1. Buttons ko hide karein taaki photo mein na aayein
+            const originalButtons = originalEl.querySelectorAll('.share-hide-btn');
+            originalButtons.forEach(e => e.style.display = 'none');
+
+            // 2. Off-screen container banayein jo browser properly render kar sake
+            const exportContainer = document.createElement('div');
+            // Fix: -9999px ki jagah fixed aur opacity 0 use kiya hai taaki crash na ho
+            exportContainer.style.position = 'fixed'; 
+            exportContainer.style.top = '0';
+            exportContainer.style.left = '0';
+            exportContainer.style.width = '400px'; 
+            exportContainer.style.padding = '20px';
+            exportContainer.style.backgroundColor = '#f8fafc'; 
+            exportContainer.style.opacity = '0'; 
+            exportContainer.style.pointerEvents = 'none'; 
+            exportContainer.style.zIndex = '-100';
+
+            // 3. Clone the card and enforce CSS rules
+            const clone = originalEl.cloneNode(true);
+            clone.style.margin = '0';
+            clone.style.width = '100%';
+            clone.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)';
+            clone.style.borderRadius = '16px';
+            clone.style.backgroundColor = '#ffffff';
+            clone.style.border = '1px solid #e2e8f0';
+
+            exportContainer.appendChild(clone);
+            document.body.appendChild(exportContainer);
+
+            // 4. Browser ko clone UI paint karne ke liye thoda waqt dein (150ms)
+            await new Promise(resolve => setTimeout(resolve, 150));
+
             try {
-                const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
-                hideElements.forEach(e => e.style.display = ''); // Restore buttons immediately
+                // 5. HD Capture
+                const canvas = await html2canvas(exportContainer, { 
+                    scale: 3, 
+                    backgroundColor: null, 
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false
+                });
                 
+                // 6. Safe Cleanup
+                if (document.body.contains(exportContainer)) {
+                    document.body.removeChild(exportContainer);
+                }
+                originalButtons.forEach(e => e.style.display = ''); 
+                
+                // 7. Convert to Image and Share
                 canvas.toBlob(async (blob) => {
-                    const file = new File([blob], 'Wisefox_Share.png', { type: 'image/png' });
+                    const file = new File([blob], 'Wisefox_Card.png', { type: 'image/png' });
+                    
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
-                            await navigator.share({ files: [file], title: 'Wisefox Details' });
+                            await navigator.share({ 
+                                files: [file], 
+                                title: 'Wisefox Details'
+                            });
                         } catch (err) {
-                            console.log('Share canceled', err);
+                            console.log('User cancelled share or timeout error');
+                            // Fix: Agar share fail hua toh direct text fallback chala dein
+                            window.open(`https://wa.me/?text=${encodeURIComponent(fallbackText)}`, '_blank');
                         }
                     } else {
-                        // Fallback logic for Desktop/unsupported browsers: Download image and open text link
+                        // Agar browser support nahi karta (Desktop fallback)
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
-                        a.download = 'Wisefox_Share.png';
+                        a.download = 'Wisefox_Card.png';
                         a.click();
                         URL.revokeObjectURL(url);
-                        window.open(`https://wa.me/?text=${fallbackText}`, '_blank');
+                        window.open(`https://wa.me/?text=${encodeURIComponent(fallbackText)}`, '_blank');
                     }
-                }, 'image/png');
+                }, 'image/png', 1.0);
+                
             } catch (err) {
-                hideElements.forEach(e => e.style.display = '');
-                showToast('Failed to generate image', 'error');
-                window.open(`https://wa.me/?text=${fallbackText}`, '_blank');
+                console.error("Canvas Error:", err);
+                // Safe Error Recovery
+                if (document.body.contains(exportContainer)) {
+                    document.body.removeChild(exportContainer);
+                }
+                originalButtons.forEach(e => e.style.display = '');
+                showToast('Sharing Text Instead.', 'success');
+                window.open(`https://wa.me/?text=${encodeURIComponent(fallbackText)}`, '_blank');
             }
         };
 
