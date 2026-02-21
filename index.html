@@ -293,12 +293,12 @@
 
     <div id="queryModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
         <div class="bg-white w-full max-w-xs rounded-2xl p-5 shadow-2xl fade-in">
-            <h3 class="font-bold text-md mb-1 text-slate-800">Ask a Query</h3>
-            <p class="text-[10px] text-slate-500 mb-3">Maximum 20 words allowed.</p>
+            <h3 class="font-bold text-md mb-1 text-slate-800">Ask a Query via WhatsApp</h3>
+            <p class="text-[10px] text-slate-500 mb-3">Your message will be sent to WhatsApp with Lead Details.</p>
             <textarea id="queryText" rows="3" placeholder="Type your query regarding this lead..." class="w-full border border-slate-300 p-3 rounded-xl mb-4 bg-slate-50 text-sm focus:outline-none focus:border-indigo-500"></textarea>
             <div class="flex gap-2">
                 <button onclick="closeQueryModal()" class="flex-1 text-slate-500 text-sm font-semibold hover:bg-slate-100 py-2 rounded-xl">Cancel</button>
-                <button onclick="submitQuery()" class="flex-1 bg-orange-500 text-white py-2 rounded-xl text-sm font-bold hover:bg-orange-600 shadow">Submit</button>
+                <button onclick="submitQuery()" class="flex-1 bg-green-500 text-white py-2 rounded-xl text-sm font-bold hover:bg-green-600 shadow flex items-center justify-center gap-1.5"><i class="fa-brands fa-whatsapp text-base"></i> Share</button>
             </div>
         </div>
     </div>
@@ -365,7 +365,7 @@
         window.processedLeads = []; 
         window.allUsers = []; 
         window.currentSort = 'new';
-        window.currentQueryLeadId = null;
+        window.currentQueryLead = null; // UPDATE: Save whole lead object
 
         // --- SECURITY & HELPERS ---
         window.escapeHTML = (str) => {
@@ -494,20 +494,38 @@
             else { badge.classList.add('hidden'); notifList.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 italic">No pending actions</div>'; }
         };
 
-        window.openQueryModal = (id) => { window.currentQueryLeadId = id; document.getElementById('queryText').value = ''; document.getElementById('queryModal').classList.remove('hidden'); };
-        window.closeQueryModal = () => { window.currentQueryLeadId = null; document.getElementById('queryModal').classList.add('hidden'); };
-        window.submitQuery = async () => {
+        // --- UPDATE: Modified Query Logic (No DB Save, Only WhatsApp) ---
+        window.openQueryModal = (id) => { 
+            // Save current lead object
+            window.currentQueryLead = window.processedLeads.find(l => l.id === id); 
+            document.getElementById('queryText').value = ''; 
+            document.getElementById('queryModal').classList.remove('hidden'); 
+        };
+        
+        window.closeQueryModal = () => { 
+            window.currentQueryLead = null; 
+            document.getElementById('queryModal').classList.add('hidden'); 
+        };
+        
+        window.submitQuery = () => {
             const text = document.getElementById('queryText').value.trim();
             if(!text) return showToast('Please type a query first!', 'error');
-            const words = text.split(/\s+/);
-            if(words.length > 20) return showToast(`Max 20 words! You typed ${words.length} words.`, 'error');
-            if(window.currentQueryLeadId) {
-                await updateDoc(doc(db, 'leads', window.currentQueryLeadId), { hasQuery: true, queryMessage: window.escapeHTML(text), queryDate: Date.now() });
-                showToast('Query sent to Admin/DSA!'); window.closeQueryModal();
+            
+            if(window.currentQueryLead) {
+                const l = window.currentQueryLead;
+                const leadIdShort = `LD-${window.generate5DigitId(l.id)}`;
+                
+                // Formatted Message for WhatsApp
+                const waText = `*New Query Regarding Lead* ❓\n\n*My Query:* ${text}\n\n*--- Lead Details ---*\n*Lead ID:* #${leadIdShort}\n*Name:* ${l.name}\n*Phone:* ${l.phone}\n*Location:* ${l.address || 'N/A'}\n*Loan Type:* ${l.type}\n*Amount:* ₹${Number(l.amount).toLocaleString('en-IN')}\n*Status:* ${l.status}\n*Added By:* ${l.agentName}\n\n_Sent via Wisefox LeadApp Pro_`;
+
+                // Open WhatsApp
+                window.open(`https://wa.me/?text=${encodeURIComponent(waText)}`, '_blank');
+                
+                showToast('Drafting WhatsApp Message...', 'success');
+                window.closeQueryModal();
             }
         };
-        window.resolveQuery = async (id) => { await updateDoc(doc(db, 'leads', id), { hasQuery: false, queryMessage: '' }); showToast('Query Resolved!'); };
-
+        
         // --- AUTH ---
         let isLoginMode = true;
         window.toggleAuthMode = () => {
@@ -639,19 +657,12 @@
                 const leadIdShort = `LD-${window.generate5DigitId(l.id)}`;
                 const statusClass = l.status === 'Disbursed' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : l.status === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' : l.status === 'Sanctioned' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200';
                 
-                // Text data parameters pass kiye gaye hain
                 let waBtn = `<button onclick="shareOnWhatsApp('${leadIdShort}', '${window.escapeHTML(l.name)}', '${window.escapeHTML(l.phone)}', '${window.escapeHTML(l.address)}', '${window.escapeHTML(l.type)}', '${l.amount}', '${l.status}', '${window.escapeHTML(l.agentName)}')" class="text-[12px] text-green-600 bg-green-50 px-2.5 py-1.5 rounded-lg ml-1 hover:bg-green-100 shadow-sm"><i class="fa-brands fa-whatsapp text-sm"></i></button>`;
                 let queryBtn = (currentUser.role === 'subdsa' || currentUser.role === 'new') ? `<button onclick="openQueryModal('${l.id}')" title="Ask a Query" class="text-[12px] text-orange-600 bg-orange-50 px-2.5 py-1.5 rounded-lg ml-1 hover:bg-orange-100 shadow-sm"><i class="fa-solid fa-comment-dots text-sm"></i></button>` : '';
                 let btn = (currentUser.role === 'dsa' || currentUser.role === 'admin') ? `<button onclick="openStatusModal('${l.id}','${l.status}')" class='text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg ml-1 hover:bg-indigo-100 shadow-sm'>Edit</button>` : '';
                 let adminBtns = currentUser.role === 'admin' ? `<button onclick="deleteLead('${l.id}')" class='text-[10px] text-red-500 bg-red-50 px-2.5 py-1.5 rounded-lg ml-1 hover:bg-red-100 shadow-sm'><i class="fa-solid fa-trash"></i></button>` : '';
                 
-                let queryDisplay = '';
-                if (l.hasQuery) {
-                    let resolveBtn = (currentUser.role === 'admin' || currentUser.role === 'dsa') ? `<button onclick="resolveQuery('${l.id}')" class="ml-2 text-indigo-700 bg-indigo-100 px-2 py-1 rounded shadow-sm hover:bg-indigo-200 font-bold text-[9px]">Resolve <i class="fa-solid fa-check"></i></button>` : '';
-                    queryDisplay = `<div class="mt-2 bg-red-50 border border-red-100 text-red-700 text-xs p-2 rounded-lg flex justify-between items-center"><span class="italic font-medium"><i class="fa-solid fa-circle-question mr-1"></i> Q: ${window.escapeHTML(l.queryMessage)}</span> ${resolveBtn}</div>`;
-                }
-
-                list.innerHTML += `<div class='bg-white p-4 rounded-2xl shadow-sm border border-slate-100 relative mb-4'><div class="flex justify-between items-start mb-2"><div><h4 class="font-bold text-slate-800 text-base">${window.escapeHTML(l.name)} <span class="text-[10px] font-mono text-slate-400 font-medium ml-1 bg-slate-100 px-1.5 py-0.5 rounded">#${leadIdShort}</span></h4><span class="text-xs font-semibold text-slate-500">${window.escapeHTML(l.type)}</span></div><span class="text-[10px] px-2.5 py-1 rounded-full font-bold border ${statusClass}">${l.status||'Pending'}</span></div><div class="mb-3 space-y-1 bg-slate-50 p-2 rounded-xl border border-slate-100"><div class="text-xs text-slate-600 font-medium"><i class="fa-solid fa-phone text-slate-400 mr-2 w-3"></i> ${window.escapeHTML(l.phone)}</div><div class="text-xs text-slate-600 truncate font-medium"><i class="fa-solid fa-location-dot text-slate-400 mr-2 w-3"></i> ${window.escapeHTML(l.address) || 'NA'}</div></div>${queryDisplay}<div class="flex justify-between items-end mt-2 pt-3 border-t border-slate-100"><div><div class="text-base font-black text-slate-800">₹${Number(l.amount).toLocaleString('en-IN')}</div><div class="text-[9px] text-indigo-700 font-bold bg-indigo-100 px-2 py-1 rounded mt-1 inline-block"><i class="fa-regular fa-user mr-1"></i> By: ${window.escapeHTML(l.agentName)}</div></div><div class="flex items-center">${waBtn} ${queryBtn} ${btn} ${adminBtns}</div></div></div>`;
+                list.innerHTML += `<div class='bg-white p-4 rounded-2xl shadow-sm border border-slate-100 relative mb-4'><div class="flex justify-between items-start mb-2"><div><h4 class="font-bold text-slate-800 text-base">${window.escapeHTML(l.name)} <span class="text-[10px] font-mono text-slate-400 font-medium ml-1 bg-slate-100 px-1.5 py-0.5 rounded">#${leadIdShort}</span></h4><span class="text-xs font-semibold text-slate-500">${window.escapeHTML(l.type)}</span></div><span class="text-[10px] px-2.5 py-1 rounded-full font-bold border ${statusClass}">${l.status||'Pending'}</span></div><div class="mb-3 space-y-1 bg-slate-50 p-2 rounded-xl border border-slate-100"><div class="text-xs text-slate-600 font-medium"><i class="fa-solid fa-phone text-slate-400 mr-2 w-3"></i> ${window.escapeHTML(l.phone)}</div><div class="text-xs text-slate-600 truncate font-medium"><i class="fa-solid fa-location-dot text-slate-400 mr-2 w-3"></i> ${window.escapeHTML(l.address) || 'NA'}</div></div><div class="flex justify-between items-end mt-2 pt-3 border-t border-slate-100"><div><div class="text-base font-black text-slate-800">₹${Number(l.amount).toLocaleString('en-IN')}</div><div class="text-[9px] text-indigo-700 font-bold bg-indigo-100 px-2 py-1 rounded mt-1 inline-block"><i class="fa-regular fa-user mr-1"></i> By: ${window.escapeHTML(l.agentName)}</div></div><div class="flex items-center">${waBtn} ${queryBtn} ${btn} ${adminBtns}</div></div></div>`;
             });
             document.getElementById('dashCount').innerText = totalCount;
             document.getElementById('dashAmount').innerText = "₹" + (totalAmount >= 100000 ? (totalAmount/100000).toFixed(2) + "L" : totalAmount.toLocaleString('en-IN'));
