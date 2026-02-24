@@ -1001,6 +1001,30 @@
             } catch (err) { showToast("Calculation Error", "error"); } 
         };
     </script>
+    <div id="notesModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div class="bg-white w-full max-w-lg h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden fade-in">
+        
+        <div class="bg-slate-800 text-white p-4 flex justify-between items-center flex-shrink-0">
+            <div>
+                <h3 class="font-bold text-lg"><i class="fa-solid fa-clipboard-list text-indigo-400 mr-2"></i> Lead Notes & History</h3>
+                <p id="notesLeadName" class="text-xs text-slate-300 mt-0.5">Loading...</p>
+            </div>
+            <button onclick="closeNotesModal()" class="text-slate-300 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+
+        <div id="notesHistory" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 hide-scrollbar">
+            </div>
+
+        <div id="notesInputArea" class="p-4 bg-white border-t border-slate-200 hidden flex-shrink-0">
+            <textarea id="newNoteText" rows="2" placeholder="Add update (e.g., File RAPC me gai hai, Search pending hai...)" class="w-full border border-slate-300 p-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:border-indigo-500 mb-2"></textarea>
+            <button onclick="saveNote()" class="w-full bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-bold shadow hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-check-circle"></i> Save Update
+            </button>
+        </div>
+
+    </div>
+</div>
 </body>
 </html>
+
 
