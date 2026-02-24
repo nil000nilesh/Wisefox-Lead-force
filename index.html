@@ -402,14 +402,14 @@
                 <input id="leadPhone" type="number" placeholder="Mobile No (10 Digits)" class="w-full border border-slate-300 p-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:border-indigo-500" />
                 <textarea id="leadAddress" placeholder="Full Address / City" rows="2" class="w-full border border-slate-300 p-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:border-indigo-500"></textarea>
                 <select id="type" class="w-full border border-slate-300 p-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:border-indigo-500">
-    <option>Personal Loan</option>
-    <option>Home Loan</option>
-    <option>Business Loan</option>
-    <option>Auto Loan</option>
-    <option>KCC</option>
-    <option>Education Loan</option>
-    <option>Mortgage Loan</option>
-</select>
+                    <option>Personal Loan</option>
+                    <option>Home Loan</option>
+                    <option>Business Loan</option>
+                    <option>Auto Loan</option>
+                    <option>KCC</option>
+                    <option>Education Loan</option>
+                    <option>Mortgage Loan</option>
+                </select>
                 <input id="leadAmount" placeholder="Amount Required (₹)" type="number" class="w-full border border-slate-300 p-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:border-indigo-500" />
                 <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100">
                     <button onclick="closeModal()" class="flex-1 py-2 text-slate-500 hover:bg-slate-100 rounded-xl text-sm font-bold">Cancel</button>
@@ -441,6 +441,30 @@
                 <button onclick="closeSubDSAModal()" class="flex-1 text-slate-500 py-2 rounded-xl text-sm font-bold">Cancel</button>
                 <button onclick="confirmSubDSALink()" class="flex-1 bg-blue-600 text-white py-2 rounded-xl shadow text-sm font-bold">Link Now</button>
             </div>
+        </div>
+    </div>
+
+    <div id="notesModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-lg h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden fade-in">
+            
+            <div class="bg-slate-800 text-white p-4 flex justify-between items-center flex-shrink-0">
+                <div>
+                    <h3 class="font-bold text-lg"><i class="fa-solid fa-clipboard-list text-indigo-400 mr-2"></i> Lead Notes & History</h3>
+                    <p id="notesLeadName" class="text-xs text-slate-300 mt-0.5">Loading...</p>
+                </div>
+                <button onclick="closeNotesModal()" class="text-slate-300 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div id="notesHistory" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 hide-scrollbar">
+                </div>
+
+            <div id="notesInputArea" class="p-4 bg-white border-t border-slate-200 hidden flex-shrink-0">
+                <textarea id="newNoteText" rows="2" placeholder="Add update (e.g., File RAPC me gai hai, Search pending hai...)" class="w-full border border-slate-300 p-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:border-indigo-500 mb-2"></textarea>
+                <button onclick="saveNote()" class="w-full bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-bold shadow hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-check-circle"></i> Save Update
+                </button>
+            </div>
+
         </div>
     </div>
 
@@ -750,6 +774,7 @@
                 
                 let waBtn = `<button onclick="shareOnWhatsApp('${leadIdShort}', '${window.escapeHTML(l.name)}', '${window.escapeHTML(l.phone)}', '${window.escapeHTML(l.address)}', '${window.escapeHTML(l.type)}', '${l.amount}', '${l.status}', '${window.escapeHTML(l.agentName)}')" class="text-[12px] text-green-600 bg-green-50 px-2.5 py-1.5 rounded-lg ml-1 hover:bg-green-100 shadow-sm"><i class="fa-brands fa-whatsapp text-sm"></i></button>`;
                 let queryBtn = (currentUser.role === 'subdsa' || currentUser.role === 'new') ? `<button onclick="openQueryModal('${l.id}')" title="Ask a Query" class="text-[12px] text-orange-600 bg-orange-50 px-2.5 py-1.5 rounded-lg ml-1 hover:bg-orange-100 shadow-sm"><i class="fa-solid fa-comment-dots text-sm"></i></button>` : '';
+                let notesBtn = `<button onclick="openNotesModal('${l.id}')" class="text-[10px] font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg ml-1 hover:bg-slate-200 border border-slate-200 shadow-sm flex items-center gap-1"><i class="fa-regular fa-file-lines"></i> Notes</button>`;
                 let btn = (currentUser.role === 'dsa' || currentUser.role === 'admin') ? `<button onclick="openStatusModal('${l.id}','${l.status}')" class='text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg ml-1 hover:bg-indigo-100 shadow-sm'>Edit</button>` : '';
                 let adminBtns = currentUser.role === 'admin' ? `<button onclick="deleteLead('${l.id}')" class='text-[10px] text-red-500 bg-red-50 px-2.5 py-1.5 rounded-lg ml-1 hover:bg-red-100 shadow-sm'><i class="fa-solid fa-trash"></i></button>` : '';
                 
@@ -759,7 +784,7 @@
                     queryDisplay = `<div class="mt-2 bg-red-50 border border-red-100 text-red-700 text-xs p-2 rounded-lg flex justify-between items-center"><span class="italic font-medium"><i class="fa-solid fa-circle-question mr-1"></i> Q: ${window.escapeHTML(l.queryMessage)}</span> ${resolveBtn}</div>`;
                 }
 
-                list.innerHTML += `<div class='bg-white p-4 rounded-2xl shadow-sm border border-slate-100 relative mb-4'><div class="flex justify-between items-start mb-2"><div><h4 class="font-bold text-slate-800 text-base">${window.escapeHTML(l.name)} <span class="text-[10px] font-mono text-slate-400 font-medium ml-1 bg-slate-100 px-1.5 py-0.5 rounded">#${leadIdShort}</span></h4><span class="text-xs font-semibold text-slate-500">${window.escapeHTML(l.type)}</span></div><span class="text-[10px] px-2.5 py-1 rounded-full font-bold border ${statusClass}">${l.status||'Pending'}</span></div><div class="mb-3 space-y-1 bg-slate-50 p-2 rounded-xl border border-slate-100"><div class="text-xs text-slate-600 font-medium"><i class="fa-solid fa-phone text-slate-400 mr-2 w-3"></i> ${window.escapeHTML(l.phone)}</div><div class="text-xs text-slate-600 truncate font-medium"><i class="fa-solid fa-location-dot text-slate-400 mr-2 w-3"></i> ${window.escapeHTML(l.address) || 'NA'}</div></div>${queryDisplay}<div class="flex justify-between items-end mt-2 pt-3 border-t border-slate-100"><div><div class="text-base font-black text-slate-800">₹${Number(l.amount).toLocaleString('en-IN')}</div><div class="text-[9px] text-indigo-700 font-bold bg-indigo-100 px-2 py-1 rounded mt-1 inline-block"><i class="fa-regular fa-user mr-1"></i> By: ${window.escapeHTML(l.agentName)}</div></div><div class="flex items-center">${waBtn} ${queryBtn} ${btn} ${adminBtns}</div></div></div>`;
+                list.innerHTML += `<div class='bg-white p-4 rounded-2xl shadow-sm border border-slate-100 relative mb-4'><div class="flex justify-between items-start mb-2"><div><h4 class="font-bold text-slate-800 text-base">${window.escapeHTML(l.name)} <span class="text-[10px] font-mono text-slate-400 font-medium ml-1 bg-slate-100 px-1.5 py-0.5 rounded">#${leadIdShort}</span></h4><span class="text-xs font-semibold text-slate-500">${window.escapeHTML(l.type)}</span></div><span class="text-[10px] px-2.5 py-1 rounded-full font-bold border ${statusClass}">${l.status||'Pending'}</span></div><div class="mb-3 space-y-1 bg-slate-50 p-2 rounded-xl border border-slate-100"><div class="text-xs text-slate-600 font-medium"><i class="fa-solid fa-phone text-slate-400 mr-2 w-3"></i> ${window.escapeHTML(l.phone)}</div><div class="text-xs text-slate-600 truncate font-medium"><i class="fa-solid fa-location-dot text-slate-400 mr-2 w-3"></i> ${window.escapeHTML(l.address) || 'NA'}</div></div>${queryDisplay}<div class="flex justify-between items-end mt-2 pt-3 border-t border-slate-100"><div><div class="text-base font-black text-slate-800">₹${Number(l.amount).toLocaleString('en-IN')}</div><div class="text-[9px] text-indigo-700 font-bold bg-indigo-100 px-2 py-1 rounded mt-1 inline-block"><i class="fa-regular fa-user mr-1"></i> By: ${window.escapeHTML(l.agentName)}</div></div><div class="flex items-center">${waBtn} ${queryBtn} ${notesBtn} ${btn} ${adminBtns}</div></div></div>`;
             });
             document.getElementById('dashCount').innerText = totalCount;
             document.getElementById('dashAmount').innerText = "₹" + (totalAmount >= 100000 ? (totalAmount/100000).toFixed(2) + "L" : totalAmount.toLocaleString('en-IN'));
@@ -1000,31 +1025,93 @@
                 document.getElementById('calcResultBox').classList.remove('hidden'); 
             } catch (err) { showToast("Calculation Error", "error"); } 
         };
+
+        // --- NOTES & HISTORY LOGIC ---
+        window.currentNotesLeadId = null;
+
+        window.openNotesModal = (id) => {
+            window.currentNotesLeadId = id;
+            const lead = window.processedLeads.find(l => l.id === id);
+            if (!lead) return;
+
+            document.getElementById('notesLeadName').innerText = `${window.escapeHTML(lead.name)} | ${lead.type}`;
+            
+            if (currentUser.role === 'admin' || currentUser.role === 'dsa') {
+                document.getElementById('notesInputArea').classList.remove('hidden');
+            } else {
+                document.getElementById('notesInputArea').classList.add('hidden');
+            }
+
+            renderNotesList(lead.notes || []);
+            document.getElementById('notesModal').classList.remove('hidden');
+        };
+
+        window.closeNotesModal = () => {
+            window.currentNotesLeadId = null;
+            document.getElementById('newNoteText').value = '';
+            document.getElementById('notesModal').classList.add('hidden');
+        };
+
+        window.renderNotesList = (notes) => {
+            const list = document.getElementById('notesHistory');
+            list.innerHTML = '';
+            
+            if (!notes || notes.length === 0) {
+                list.innerHTML = '<div class="text-center text-sm text-slate-400 mt-10 italic"><i class="fa-regular fa-folder-open text-3xl mb-2 opacity-50 block"></i> No notes added yet.</div>';
+                return;
+            }
+            
+            let sorted = [...notes].sort((a, b) => b.timestamp - a.timestamp);
+            
+            sorted.forEach(note => {
+                let dateStr = new Date(note.timestamp).toLocaleString('en-IN', {day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true});
+                list.innerHTML += `
+                    <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-indigo-500 relative mb-2">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded uppercase tracking-wide">${window.escapeHTML(note.author)} (${note.role})</span>
+                            <span class="text-[9px] text-slate-400 font-bold"><i class="fa-regular fa-clock mr-1"></i>${dateStr}</span>
+                        </div>
+                        <p class="text-xs text-slate-700 font-medium whitespace-pre-wrap leading-relaxed">${window.escapeHTML(note.text)}</p>
+                    </div>
+                `;
+            });
+        };
+
+        window.saveNote = async () => {
+            const text = document.getElementById('newNoteText').value.trim();
+            if (!text) return showToast('Please write an update first!', 'error');
+            
+            const lead = window.processedLeads.find(l => l.id === window.currentNotesLeadId);
+            if (!lead) return;
+
+            let existingNotes = lead.notes || [];
+            const newNote = {
+                text: text,
+                timestamp: Date.now(),
+                author: currentUser.name || 'User',
+                role: currentUser.role
+            };
+            
+            existingNotes.push(newNote);
+
+            try {
+                const btn = event.currentTarget;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+                btn.disabled = true;
+
+                await updateDoc(doc(db, 'leads', window.currentNotesLeadId), { notes: existingNotes });
+                
+                showToast('Update saved to history!');
+                document.getElementById('newNoteText').value = '';
+                renderNotesList(existingNotes);
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            } catch (e) {
+                showToast('Error saving update', 'error');
+            }
+        };
     </script>
-    <div id="notesModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-    <div class="bg-white w-full max-w-lg h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden fade-in">
-        
-        <div class="bg-slate-800 text-white p-4 flex justify-between items-center flex-shrink-0">
-            <div>
-                <h3 class="font-bold text-lg"><i class="fa-solid fa-clipboard-list text-indigo-400 mr-2"></i> Lead Notes & History</h3>
-                <p id="notesLeadName" class="text-xs text-slate-300 mt-0.5">Loading...</p>
-            </div>
-            <button onclick="closeNotesModal()" class="text-slate-300 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
-        </div>
-
-        <div id="notesHistory" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 hide-scrollbar">
-            </div>
-
-        <div id="notesInputArea" class="p-4 bg-white border-t border-slate-200 hidden flex-shrink-0">
-            <textarea id="newNoteText" rows="2" placeholder="Add update (e.g., File RAPC me gai hai, Search pending hai...)" class="w-full border border-slate-300 p-2.5 rounded-xl bg-slate-50 text-sm focus:outline-none focus:border-indigo-500 mb-2"></textarea>
-            <button onclick="saveNote()" class="w-full bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-bold shadow hover:bg-indigo-700 transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-check-circle"></i> Save Update
-            </button>
-        </div>
-
-    </div>
-</div>
 </body>
 </html>
-
-
